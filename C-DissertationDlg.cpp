@@ -137,7 +137,52 @@ BOOL CCDissertationDlg::CanExit()
 
 	return TRUE;
 }
+void CCDissertationDlg::OnBnClickedCretatProject()
+{
+	// 엑셀 자동화 객체 생성
+	CXLAutomation* Xl = new CXLAutomation;
 
+	// 엑셀 파일 열기
+	if (!Xl->OpenExcelFile(_T("d:\\1.xlsx")))
+	{
+		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		delete Xl;
+		return;
+	}
+
+	// 데이터를 저장할 2차원 배열 선언
+	const int rows = 3;
+	const int cols = 5;
+	int dataArray[rows][cols] = { 0 };
+
+	// 엑셀 시트의 특정 범위를 읽어서 배열에 저장
+	int startRow = 8, startCol = 6, endRow = 8+2, endCol = 6+4;
+	if (!Xl->ReadRangeToArray(PROJECT, startRow, startCol, endRow, endCol, (int*)dataArray, rows, cols))
+	{
+		MessageBox(_T("엑셀 데이터 범위를 읽어올 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		Xl->ReleaseExcel();
+		delete Xl;
+		return;
+	}
+
+	// 가져온 데이터 배열 확인 (예시로 출력)
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+		{
+			CString str;
+			str.Format(_T("dataArray[%d][%d] = %d"), i, j, dataArray[i][j]);
+			MessageBox(str, _T("Data"), MB_OK);
+		}
+	}
+
+
+	// 엑셀 리소스 해제
+	Xl->ReleaseExcel();
+	delete Xl;
+}
+
+/*
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
     // 엑셀 자동화 객체 생성
@@ -187,5 +232,5 @@ void CCDissertationDlg::OnBnClickedCretatProject()
     Xl->ReleaseExcel();
     delete Xl;
 }
-
+*/
 

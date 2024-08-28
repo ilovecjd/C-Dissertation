@@ -65,9 +65,10 @@ public:
 	//song 
 	BOOL SetRangeValueAndStyle(SheetName sheet, int startRow, int startCol, int** dataArray, int numRows, int numCols);
 	BOOL GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange);
-	BOOL GetRange(SheetName sheet, CString rangeAddress, VARIANTARG* pRange);
+	//BOOL GetRange(SheetName sheet, CString rangeAddress, VARIANTARG* pRange);
 	//BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int rowCount, int colCount, int** dataArray);
-	BOOL ReadRangeToArray(SheetName sheet, CString range, int* dataArray, int rows, int cols);
+	//BOOL ReadRangeToArray(SheetName sheet, CString range, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
 	//song
 
 	CXLAutomation();

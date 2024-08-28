@@ -938,6 +938,45 @@ BOOL CXLAutomation::SetRangeValueAndStyle(SheetName sheet, int startRow, int sta
 	return result;
 }
 
+BOOL CXLAutomation::GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargStartCell, vargEndCell;
+	VariantInit(&vargStartCell);
+	VariantInit(&vargEndCell);
+
+	// 첫 번째 셀 객체 가져오기 column,row, 순서로 전달)!!!!!!
+	ClearAllArgs();	
+	AddArgumentInt2(NULL, 0, startCol); // Column
+	AddArgumentInt2(NULL, 0, startRow); // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargStartCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 마지막 셀 객체 가져오기 column,row, 순서로 전달)!!!!!!
+	ClearAllArgs();	
+	AddArgumentInt2(NULL, 0, endCol);   // Column
+	AddArgumentInt2(NULL, 0, endRow);   // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargEndCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+	{
+		VariantClear(&vargStartCell);
+		return FALSE;
+	}
+
+	// Range 메서드 호출하여 범위 설정
+	ClearAllArgs();
+	AddArgumentDispatch(NULL, 0, vargStartCell.pdispVal);
+	AddArgumentDispatch(NULL, 0, vargEndCell.pdispVal);
+	BOOL result = ExlInvoke(m_pdispWorksheets[sheet], L"Range", pRange, DISPATCH_PROPERTYGET, DISP_FREEARGS);
+
+	VariantClear(&vargStartCell);
+	VariantClear(&vargEndCell);
+
+	return result;
+}
+
+/*
 BOOL CXLAutomation::GetRange(SheetName sheet, CString rangeAddress, VARIANTARG* pRange)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
@@ -951,7 +990,7 @@ BOOL CXLAutomation::GetRange(SheetName sheet, CString rangeAddress, VARIANTARG* 
 
 	return TRUE;
 }
-
+*/
 /*
 BOOL CXLAutomation::GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange)
 {
@@ -1002,8 +1041,76 @@ BOOL CXLAutomation::GetRange(SheetName sheet, int startRow, int startCol, int en
 
 
 
+BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
+{
+	VARIANTARG vargRng, vargData;
 
+	// 범위를 설정하고 Excel에서 해당 범위의 IDispatch 포인터를 가져옵니다.
+	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+		return FALSE;
 
+	// Excel 범위의 데이터를 가져옴
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// SAFEARRAY 접근
+	SAFEARRAY* pSafeArray = vargData.parray;
+	VARIANT* pVarData = NULL;
+	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
+	if (FAILED(hr))
+	{
+		VariantClear(&vargRng);
+		VariantClear(&vargData);
+		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// SAFEARRAY에서 데이터 추출
+	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
+	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
+	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
+	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
+	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
+
+	
+	/*for (LONG r = lRowLBound; r <= lRowUBound; r++)
+	{*/
+		//for (LONG c = lColLBound; c <= lColUBound; c++)		
+		ULONG lLoop = (lRowUBound- lRowLBound+1) * (lColUBound - lColLBound + 1);
+		for (ULONG c = 0; c <= lLoop ; c++)
+		{
+//			LONG index[2] = { r, c };
+			VARIANT* pVarCell = &pVarData[c];
+
+			// 데이터 타입에 따라 처리
+			if (pVarCell->vt == VT_I4) // Integer
+			{
+				*(dataArray + c) = pVarCell->lVal;
+			}
+			else if (pVarCell->vt == VT_R8) // Double, in case of float numbers
+			{
+				*(dataArray + c) = (int)pVarCell->dblVal;
+			}
+			else if (pVarCell->vt == VT_BSTR) // String, if needed to handle
+			{
+				// 문자열을 정수로 변환하거나 필요에 따라 처리할 수 있습니다.
+			}
+			else if (pVarCell->vt == VT_EMPTY) // Empty cell
+			{
+				*(dataArray + c) = 0; // Or any default value
+			}
+		}
+	//}
+
+	SafeArrayUnaccessData(pSafeArray);
+	VariantClear(&vargRng);
+	VariantClear(&vargData);
+	return TRUE;
+}
+/*
 BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, CString range, int* dataArray, int rows, int cols)
 {
 	VARIANTARG vargRng, vargData;
@@ -1070,3 +1177,4 @@ BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, CString range, int* dataAr
 	VariantClear(&vargData);
 	return TRUE;
 }
+*/
