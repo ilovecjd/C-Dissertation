@@ -1,0 +1,29 @@
+﻿// CDissertation.idl : C-Dissertation.exe에 대한 형식 라이브러리 소스
+
+// 이 파일은 MIDL 컴파일러에 의해 처리되어
+// 형식 라이브러리(CDissertation.tlb)를 생성합니다.
+
+[ uuid(0A114ADB-520D-443F-8F9C-2B73F239959E), version(1.0) ]
+library CDissertation
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  CCDissertationDoc의 기본 디스패치 인터페이스
+	
+	[ uuid(2D2AA0A4-6E81-4BBB-AB37-F0F477771B5E) ]
+	dispinterface ICDissertation
+	{
+		properties:
+			
+		methods:
+	};
+
+	//  CCDissertationDoc의 클래스 정보
+	
+	[ uuid(DD252F81-78B3-44B6-869E-F6496C136DA1) ]
+	coclass CDissertation
+	{
+		[default] dispinterface ICDissertation;
+	};
+};
