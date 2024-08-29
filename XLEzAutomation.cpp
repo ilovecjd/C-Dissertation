@@ -109,18 +109,32 @@ BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nColumn, int nRow, doubl
 	return m_pXLServer->SetCellValueDouble(sheet, nColumn, nRow, value);
 }
 
-// ReadRangeToIntArray: int 배열로 Excel 범위 데이터 읽기
-BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
+// Overloaded function to read integer values from Excel
+BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
-	if (m_pXLServer == NULL)
-		return FALSE;
-	return m_pXLServer->ReadRangeToIntArray(sheet, startRow, startCol, endRow, endCol, dataArray, rows, cols);
+	if (!m_pXLServer) return FALSE;
+	return m_pXLServer->ReadRangeToIntArray(sheet, startRow, startCol, dataArray, rows, cols);
 }
 
-// ReadRangeToCStringArray: CString 배열로 Excel 범위 데이터 읽기
-BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols)
+// Overloaded function to read CString values from Excel
+BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
+{
+	if (!m_pXLServer) return FALSE;
+	return m_pXLServer->ReadRangeToCStringArray(sheet, startRow, startCol, dataArray, rows, cols);
+}
+
+// int 배열을 Excel에 쓰기
+BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->ReadRangeToCStringArray(sheet, startRow, startCol, endRow, endCol, dataArray, rows, cols);
+	return m_pXLServer->WriteArrayToRangeInt(sheet, startRow, startCol, dataArray, rows, cols);
+}
+
+// CString 배열을 Excel에 쓰기
+BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
+{
+	if (m_pXLServer == NULL)
+		return FALSE;
+	return m_pXLServer->WriteArrayToRangeCString(sheet, startRow, startCol, dataArray, rows, cols);
 }

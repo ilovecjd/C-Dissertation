@@ -77,10 +77,14 @@ public:
 	BOOL SetCellValueCString(SheetName sheet, int nColumn, int nRow, CString value);
 	BOOL SetCellValueDouble(SheetName sheet, int nColumn, int nRow, double value);
 	
+	// For reading values from Excel
+	BOOL ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);	
+	BOOL ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
 
-	BOOL ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
-	BOOL ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols);
+	BOOL WriteArrayToRangeInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL WriteArrayToRangeCString(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
 
+	HRESULT AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...);
 	//song
 
 	CXLAutomation();

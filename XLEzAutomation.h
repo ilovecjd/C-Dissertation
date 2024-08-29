@@ -29,13 +29,16 @@ public:
 	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, CString value);
 	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, double value);
 
-	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
-	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols);
+	// Overloaded ReadRangeToArray functions
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+
+	// 배열을 Excel에 쓰기
+	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
 
 
 	BOOL DeleteRow(SheetName sheet, int nRow);
-
-	
 
 	BOOL ExportCString(SheetName sheet, CString szDataCollection);
 

@@ -1133,90 +1133,83 @@ BOOL CXLAutomation::SetCellValueDouble(SheetName sheet, int nColumn, int nRow, d
 	return TRUE;
 }
 
-
-
-
 // ReadRangeToIntArray: Excel 범위 데이터를 int 배열로 읽어오기
-// ReadRangeToIntArray: Excel 범위 데이터를 int 배열로 읽어오기
-BOOL CXLAutomation::ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
-{
-	VARIANTARG vargRng, vargData;
-
-	// 범위를 설정하고 Excel에서 해당 범위의 IDispatch 포인터를 가져옵니다.
-	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+BOOL CXLAutomation::ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols) {
+	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
-	// Excel 범위의 데이터를 가져옴
-	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0))
-	{
+	VARIANTARG vargRng, vargData;
+	VariantInit(&vargRng);
+	VariantInit(&vargData);
+
+	// Get the range from Excel
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Read the data from the range
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0)) {
 		VariantClear(&vargRng);
 		return FALSE;
 	}
 
-	// SAFEARRAY 접근
+	// Access the SAFEARRAY data
 	SAFEARRAY* pSafeArray = vargData.parray;
 	VARIANT* pVarData = NULL;
 	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		VariantClear(&vargRng);
 		VariantClear(&vargData);
 		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
-	// SAFEARRAY에서 데이터 추출
+	// Extract data from SAFEARRAY
 	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
 	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
 	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
 	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
 	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
 
-	for (LONG r = lRowLBound; r <= lRowUBound; r++)
-	{
-		for (LONG c = lColLBound; c <= lColUBound; c++)
-		{
-			LONG index[2] = { r, c };
+	for (LONG r = 0; r < rows; r++) {
+		for (LONG c = 0; c < cols; c++) {
+			LONG index[2] = { r + lRowLBound, c + lColLBound }; // Corrected indices for column-major order
+
 			VARIANT varCell;
 			VariantInit(&varCell);
+			HRESULT hr = SafeArrayGetElement(pSafeArray, index, &varCell);
 
-			// SAFEARRAY에서 직접 데이터 접근
-			hr = SafeArrayGetElement(pSafeArray, index, &varCell);
-			if (SUCCEEDED(hr))
-			{
-				if (varCell.vt == VT_I4) // Integer
-				{
-					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = varCell.lVal;
-				}
-				else if (varCell.vt == VT_R8) // Double
-				{
-					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = static_cast<int>(varCell.dblVal);
-				}
-				else if (varCell.vt == VT_R4) // Float
-				{
-					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = static_cast<int>(varCell.fltVal);
-				}
-				else if (varCell.vt == VT_EMPTY) // 비어있는 셀
-				{
-					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = 0; // 0으로 설정
-				}
-				else
-				{
-					// 정수, 더블, 플로트가 아닌 경우 에러 처리
-					MessageBox(NULL, _T("The cell value is not a number."), _T("Type Error"), MB_OK | MB_ICONERROR);
-					VariantClear(&varCell);
-					SafeArrayUnaccessData(pSafeArray);
-					VariantClear(&vargRng);
-					VariantClear(&vargData);
-					return FALSE;
-				}
-				VariantClear(&varCell); // 사용 후 VARIANT 정리
+			if (FAILED(hr)) {
+				SafeArrayUnaccessData(pSafeArray);
+				VariantClear(&vargRng);
+				VariantClear(&vargData);
+				MessageBox(NULL, _T("Failed to get element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+				return FALSE;
 			}
-			else
-			{
-				// SafeArrayGetElement 실패 처리
-				MessageBox(NULL, _T("Failed to retrieve element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+
+			if (varCell.vt == VT_I4) {
+				dataArray[r * cols + c] = varCell.lVal;
 			}
+			else if (varCell.vt == VT_R8) {
+				dataArray[r * cols + c] = static_cast<int>(varCell.dblVal);
+			}
+			else if (varCell.vt == VT_R4) {
+				dataArray[r * cols + c] = static_cast<int>(varCell.fltVal);
+			}
+			else if (varCell.vt == VT_EMPTY) {
+				dataArray[r * cols + c] = 0;
+			}
+			else {
+				MessageBox(NULL, _T("Unexpected data type in Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+				SafeArrayUnaccessData(pSafeArray);
+				VariantClear(&varCell);
+				VariantClear(&vargRng);
+				VariantClear(&vargData);
+				return FALSE;
+			}
+
+			VariantClear(&varCell);
 		}
 	}
 
@@ -1226,78 +1219,79 @@ BOOL CXLAutomation::ReadRangeToIntArray(SheetName sheet, int startRow, int start
 	return TRUE;
 }
 
-// ReadRangeToCStringArray: Excel 범위 데이터를 CString 배열로 읽어오기
-BOOL CXLAutomation::ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols)
-{
-	VARIANTARG vargRng, vargData;
 
-	// 범위를 설정하고 Excel에서 해당 범위의 IDispatch 포인터를 가져옵니다.
-	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+// ReadRangeToCStringArray: Excel 범위 데이터를 CString 배열로 읽어오기
+BOOL CXLAutomation::ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols) {
+	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
-	// Excel 범위의 데이터를 가져옴
-	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0))
-	{
+	VARIANTARG vargRng, vargData;
+	VariantInit(&vargRng);
+	VariantInit(&vargData);
+
+	// Get the range from Excel
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Read the data from the range
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0)) {
 		VariantClear(&vargRng);
 		return FALSE;
 	}
 
-	// SAFEARRAY 접근
+	// Access the SAFEARRAY data
 	SAFEARRAY* pSafeArray = vargData.parray;
 	VARIANT* pVarData = NULL;
 	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		VariantClear(&vargRng);
 		VariantClear(&vargData);
 		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
-	// SAFEARRAY에서 데이터 추출
+	// Extract data from SAFEARRAY using 1-based indexing
 	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
 	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
 	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
 	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
 	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
 
-	for (LONG r = lRowLBound; r <= lRowUBound; r++)
-	{
-		for (LONG c = lColLBound; c <= lColUBound; c++)
-		{
-			LONG index[2] = { r, c };
+	for (LONG r = 0; r < rows; r++) {
+		for (LONG c = 0; c < cols; c++) {
+			LONG index[2] = { r + lRowLBound, c + lColLBound }; // Corrected indices for column-major order
+
 			VARIANT varCell;
 			VariantInit(&varCell);
+			HRESULT hr = SafeArrayGetElement(pSafeArray, index, &varCell);
 
-			// SAFEARRAY에서 직접 데이터 접근
-			hr = SafeArrayGetElement(pSafeArray, index, &varCell);
-			if (SUCCEEDED(hr))
-			{
-				if (varCell.vt == VT_BSTR) // 문자열
-				{
-					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = varCell.bstrVal;
-				}
-				else if (varCell.vt == VT_EMPTY) // 비어있는 셀
-				{
-					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = _T(""); // 빈 문자열로 설정
-				}
-				else
-				{
-					// 문자열이 아니면 에러 처리
-					MessageBox(NULL, _T("The cell value is not a string."), _T("Type Error"), MB_OK | MB_ICONERROR);
-					VariantClear(&varCell);
-					SafeArrayUnaccessData(pSafeArray);
-					VariantClear(&vargRng);
-					VariantClear(&vargData);
-					return FALSE;
-				}
-				VariantClear(&varCell); // 사용 후 VARIANT 정리
+			if (FAILED(hr)) {
+				SafeArrayUnaccessData(pSafeArray);
+				VariantClear(&vargRng);
+				VariantClear(&vargData);
+				MessageBox(NULL, _T("Failed to get element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+				return FALSE;
 			}
-			else
-			{
-				// SafeArrayGetElement 실패 처리
-				MessageBox(NULL, _T("Failed to retrieve element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+
+			// Check if the VARIANT is a string or empty, otherwise error
+			if (varCell.vt == VT_BSTR) {
+				dataArray[r * cols + c] = CString(varCell.bstrVal);
 			}
+			else if (varCell.vt == VT_EMPTY) {
+				dataArray[r * cols + c] = _T("");
+			}
+			else {
+				MessageBox(NULL, _T("Non-string data type found in Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+				SafeArrayUnaccessData(pSafeArray);
+				VariantClear(&varCell);
+				VariantClear(&vargRng);
+				VariantClear(&vargData);
+				return FALSE;
+			}
+
+			VariantClear(&varCell); // Clear the VARIANT after processing
 		}
 	}
 
@@ -1305,4 +1299,199 @@ BOOL CXLAutomation::ReadRangeToCStringArray(SheetName sheet, int startRow, int s
 	VariantClear(&vargRng);
 	VariantClear(&vargData);
 	return TRUE;
+}
+
+BOOL CXLAutomation::WriteArrayToRangeInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols) {
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// Set the Excel range using the GetRange function
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Create a SAFEARRAY for the data
+	SAFEARRAYBOUND sab[2];
+	sab[0].lLbound = 1;
+	sab[0].cElements = rows;
+	sab[1].lLbound = 1;
+	sab[1].cElements = cols;
+
+	SAFEARRAY* pSafeArray = SafeArrayCreate(VT_VARIANT, 2, sab);
+	if (pSafeArray == NULL) {
+		MessageBox(NULL, _T("Failed to create SAFEARRAY."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// Fill the SAFEARRAY with data
+	for (long r = 1; r <= rows; ++r) {
+		for (long c = 1; c <= cols; ++c) {
+			VARIANT vtData;
+			VariantInit(&vtData);
+			vtData.vt = VT_I4; // Integer format
+			vtData.lVal = *(dataArray + (r - 1) * cols + (c - 1)); // Note: Indexing corrected to match 1-based indexing of SAFEARRAY
+
+			long indices[2] = { r, c }; // SAFEARRAY is 1-based
+			SafeArrayPutElement(pSafeArray, indices, &vtData);
+		}
+	}
+
+	// Wrap the SAFEARRAY in a VARIANT
+	VARIANT vtArray;
+	VariantInit(&vtArray);
+	vtArray.vt = VT_ARRAY | VT_VARIANT;
+	vtArray.parray = pSafeArray;
+	
+	// Write the SAFEARRAY data to the range
+	HRESULT hr = AutoWrap(DISPATCH_PROPERTYPUT, NULL, vargRng.pdispVal, L"Value", 1, vtArray);
+
+	// Clean up
+	VariantClear(&vargRng);
+	SafeArrayDestroy(pSafeArray);
+
+	// Check for errors
+	if (FAILED(hr)) {
+		MessageBox(NULL, _T("Failed to write data to Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols) {
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// Set the Excel range using the GetRange function
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Create a SAFEARRAY for the data
+	SAFEARRAYBOUND sab[2];
+	sab[0].lLbound = 1;
+	sab[0].cElements = rows;
+	sab[1].lLbound = 1;
+	sab[1].cElements = cols;
+
+	SAFEARRAY* pSafeArray = SafeArrayCreate(VT_VARIANT, 2, sab);
+	if (pSafeArray == NULL) {
+		MessageBox(NULL, _T("Failed to create SAFEARRAY."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// Fill the SAFEARRAY with data
+	for (long r = 1; r <= rows; ++r) {
+		for (long c = 1; c <= cols; ++c) {
+			VARIANT vtData;
+			VariantInit(&vtData);
+			vtData.vt = VT_BSTR; // String format
+			vtData.bstrVal = SysAllocString(dataArray[(r - 1) * cols + (c - 1)]); // Convert CString to BSTR
+
+			if (vtData.bstrVal == NULL) {
+				MessageBox(NULL, _T("Failed to allocate memory for BSTR."), _T("Error"), MB_OK | MB_ICONERROR);
+				SafeArrayDestroy(pSafeArray);
+				VariantClear(&vargRng);
+				return FALSE;
+			}
+
+			long indices[2] = { r, c }; // SAFEARRAY is 1-based
+			SafeArrayPutElement(pSafeArray, indices, &vtData);
+			VariantClear(&vtData); // Clear VARIANT after use
+		}
+	}
+
+	// Wrap the SAFEARRAY in a VARIANT
+	VARIANT vtArray;
+	VariantInit(&vtArray);
+	vtArray.vt = VT_ARRAY | VT_VARIANT;
+	vtArray.parray = pSafeArray;
+
+	// Write the SAFEARRAY data to the range
+	HRESULT hr = AutoWrap(DISPATCH_PROPERTYPUT, NULL, vargRng.pdispVal, L"Value", 1, vtArray);
+
+	// Clean up
+	VariantClear(&vargRng);
+	SafeArrayDestroy(pSafeArray);
+
+	// Check for errors
+	if (FAILED(hr)) {
+		MessageBox(NULL, _T("Failed to write data to Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+// Define the AutoWrap function
+HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...) {
+	// Begin variable-argument list...
+	va_list marker;
+	va_start(marker, cArgs);
+
+	if (!pDisp) {
+		MessageBox(NULL, _T("NULL IDispatch passed to AutoWrap()"), _T("Error"), MB_OK | MB_ICONERROR);
+		return E_INVALIDARG;
+	}
+
+	// Variables used...
+	DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	DISPID dispidNamed = DISPID_PROPERTYPUT;
+	DISPID dispID;
+	HRESULT hr;
+	WCHAR buf[200];
+	char szName[200];
+
+	// Convert down to ANSI
+	WideCharToMultiByte(CP_ACP, 0, ptName, -1, szName, 256, NULL, NULL);
+
+	// Get DISPID for name passed...
+	hr = pDisp->GetIDsOfNames(IID_NULL, &ptName, 1, LOCALE_USER_DEFAULT, &dispID);
+	if (FAILED(hr)) {
+		wsprintf(buf, _T("IDispatch::GetIDsOfNames(\"%s\") failed w/err 0x%08lx"), ptName, hr);
+		MessageBox(NULL, buf, _T("AutoWrap()"), MB_OK | MB_ICONERROR);
+		return hr;
+	}
+
+	// Allocate memory for arguments...
+	VARIANT* pArgs = new VARIANT[cArgs + 1];
+	// Extract arguments...
+	for (int i = 0; i < cArgs; i++) {
+		pArgs[i] = va_arg(marker, VARIANT);
+	}
+
+	// Build DISPPARAMS
+	dp.cArgs = cArgs;
+	dp.rgvarg = pArgs;
+
+	// Handle special-case for property-puts!
+	if (autoType & DISPATCH_PROPERTYPUT) {
+		dp.cNamedArgs = 1;
+		dp.rgdispidNamedArgs = &dispidNamed;
+	}
+
+	// Make the call!
+	hr = pDisp->Invoke(dispID, IID_NULL, LOCALE_SYSTEM_DEFAULT, autoType, &dp, pvResult, NULL, NULL);
+	if (FAILED(hr)) {
+		wsprintf(buf, _T("IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx"), ptName, dispID, hr);
+		MessageBox(NULL, buf, _T("AutoWrap()"), MB_OK | MB_ICONERROR);
+		return hr;
+	}
+
+	// End variable-argument section...
+	va_end(marker);
+
+	delete[] pArgs;
+
+	return hr;
 }
