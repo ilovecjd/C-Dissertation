@@ -18,6 +18,7 @@ enum SheetName {
 	SHEET_COUNT // Total number of sheets
 };
 
+
 // CXLAutomation class definition
 class CXLAutomation
 {
@@ -43,8 +44,7 @@ class CXLAutomation
 #define xlAutomatic -4105 // xlAutomatic for borders color
 
 public:
-	BOOL OpenExcelFile(CString szFileName);
-	CString GetCellValueCString(SheetName sheet, int nColumn, int nRow);
+	BOOL OpenExcelFile(CString szFileName);	
 	BOOL SaveAs(CString szFileName, int nFileFormat, CString szPassword, CString szWritePassword, BOOL bReadOnly, BOOL bBackUp);
 	BOOL DeleteRow(SheetName sheet, long nRow);
 	BOOL ReleaseExcel();
@@ -69,6 +69,16 @@ public:
 	//BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int rowCount, int colCount, int** dataArray);
 	//BOOL ReadRangeToArray(SheetName sheet, CString range, int* dataArray, int rows, int cols);
 	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
+	
+	BOOL GetCellValueInt(SheetName sheet, int nColumn, int nRow, int* pValue);
+	BOOL GetCellValueCString(SheetName sheet, int nColumn, int nRow, CString* pValue);
+	BOOL GetCellValueDouble(SheetName sheet, int nColumn, int nRow, double* pValue);
+	BOOL GetCellValueVariant(SheetName sheet, int nColumn, int nRow, VARIANTARG* pValue); // 범용 함수 선언
+																					  // 셀에 값을 설정하는 함수들 (오버로딩)
+	BOOL SetCellValueInt(SheetName sheet, int nColumn, int nRow, int value);
+	BOOL SetCellValueCString(SheetName sheet, int nColumn, int nRow, CString value);
+	BOOL SetCellValueDouble(SheetName sheet, int nColumn, int nRow, double value);
+	
 	//song
 
 	CXLAutomation();

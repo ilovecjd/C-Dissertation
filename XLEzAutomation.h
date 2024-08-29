@@ -16,15 +16,29 @@ class CXLEzAutomation
 {
 public:
 	BOOL OpenExcelFile(CString szFileName);
-	CString GetCellValue(SheetName sheet, int nColumn, int nRow);
 	BOOL SaveFileAs(CString szFileName);
-	BOOL DeleteRow(SheetName sheet, int nRow);
 	BOOL ReleaseExcel();
-	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, CString szValue);
+
+	// Overloaded GetCellValue functions
+	BOOL GetCellValue(SheetName sheet, int nColumn, int nRow, int* pValue);      // For int
+	BOOL GetCellValue(SheetName sheet, int nColumn, int nRow, CString* pValue);  // For CString
+	BOOL GetCellValue(SheetName sheet, int nColumn, int nRow, double* pValue);   // For double
+
+	// 셀에 값을 설정하는 함수들 (오버로딩)
+	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, int value);
+	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, CString value);
+	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, double value);
+
+	
+	BOOL DeleteRow(SheetName sheet, int nRow);
+
+	
+
 	BOOL ExportCString(SheetName sheet, CString szDataCollection);
+
+
 	CXLEzAutomation();
 	CXLEzAutomation(BOOL bVisible);
-	BOOL ConvNumFormatColumn(int nColumn);
 	virtual ~CXLEzAutomation();
 
 protected:

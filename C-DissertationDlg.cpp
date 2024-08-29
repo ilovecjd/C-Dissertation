@@ -137,6 +137,9 @@ BOOL CCDissertationDlg::CanExit()
 
 	return TRUE;
 }
+
+
+/*
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
 	// 엑셀 자동화 객체 생성
@@ -180,57 +183,140 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	// 엑셀 리소스 해제
 	Xl->ReleaseExcel();
 	delete Xl;
-}
+}*/
+
 
 /*
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
-    // 엑셀 자동화 객체 생성
-    CXLAutomation* Xl = new CXLAutomation;
+	// 엑셀 자동화 객체 생성
+	CXLAutomation* Xl = new CXLAutomation;
 
-    // 엑셀 파일 열기
-    if (!Xl->OpenExcelFile(_T("d:\\1.xlsx")))
-    {
-        MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-        delete Xl;
-        return;
-    }
+	// 엑셀 파일 열기
+	if (!Xl->OpenExcelFile(_T("d:\\1.xlsx")))
+	{
+		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		delete Xl;
+		return;
+	}
 
-    // 데이터를 저장할 2차원 배열 선언
-    const int rows = 3;
-    const int cols = 3;
-    int dataArray[rows][cols] = { 0 };
+	int intValue = 0;
+	double doubleValue = 0.0;
+	CString strValue;
 
-    // 엑셀 시트의 특정 범위를 읽어서 배열에 저장
-    CString range = _T("C12:E14"); // 12행 3열부터 14행 5열까지의 범위
-    if (!Xl->ReadRangeToArray(PROJECT, range, (int*)dataArray, rows, cols))
-    {
-        MessageBox(_T("엑셀 데이터 범위를 읽어올 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-        Xl->ReleaseExcel();
-        delete Xl;
-        return;
-    }
+	// 정수 값을 테스트하기 위해 셀 값을 가져오기
+	if (Xl->GetCellValueInt(PROJECT, 1, 1, &intValue))
+	{
+		CString message;
+		message.Format(_T("Integer value in cell (1,1) is: %d"), intValue);
+		MessageBox(message, _T("Integer Value"), MB_OK);
+	}
+	else
+	{
+		MessageBox(_T("셀에서 정수 값을 가져오지 못했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+	}
 
-    // 가져온 데이터 배열 확인 (예시로 출력)
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < cols; j++)
-        {
-            CString str;
-            str.Format(_T("dataArray[%d][%d] = %d"), i, j, dataArray[i][j]);
-            MessageBox(str, _T("Data"), MB_OK);
-        }
-    }
+	// 실수 값을 테스트하기 위해 셀 값을 가져오기
+	if (Xl->GetCellValueDouble(PROJECT, 2, 2, &doubleValue))
+	{
+		CString message;
+		message.Format(_T("Double value in cell (2,2) is: %f"), doubleValue);
+		MessageBox(message, _T("Double Value"), MB_OK);
+	}
+	else
+	{
+		MessageBox(_T("셀에서 실수 값을 가져오지 못했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+	}
 
-    // 셀 값 설정 (예시)
-    if (!Xl->SetCellsValueToString(PROJECT, 1, 1, _T("주")))
-    {
-        MessageBox(_T("셀 값을 설정할 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-    }
+	// 문자열 값을 테스트하기 위해 셀 값을 가져오기
+	if (Xl->GetCellValueCString(PROJECT, 3, 3, &strValue))
+	{
+		CString message;
+		message.Format(_T("String value in cell (3,3) is: %s"), strValue);
+		MessageBox(message, _T("String Value"), MB_OK);
+	}
+	else
+	{
+		MessageBox(_T("셀에서 문자열 값을 가져오지 못했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+	}
 
-    // 엑셀 리소스 해제
-    Xl->ReleaseExcel();
-    delete Xl;
+	// 엑셀 리소스 해제
+	Xl->ReleaseExcel();
+	delete Xl;
 }
 */
+
+void CCDissertationDlg::OnBnClickedCretatProject()
+{
+	// CXLEzAutomation 객체 생성
+	CXLEzAutomation* xlAutomation = new CXLEzAutomation(TRUE); // Excel을 보이도록 생성
+
+															   // 엑셀 파일 열기
+	if (!xlAutomation->OpenExcelFile(_T("d:\\1.xlsx")))
+	{
+		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		delete xlAutomation;
+		return;
+	}
+
+	// 다양한 유형의 데이터를 Excel 셀에 설정하고 읽기
+	try
+	{
+		// 정수 값 설정 및 읽기
+		int intValue = 42;
+		xlAutomation->SetCellValue(PROJECT, 1, 1, intValue); // 1행 1열 (A1 셀)에 42 설정
+		int readIntValue;
+		if (xlAutomation->GetCellValue(PROJECT, 1, 1, &readIntValue))
+		{
+			CString msg;
+			msg.Format(_T("Read integer value: %d"), readIntValue);
+			MessageBox(msg, _T("Info"), MB_OK);
+		}
+		else
+		{
+			MessageBox(_T("정수 값을 읽어오는데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		}
+
+		// 문자열 값 설정 및 읽기
+		CString strValue = _T("Hello Excel");
+		xlAutomation->SetCellValue(PROJECT, 2, 1, strValue); // 1행 2열 (B1 셀)에 "Hello Excel" 설정
+		CString readStrValue;
+		if (xlAutomation->GetCellValue(PROJECT, 2, 1, &readStrValue))
+		{
+			CString msg;
+			msg.Format(_T("Read string value: %s"), readStrValue);
+			MessageBox(msg, _T("Info"), MB_OK);
+		}
+		else
+		{
+			MessageBox(_T("문자열 값을 읽어오는데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		}
+
+		// 실수 값 설정 및 읽기
+		double dblValue = 3.14159;
+		xlAutomation->SetCellValue(PROJECT, 3, 1, dblValue); // 1행 3열 (C1 셀)에 3.14159 설정
+		double readDblValue;
+		if (xlAutomation->GetCellValue(PROJECT, 3, 1, &readDblValue))
+		{
+			CString msg;
+			msg.Format(_T("Read double value: %f"), readDblValue);
+			MessageBox(msg, _T("Info"), MB_OK);
+		}
+		else
+		{
+			MessageBox(_T("실수 값을 읽어오는데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		}
+	}
+	catch (const std::exception& e)
+	{
+		MessageBox(CString(e.what()), _T("Error"), MB_OK | MB_ICONERROR);
+	}
+
+	// 엑셀 리소스 해제
+	xlAutomation->ReleaseExcel();
+	delete xlAutomation;
+}
+
+
+
 

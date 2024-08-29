@@ -726,82 +726,6 @@ BOOL CXLAutomation::SaveAs(CString szFileName, int nFileFormat, CString szPasswo
 	return TRUE;
 }
 
-//Get Worksheet.Calls(nColumn, nRow).Value
-//This method is not fully tested - see code coments 
-CString CXLAutomation::GetCellValueCString(SheetName sheet, int nColumn, int nRow)
-{
-	CString szValue = _T("");
-	if (NULL == m_pdispWorksheets[sheet])
-		return szValue;
-
-	VARIANTARG vargRng, vargValue;
-
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, nColumn);
-	AddArgumentDouble(NULL, 0, nRow);
-	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return szValue;
-
-	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargValue, DISPATCH_PROPERTYGET, 0))
-		return szValue;
-
-	VARTYPE Type = vargValue.vt;
-	switch (Type)
-	{
-	case VT_UI1:
-	{
-		unsigned char nChr = vargValue.bVal;
-		szValue.Format(_T("%d"), nChr);
-	}
-	break;
-	case VT_I4:
-	{
-		long nVal = vargValue.lVal;
-		szValue.Format(_T("%i"), nVal);
-	}
-	break;
-	case VT_R4:
-	{
-		float fVal = vargValue.fltVal;
-		szValue.Format(_T("%f"), fVal);
-	}
-	break;
-	case VT_R8:
-	{
-		double dVal = vargValue.dblVal;
-		szValue.Format(_T("%f"), dVal);
-	}
-	break;
-	case VT_BSTR:
-	{
-		BSTR b = vargValue.bstrVal;
-		szValue = b;
-	}
-	break;
-	case VT_BYREF | VT_UI1:
-	{
-		//Not tested
-		unsigned char* pChr = vargValue.pbVal;
-		szValue.Format(_T("%d"), pChr);
-	}
-	break;
-	case VT_BYREF | VT_BSTR:
-	{
-		//Not tested
-		BSTR* pb = vargValue.pbstrVal;
-		szValue = *pb;
-	}
-	case 0:
-	{
-		//Empty
-		szValue = _T("");
-	}
-	break;
-	}
-
-	return szValue;
-}
-
 //Open Microsoft Excel file and switch to the firs available worksheet. 
 BOOL CXLAutomation::OpenExcelFile(CString szFileName) {
 	// Leave if the file cannot be opened
@@ -1178,3 +1102,253 @@ BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, CString range, int* dataAr
 	return TRUE;
 }
 */
+
+
+
+// 엑셀 셀 값 가져오기 (기존 Variant 리턴 함수)
+BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nColumn, int nRow, VARIANTARG* pValue)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return false;
+
+	VARIANTARG vargCell;
+	VariantInit(&vargCell);
+
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn);
+	AddArgumentDouble(NULL, 0, nRow);
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return false;
+
+	if (!ExlInvoke(vargCell.pdispVal, L"Value", pValue, DISPATCH_PROPERTYGET, 0))
+	{
+		VariantClear(&vargCell);
+		return false;
+	}
+
+	VariantClear(&vargCell);
+	return true;
+}
+
+
+// Get integer value from Worksheet.Cells(nColumn, nRow)
+BOOL CXLAutomation::GetCellValueInt(SheetName sheet, int nColumn, int nRow, int* result)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng, vargValue;
+	VariantInit(&vargRng);
+	VariantInit(&vargValue);
+
+	// 해당 셀 범위 가져오기
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // Column
+	AddArgumentDouble(NULL, 0, nRow);    // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 셀 값 가져오기
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargValue, DISPATCH_PROPERTYGET, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// VARIANT 타입에 따라 처리
+	if (vargValue.vt == VT_I4) // Integer
+	{
+		*result = vargValue.lVal;
+	}
+	else if (vargValue.vt == VT_R8) // Double
+	{
+		*result = static_cast<int>(vargValue.dblVal); // Double을 Int로 변환
+	}
+	else if (vargValue.vt == VT_R4) // Float
+	{
+		*result = static_cast<int>(vargValue.fltVal); // Float을 Int로 변환
+	}
+	else
+	{
+		VariantClear(&vargRng);
+		VariantClear(&vargValue);
+		return FALSE; // 지원하지 않는 타입일 경우 FALSE 반환
+	}
+
+	VariantClear(&vargRng);
+	VariantClear(&vargValue);
+	return TRUE;
+}
+
+// Get double value from Worksheet.Cells(nColumn, nRow)
+BOOL CXLAutomation::GetCellValueDouble(SheetName sheet, int nColumn, int nRow, double* result)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng, vargValue;
+	VariantInit(&vargRng);
+	VariantInit(&vargValue);
+
+	// 해당 셀 범위 가져오기
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // Column
+	AddArgumentDouble(NULL, 0, nRow);    // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 셀 값 가져오기
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargValue, DISPATCH_PROPERTYGET, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// VARIANT 타입에 따라 처리
+	if (vargValue.vt == VT_R8) // Double
+	{
+		*result = vargValue.dblVal;
+	}
+	else if (vargValue.vt == VT_R4) // Float
+	{
+		*result = static_cast<double>(vargValue.fltVal); // Float을 Double로 변환
+	}
+	else if (vargValue.vt == VT_I4) // Integer
+	{
+		*result = static_cast<double>(vargValue.lVal); // Integer를 Double로 변환
+	}
+	else
+	{
+		VariantClear(&vargRng);
+		VariantClear(&vargValue);
+		return FALSE; // 지원하지 않는 타입일 경우 FALSE 반환
+	}
+
+	VariantClear(&vargRng);
+	VariantClear(&vargValue);
+	return TRUE;
+}
+
+
+// Get CString value from Worksheet.Cells(nColumn, nRow)
+BOOL CXLAutomation::GetCellValueCString(SheetName sheet, int nColumn, int nRow, CString* pValue)
+{
+	if (NULL == m_pdispWorksheets[sheet] || pValue == nullptr)
+		return FALSE;
+
+	VARIANTARG vargRng, vargValue;
+	VariantInit(&vargValue);
+
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn);
+	AddArgumentDouble(NULL, 0, nRow);
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargValue, DISPATCH_PROPERTYGET, 0))
+		return FALSE;
+
+	if (vargValue.vt == VT_BSTR) // Check if the value is a string
+	{
+		*pValue = vargValue.bstrVal;
+	}
+	else
+	{
+		MessageBox(NULL, _T("The cell value is not a string."), _T("Type Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargRng);
+		VariantClear(&vargValue);
+		return FALSE;
+	}
+
+	VariantClear(&vargRng);
+	VariantClear(&vargValue);
+	return TRUE;
+}
+
+
+// SetCellValue for integer
+BOOL CXLAutomation::SetCellValueInt(SheetName sheet, int nColumn, int nRow, int value)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// 해당 셀 범위 가져오기
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // Column
+	AddArgumentDouble(NULL, 0, nRow);    // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 셀 값 설정 (정수)
+	ClearAllArgs();
+	AddArgumentInt2(NULL, 0, value); // 정수 값을 설정
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	VariantClear(&vargRng);
+	return TRUE;
+}
+
+// SetCellValue for CString
+BOOL CXLAutomation::SetCellValueCString(SheetName sheet, int nColumn, int nRow, CString value)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// 해당 셀 범위 가져오기
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // Column
+	AddArgumentDouble(NULL, 0, nRow);    // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 셀 값 설정 (문자열)
+	ClearAllArgs();
+	AddArgumentCString(NULL, 0, value); // CString 값을 설정
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	VariantClear(&vargRng);
+	return TRUE;
+}
+
+// SetCellValue for double
+BOOL CXLAutomation::SetCellValueDouble(SheetName sheet, int nColumn, int nRow, double value)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// 해당 셀 범위 가져오기
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // Column
+	AddArgumentDouble(NULL, 0, nRow);    // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 셀 값 설정 (더블)
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, value); // 더블 값을 설정
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	VariantClear(&vargRng);
+	return TRUE;
+}
