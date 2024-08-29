@@ -502,7 +502,7 @@ BOOL CXLAutomation::AddArgumentCString(LPOLESTR lpszArgName, WORD wFlags, CStrin
 }
 
 //Perform Worksheets.Cells(x,y).Value = szStr
-BOOL CXLAutomation::SetCellsValueToString(SheetName sheet, double Column, double Row, CString szStr)
+BOOL CXLAutomation::SetCellsValueToString(SheetName sheet, double Row, double Column, CString szStr)
 {
 	if (NULL == m_pdispWorksheets[sheet])
 		return FALSE;
@@ -512,8 +512,8 @@ BOOL CXLAutomation::SetCellsValueToString(SheetName sheet, double Column, double
 	VARIANTARG vargRng;
 
 	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, Column);
 	AddArgumentDouble(NULL, 0, Row);
+	AddArgumentDouble(NULL, 0, Column);	
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return FALSE;
 
@@ -886,7 +886,7 @@ BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol
 }
 
 // 엑셀 셀 값 가져오기 (기존 Variant 리턴 함수)
-BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nColumn, int nRow, VARIANTARG* pValue)
+BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nRow, int nColumn, VARIANTARG* pValue)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
 		return false;
@@ -894,7 +894,6 @@ BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nColumn, int nRow, 
 	VARIANTARG vargCell;
 	VariantInit(&vargCell);
 
-	ClearAllArgs();
 	AddArgumentDouble(NULL, 0, nColumn);
 	AddArgumentDouble(NULL, 0, nRow);
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
@@ -1011,7 +1010,7 @@ BOOL CXLAutomation::GetCellValueDouble(SheetName sheet, int nColumn, int nRow, d
 
 
 // Get CString value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLAutomation::GetCellValueCString(SheetName sheet, int nColumn, int nRow, CString* pValue)
+BOOL CXLAutomation::GetCellValueCString(SheetName sheet, int nRow, int nColumn, CString* pValue)
 {
 	if (NULL == m_pdispWorksheets[sheet] || pValue == nullptr)
 		return FALSE;
@@ -1019,7 +1018,7 @@ BOOL CXLAutomation::GetCellValueCString(SheetName sheet, int nColumn, int nRow, 
 	VARIANTARG vargRng, vargValue;
 	VariantInit(&vargValue);
 
-	ClearAllArgs();
+	ClearAllArgs();		
 	AddArgumentDouble(NULL, 0, nColumn);
 	AddArgumentDouble(NULL, 0, nRow);
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
@@ -1047,7 +1046,7 @@ BOOL CXLAutomation::GetCellValueCString(SheetName sheet, int nColumn, int nRow, 
 
 
 // SetCellValue for integer
-BOOL CXLAutomation::SetCellValueInt(SheetName sheet, int nColumn, int nRow, int value)
+BOOL CXLAutomation::SetCellValueInt(SheetName sheet, int nRow, int nColumn, int value)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
@@ -1056,7 +1055,7 @@ BOOL CXLAutomation::SetCellValueInt(SheetName sheet, int nColumn, int nRow, int 
 	VariantInit(&vargRng);
 
 	// 해당 셀 범위 가져오기
-	ClearAllArgs();
+	ClearAllArgs();		
 	AddArgumentDouble(NULL, 0, nColumn); // Column
 	AddArgumentDouble(NULL, 0, nRow);    // Row
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
@@ -1076,7 +1075,7 @@ BOOL CXLAutomation::SetCellValueInt(SheetName sheet, int nColumn, int nRow, int 
 }
 
 // SetCellValue for CString
-BOOL CXLAutomation::SetCellValueCString(SheetName sheet, int nColumn, int nRow, CString value)
+BOOL CXLAutomation::SetCellValueCString(SheetName sheet, int nRow, int nColumn, CString value)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
@@ -1085,7 +1084,7 @@ BOOL CXLAutomation::SetCellValueCString(SheetName sheet, int nColumn, int nRow, 
 	VariantInit(&vargRng);
 
 	// 해당 셀 범위 가져오기
-	ClearAllArgs();
+	ClearAllArgs();		
 	AddArgumentDouble(NULL, 0, nColumn); // Column
 	AddArgumentDouble(NULL, 0, nRow);    // Row
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
@@ -1105,7 +1104,7 @@ BOOL CXLAutomation::SetCellValueCString(SheetName sheet, int nColumn, int nRow, 
 }
 
 // SetCellValue for double
-BOOL CXLAutomation::SetCellValueDouble(SheetName sheet, int nColumn, int nRow, double value)
+BOOL CXLAutomation::SetCellValueDouble(SheetName sheet, int nRow, int nColumn, double value)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
@@ -1115,8 +1114,8 @@ BOOL CXLAutomation::SetCellValueDouble(SheetName sheet, int nColumn, int nRow, d
 
 	// 해당 셀 범위 가져오기
 	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, nColumn); // Column
-	AddArgumentDouble(NULL, 0, nRow);    // Row
+	AddArgumentDouble(NULL, 0, nColumn); // Column	
+	AddArgumentDouble(NULL, 0, nRow);    // Row	
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return FALSE;
 

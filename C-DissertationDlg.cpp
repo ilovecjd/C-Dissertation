@@ -383,81 +383,39 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	}
 
 	// 데이터를 Excel에 쓰기 위해 배열 준비
-	int intArray2D[3][3] = { { 1, 2, 3 },{ 4, 5, 6 },{ 7, 8, 9 } };
-	CString strArray2D[3][1] = { _T("A1"), _T("A2"), _T("A3") };
-	int intArray1D[3] = { 10, 20, 30 };
-	CString strArray1D[3] = { _T("B1"), _T("B2"), _T("B3") };
+	int posX = 4;
+	int posY = 8;
+	
+	////////////////////////////////////////////////////////////////////////////
+	int intArray2D[4][3] = { { 1, 2, 3 },{ 4, 5, 6 },{ 7, 8, 9 },{ 10, 11, 12 }, };
+	int readIntArray2D[4][3] = { 0 };
 
 	// 2D int 배열 데이터를 Excel에 쓰기
-	if (xlAutomation.WriteArrayToRange(PROJECT, 1, 1, (int*)intArray2D, 3, 3))
-	{
-		MessageBox(_T("Successfully wrote 2D int array to Excel."), _T("Success"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("Failed to write 2D int array to Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 2D CString 배열 데이터를 Excel에 쓰기
-	if (xlAutomation.WriteArrayToRange(PROJECT, 5, 1, (CString*)strArray2D, 3, 1))
-	{
-		MessageBox(_T("Successfully wrote 2D CString array to Excel."), _T("Success"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("Failed to write 2D CString array to Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 1D int 배열 데이터를 Excel에 쓰기
-	if (xlAutomation.WriteArrayToRange(PROJECT, 8, 1, intArray1D, 3, 1))
-	{
-		MessageBox(_T("Successfully wrote 1D int array to Excel."), _T("Success"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("Failed to write 1D int array to Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 1D CString 배열 데이터를 Excel에 쓰기
-	if (xlAutomation.WriteArrayToRange(PROJECT, 12, 1, strArray1D, 3, 1))
-	{
-		MessageBox(_T("Successfully wrote 1D CString array to Excel."), _T("Success"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("Failed to write 1D CString array to Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 다양한 데이터 유형을 Excel에 쓰기
-	xlAutomation.SetCellValue(PROJECT, 8, 1, 42);              // Integer
-	xlAutomation.SetCellValue(PROJECT, 9, 1, (float)3.14);     // Float (주의: Excel에서는 float이 double로 처리될 수 있음)
-	xlAutomation.SetCellValue(PROJECT, 10, 1, 2.71828);        // Double
-	xlAutomation.SetCellValue(PROJECT, 11, 1, _T("문자"));     // CString
-
-															 // Excel에서 데이터를 읽기 위한 배열 준비
-	int readIntArray2D[3][3] = { 0 };
-	CString readStrArray2D[3][1];
-	int readIntArray1D[3] = { 0 };
-	CString readStrArray1D[3];
-
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, (int*)intArray2D, 4, 3);	
 	// 2D int 배열 데이터를 Excel에서 읽기
-	if (xlAutomation.ReadRangeToArray(PROJECT, 1, 1, (int*)readIntArray2D, 3, 3))
+	xlAutomation.ReadRangeToArray(PROJECT, posX, posY, (int*)readIntArray2D, 4, 3);
 	{
 		CString message;
-		for (int r = 0; r < 3; r++) {
+		for (int r = 0; r < 4; r++) {
 			for (int c = 0; c < 3; c++) {
 				message.AppendFormat(_T("readIntArray2D[%d][%d] = %d\n"), r, c, readIntArray2D[r][c]);
 			}
 		}
 		MessageBox(message, _T("Read 2D int array from Excel"), MB_OK);
 	}
-	else
-	{
-		MessageBox(_T("Failed to read 2D int array from Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
+	
+	////////////////////////////////////////////////////////////////////////////
 
+
+	////////////////////////////////////////////////////////////////////////////
+	CString readStrArray2D[3][1];
+	CString strArray2D[3][1] = { _T("A1"), _T("A2"), _T("A3") };
+
+	// 2D CString 배열 데이터를 Excel에 쓰기
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, (CString*)strArray2D, 3, 1);
+	
 	// 2D CString 배열 데이터를 Excel에서 읽기
-	if (xlAutomation.ReadRangeToArray(PROJECT, 5, 1, (CString*)readStrArray2D, 3, 1))
+	xlAutomation.ReadRangeToArray(PROJECT, posX, posY, (CString*)readStrArray2D, 3, 1);
 	{
 		CString message;
 		for (int r = 0; r < 3; r++) {
@@ -465,13 +423,53 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 		}
 		MessageBox(message, _T("Read 2D CString array from Excel"), MB_OK);
 	}
-	else
+	
+	////////////////////////////////////////////////////////////////////////////
+
+
+	////////////////////////////////////////////////////////////////////////////
+	CString readStrArray2D2[1][3];
+	CString strArray2D2[1][3] = { _T("2A1"), _T("2A2"), _T("2A3") };
+
+	// 2D CString 배열 데이터를 Excel에 쓰기
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, (CString*)strArray2D2, 1, 3);
+
+	// 2D CString 배열 데이터를 Excel에서 읽기
+	xlAutomation.ReadRangeToArray(PROJECT, posX, posY, (CString*)readStrArray2D2, 1, 3);
 	{
-		MessageBox(_T("Failed to read 2D CString array from Excel."), _T("Error"), MB_OK | MB_ICONERROR);
+		CString message;
+		for (int r = 0; r < 3; r++) {
+			message.AppendFormat(_T("readStrArray2D2[0][%d] = %s\n"), r, readStrArray2D2[0][r]);
+		}
+		MessageBox(message, _T("Read 2D2 CString array from Excel"), MB_OK);
 	}
 
+
+	// 2D CString 배열 데이터를 Excel에 쓰기
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, (CString*)strArray2D2, 3, 1);
+
+	// 2D CString 배열 데이터를 Excel에서 읽기
+	xlAutomation.ReadRangeToArray(PROJECT, posX, posY, (CString*)readStrArray2D2, 3, 1);
+	{
+		CString message;
+		for (int r = 0; r < 3; r++) {
+			message.AppendFormat(_T("readStrArray2D2[0][%d] = %s\n"), r, readStrArray2D2[0][r]);
+		}
+		MessageBox(message, _T("Read 2D2 CString array from Excel"), MB_OK);
+	}
+	////////////////////////////////////////////////////////////////////////////
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	int readIntArray1D[3] = { 0 };
+	int intArray1D[3] = { 10, 20, 30 };
+
+	// 1D int 배열 데이터를 Excel에 쓰기
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, intArray1D, 3, 1);
+	
 	// 1D int 배열 데이터를 Excel에서 읽기
-	if (xlAutomation.ReadRangeToArray(PROJECT, 8, 1, readIntArray1D, 3, 1))
+	xlAutomation.ReadRangeToArray(PROJECT, posX, posY, readIntArray1D, 3, 1);
 	{
 		CString message;
 		for (int r = 0; r < 3; r++) {
@@ -479,13 +477,33 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 		}
 		MessageBox(message, _T("Read 1D int array from Excel"), MB_OK);
 	}
-	else
-	{
-		MessageBox(_T("Failed to read 1D int array from Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
 
+
+
+	// 1D int 배열 데이터를 Excel에 쓰기
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, intArray1D, 1, 3);
+
+	// 1D int 배열 데이터를 Excel에서 읽기
+	xlAutomation.ReadRangeToArray(PROJECT, posX, posY, readIntArray1D, 1, 3);
+	{
+		CString message;
+		for (int r = 0; r < 3; r++) {
+			message.AppendFormat(_T("readIntArray1D[%d] = %d\n"), r, readIntArray1D[r]);
+		}
+		MessageBox(message, _T("Read 1D int array from Excel"), MB_OK);
+	}
+	////////////////////////////////////////////////////////////////////////////
+	
+
+	////////////////////////////////////////////////////////////////////////////	
+	CString readStrArray1D[3];
+	CString strArray1D[3] = { _T("B1"), _T("B2"), _T("B3") };
+
+	// 1D CString 배열 데이터를 Excel에 쓰기	
+	xlAutomation.WriteArrayToRange(PROJECT, posX, posY, strArray1D, 3, 1);
+	
 	// 1D CString 배열 데이터를 Excel에서 읽기
-	if (xlAutomation.ReadRangeToArray(PROJECT, 12, 1, readStrArray1D, 3, 1))
+	if (xlAutomation.ReadRangeToArray(PROJECT, posX, posY, readStrArray1D, 3, 1))
 	{
 		CString message;
 		for (int r = 0; r < 3; r++) {
@@ -497,6 +515,8 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	{
 		MessageBox(_T("Failed to read 1D CString array from Excel."), _T("Error"), MB_OK | MB_ICONERROR);
 	}
+	////////////////////////////////////////////////////////////////////////////
+
 
 	// Excel에서 다양한 데이터 유형 읽기
 	int readIntValue;
@@ -504,25 +524,30 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	double readDoubleValue;
 	CString readStrValue;
 
-	if (xlAutomation.GetCellValue(PROJECT, 8, 1, &readIntValue)) {
+	// 다양한 데이터 유형을 Excel에 쓰고 읽기
+	xlAutomation.SetCellValue(PROJECT, posX, posY, 42);              // Integer
+	if (xlAutomation.GetCellValue(PROJECT, posX, posY, &readIntValue)) {
 		CString message;
 		message.Format(_T("Read Integer value from Excel: %d"), readIntValue);
 		MessageBox(message, _T("Read Integer"), MB_OK);
 	}
 
-	if (xlAutomation.GetCellValue(PROJECT, 9, 1, &readFloatValue)) {
+	xlAutomation.SetCellValue(PROJECT, posX, posY, (float)3.14);     // Float (주의: Excel에서는 float이 double로 처리될 수 있음)
+	if (xlAutomation.GetCellValue(PROJECT, posX, posY,  &readFloatValue)) {
 		CString message;
 		message.Format(_T("Read Float value from Excel: %lf"), readFloatValue);
 		MessageBox(message, _T("Read Float"), MB_OK);
 	}
 
-	if (xlAutomation.GetCellValue(PROJECT, 10, 1, &readDoubleValue)) {
+	xlAutomation.SetCellValue(PROJECT, posX, posY, 2.71828);        // Double
+	if (xlAutomation.GetCellValue(PROJECT, posX, posY, &readDoubleValue)) {
 		CString message;
 		message.Format(_T("Read Double value from Excel: %lf"), readDoubleValue);
 		MessageBox(message, _T("Read Double"), MB_OK);
 	}
 
-	if (xlAutomation.GetCellValue(PROJECT, 11, 1, &readStrValue)) {
+	xlAutomation.SetCellValue(PROJECT, posX, posY, _T("문자"));     // CString
+	if (xlAutomation.GetCellValue(PROJECT, posX, posY, &readStrValue)) {
 		CString message;
 		message.Format(_T("Read CString value from Excel: %s"), readStrValue);
 		MessageBox(message, _T("Read CString"), MB_OK);

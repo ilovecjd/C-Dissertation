@@ -64,49 +64,49 @@ BOOL CXLEzAutomation::OpenExcelFile(CString szFileName)
 
 // Overloaded GetCellValue functions
 // Returns integer value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nColumn, int nRow, int* pValue)
+BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, int* pValue)
 {
 	if (pValue == nullptr) return FALSE;
-	return m_pXLServer->GetCellValueInt(sheet, nColumn, nRow, pValue);
+	return m_pXLServer->GetCellValueInt(sheet, nRow, nColumn, pValue);
 }
 
-// Returns CString value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nColumn, int nRow, CString* pValue)
+// Returns CString value from Worksheet.Cells(nRow, nColumn)
+BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, CString* pValue)
 {
 	if (pValue == nullptr) return FALSE;
-	return m_pXLServer->GetCellValueCString(sheet, nColumn, nRow, pValue);
+	return m_pXLServer->GetCellValueCString(sheet, nRow, nColumn, pValue);
 }
 
 // Returns double value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nColumn, int nRow, double* pValue)
+BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, double* pValue)
 {
 	if (pValue == nullptr) return FALSE;
-	return m_pXLServer->GetCellValueDouble(sheet, nColumn, nRow, pValue);
+	return m_pXLServer->GetCellValueDouble(sheet, nRow, nColumn, pValue);
 }
 
 
 // SetCellValue for integer
-BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nColumn, int nRow, int value)
+BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, int value)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->SetCellValueInt(sheet, nColumn, nRow, value);
+	return m_pXLServer->SetCellValueInt(sheet, nRow, nColumn, value);
 }
 
 // SetCellValue for CString
-BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nColumn, int nRow, CString value)
+BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, CString value)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->SetCellValueCString(sheet, nColumn, nRow, value);
+	return m_pXLServer->SetCellValueCString(sheet, nRow, nColumn, value);
 }
 
 // SetCellValue for double
-BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nColumn, int nRow, double value)
+BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, double value)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->SetCellValueDouble(sheet, nColumn, nRow, value);
+	return m_pXLServer->SetCellValueDouble(sheet, nRow, nColumn, value);
 }
 
 // Overloaded function to read integer values from Excel

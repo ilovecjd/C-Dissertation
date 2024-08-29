@@ -20,14 +20,14 @@ public:
 	BOOL ReleaseExcel();
 
 	// Overloaded GetCellValue functions
-	BOOL GetCellValue(SheetName sheet, int nColumn, int nRow, int* pValue);      // For int
-	BOOL GetCellValue(SheetName sheet, int nColumn, int nRow, CString* pValue);  // For CString
-	BOOL GetCellValue(SheetName sheet, int nColumn, int nRow, double* pValue);   // For double
+	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, int* pValue);      // For int
+	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, CString* pValue);  // For CString
+	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, double* pValue);   // For double
 
 	// 셀에 값을 설정하는 함수들 (오버로딩)
-	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, int value);
-	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, CString value);
-	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, double value);
+	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, int value);
+	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, CString value);
+	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, double value);
 
 	// Overloaded ReadRangeToArray functions
 	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);

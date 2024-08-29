@@ -51,7 +51,7 @@ public:
 
 	BOOL AddArgumentCStringArray(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR *paszStrings, int iCount);
 	BOOL SetRangeValueDouble(SheetName sheet, LPOLESTR lpszRef, double d);
-	BOOL SetCellsValueToString(SheetName sheet, double Column, double Row, CString szStr);
+	BOOL SetCellsValueToString(SheetName sheet, double Row, double Column, CString szStr);
 	BOOL AddArgumentOLEString(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR lpsz);
 	BOOL AddArgumentCString(LPOLESTR lpszArgName, WORD wFlags, CString szStr);
 	BOOL CreateWorkSheet();
@@ -67,15 +67,15 @@ public:
 	BOOL GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange);	
 	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
 	
-	BOOL GetCellValueInt(SheetName sheet, int nColumn, int nRow, int* pValue);
-	BOOL GetCellValueCString(SheetName sheet, int nColumn, int nRow, CString* pValue);
-	BOOL GetCellValueDouble(SheetName sheet, int nColumn, int nRow, double* pValue);
-	BOOL GetCellValueVariant(SheetName sheet, int nColumn, int nRow, VARIANTARG* pValue); // 범용 함수 선언
+	BOOL GetCellValueInt(SheetName sheet, int nRow, int nColumn, int* pValue);
+	BOOL GetCellValueCString(SheetName sheet, int nRow, int nColumn, CString* pValue);
+	BOOL GetCellValueDouble(SheetName sheet, int nRow, int nColumn, double* pValue);
+	BOOL GetCellValueVariant(SheetName sheet, int nRow, int nColumn, VARIANTARG* pValue); // 범용 함수 선언
 
 	// 셀에 값을 설정하는 함수들 (오버로딩)
-	BOOL SetCellValueInt(SheetName sheet, int nColumn, int nRow, int value);
-	BOOL SetCellValueCString(SheetName sheet, int nColumn, int nRow, CString value);
-	BOOL SetCellValueDouble(SheetName sheet, int nColumn, int nRow, double value);
+	BOOL SetCellValueInt(SheetName sheet, int nRow, int nColumn, int value);
+	BOOL SetCellValueCString(SheetName sheet, int nRow, int nColumn, CString value);
+	BOOL SetCellValueDouble(SheetName sheet, int nRow, int nColumn, double value);
 	
 	// For reading values from Excel
 	BOOL ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);	
