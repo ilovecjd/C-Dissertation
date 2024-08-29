@@ -894,7 +894,8 @@ BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nRow, int nColumn, 
 	VARIANTARG vargCell;
 	VariantInit(&vargCell);
 
-	AddArgumentDouble(NULL, 0, nColumn);
+	ClearAllArgs();	
+	AddArgumentDouble(NULL, 0, nColumn);	
 	AddArgumentDouble(NULL, 0, nRow);
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return false;
@@ -909,9 +910,7 @@ BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nRow, int nColumn, 
 	return true;
 }
 
-
-// Get integer value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLAutomation::GetCellValueInt(SheetName sheet, int nColumn, int nRow, int* result)
+BOOL CXLAutomation::GetCellValueInt(SheetName sheet, int nRow, int nColumn, int* result)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
@@ -921,7 +920,7 @@ BOOL CXLAutomation::GetCellValueInt(SheetName sheet, int nColumn, int nRow, int*
 	VariantInit(&vargValue);
 
 	// 해당 셀 범위 가져오기
-	ClearAllArgs();
+	ClearAllArgs();		
 	AddArgumentDouble(NULL, 0, nColumn); // Column
 	AddArgumentDouble(NULL, 0, nRow);    // Row
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
@@ -960,7 +959,7 @@ BOOL CXLAutomation::GetCellValueInt(SheetName sheet, int nColumn, int nRow, int*
 }
 
 // Get double value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLAutomation::GetCellValueDouble(SheetName sheet, int nColumn, int nRow, double* result)
+BOOL CXLAutomation::GetCellValueDouble(SheetName sheet, int nRow, int nColumn, double* result)
 {
 	if (m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
@@ -970,7 +969,7 @@ BOOL CXLAutomation::GetCellValueDouble(SheetName sheet, int nColumn, int nRow, d
 	VariantInit(&vargValue);
 
 	// 해당 셀 범위 가져오기
-	ClearAllArgs();
+	ClearAllArgs();		
 	AddArgumentDouble(NULL, 0, nColumn); // Column
 	AddArgumentDouble(NULL, 0, nRow);    // Row
 	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
