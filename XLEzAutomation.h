@@ -29,7 +29,10 @@ public:
 	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, CString value);
 	BOOL SetCellValue(SheetName sheet, int nColumn, int nRow, double value);
 
-	
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols);
+
+
 	BOOL DeleteRow(SheetName sheet, int nRow);
 
 	

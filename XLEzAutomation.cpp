@@ -108,3 +108,19 @@ BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nColumn, int nRow, doubl
 		return FALSE;
 	return m_pXLServer->SetCellValueDouble(sheet, nColumn, nRow, value);
 }
+
+// ReadRangeToIntArray: int 배열로 Excel 범위 데이터 읽기
+BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
+{
+	if (m_pXLServer == NULL)
+		return FALSE;
+	return m_pXLServer->ReadRangeToIntArray(sheet, startRow, startCol, endRow, endCol, dataArray, rows, cols);
+}
+
+// ReadRangeToCStringArray: CString 배열로 Excel 범위 데이터 읽기
+BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols)
+{
+	if (m_pXLServer == NULL)
+		return FALSE;
+	return m_pXLServer->ReadRangeToCStringArray(sheet, startRow, startCol, endRow, endCol, dataArray, rows, cols);
+}

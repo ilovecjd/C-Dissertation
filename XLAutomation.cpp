@@ -761,6 +761,8 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName) {
 	return TRUE;
 }
 
+/////////////////////////////////////////////////////////
+//song
 BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName, IDispatch** ppSheet) {
 	VARIANTARG vargSheet;
 	ClearAllArgs();
@@ -773,94 +775,6 @@ BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetNa
 	return TRUE;
 }
 
-
-BOOL CXLAutomation::SetRangeValueAndStyle(SheetName sheet, int startRow, int startCol, int** dataArray, int numRows, int numCols)
-{
-	if (m_pdispWorksheets[sheet] == NULL)
-		return FALSE;
-
-	// Range 문자열 생성: R1C1 형식 사용
-	CString range;
-	range.Format(_T("R%dC%d:R%dC%d"), startRow, startCol, startRow + numRows - 1, startCol + numCols - 1);
-
-	// Range 객체 가져오기
-	VARIANTARG vargRng;
-	//if (!GetRange(sheet, range, &vargRng))
-	{
-		MessageBox(NULL, _T("범위를 가져오는 데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		return FALSE;
-	}
-
-	// 배열을 SAFEARRAY로 변환
-	SAFEARRAYBOUND sab[2];
-	sab[0].lLbound = 0;
-	sab[0].cElements = numRows;
-	sab[1].lLbound = 0;
-	sab[1].cElements = numCols;
-	SAFEARRAY* pSafeArray = SafeArrayCreate(VT_VARIANT, 2, sab);
-	if (pSafeArray == NULL)
-	{
-		MessageBox(NULL, _T("SAFEARRAY를 생성할 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		return FALSE;
-	}
-
-	// 배열 데이터 복사
-	for (long i = 0; i < numRows; ++i)
-	{
-		for (long j = 0; j < numCols; ++j)
-		{
-			VARIANT vtData;
-			vtData.vt = VT_I4; // Integer 형식
-			vtData.lVal = dataArray[i][j];
-			long indices[2] = { i, j };
-			SafeArrayPutElement(pSafeArray, indices, &vtData);
-		}
-	}
-
-	// SAFEARRAY를 VARIANT로 감싸기
-	VARIANT vtArray;
-	VariantInit(&vtArray);
-	vtArray.vt = VT_ARRAY | VT_VARIANT;
-	vtArray.parray = pSafeArray;
-
-	// SAFEARRAY와 스타일 속성을 Excel Range에 한 번에 설정
-	ClearAllArgs();
-	AddArgumentCommon(NULL, 0, VT_VARIANT); // Common 함수로 추가
-	m_aVargs[m_iArgCount - 1].parray = pSafeArray;
-	BOOL result = ExlInvoke(m_pdispWorksheets[sheet], L"Value", NULL, DISPATCH_PROPERTYPUT, DISP_FREEARGS);
-
-	// Borders 스타일 설정
-	if (result)
-	{
-		VARIANTARG vargBorders;
-		if (ExlInvoke(m_pdispWorksheets[sheet], L"Borders", &vargBorders, DISPATCH_PROPERTYGET, 0))
-		{
-			ClearAllArgs();
-			AddArgumentInt2(NULL, 0, xlContinuous);
-			ExlInvoke(vargBorders.pdispVal, L"LineStyle", NULL, DISPATCH_PROPERTYPUT, 0);
-
-			ClearAllArgs();
-			AddArgumentInt2(NULL, 0, xlThin);
-			ExlInvoke(vargBorders.pdispVal, L"Weight", NULL, DISPATCH_PROPERTYPUT, 0);
-
-			ClearAllArgs();
-			AddArgumentInt2(NULL, 0, xlAutomatic);
-			ExlInvoke(vargBorders.pdispVal, L"ColorIndex", NULL, DISPATCH_PROPERTYPUT, 0);
-
-			VariantClear(&vargBorders);
-		}
-		else
-		{
-			result = FALSE;
-		}
-	}
-
-	// 자원 정리
-	VariantClear(&vargRng);
-	SafeArrayDestroy(pSafeArray);
-
-	return result;
-}
 
 BOOL CXLAutomation::GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange)
 {
@@ -899,70 +813,6 @@ BOOL CXLAutomation::GetRange(SheetName sheet, int startRow, int startCol, int en
 
 	return result;
 }
-
-/*
-BOOL CXLAutomation::GetRange(SheetName sheet, CString rangeAddress, VARIANTARG* pRange)
-{
-	if (m_pdispWorksheets[sheet] == NULL)
-		return FALSE;
-
-	ClearAllArgs();
-	AddArgumentOLEString(NULL, 0, rangeAddress.AllocSysString());
-
-	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Range", pRange, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-
-	return TRUE;
-}
-*/
-/*
-BOOL CXLAutomation::GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange)
-{
-	if (m_pdispWorksheets[sheet] == NULL)
-		return FALSE;
-
-	VARIANTARG vargStartCell, vargEndCell;
-	VariantInit(&vargStartCell);
-	VariantInit(&vargEndCell);
-
-	// Using Cells to define the start and end cells
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, startRow);
-	AddArgumentDouble(NULL, 0, startCol);
-	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargStartCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, endRow);
-	AddArgumentDouble(NULL, 0, endCol);
-	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargEndCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-	{
-		VariantClear(&vargStartCell);
-		return FALSE;
-	}
-
-	// Using Range to define the full range using the start and end cells
-	ClearAllArgs();
-	AddArgumentDispatch(NULL, 0, vargStartCell.pdispVal);
-	AddArgumentDispatch(NULL, 0, vargEndCell.pdispVal);
-	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Range", pRange, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-	{
-		VariantClear(&vargStartCell);
-		VariantClear(&vargEndCell);
-		return FALSE;
-	}
-
-	VariantClear(&vargStartCell);
-	VariantClear(&vargEndCell);
-
-	return TRUE;
-}
-*/
-
-
-
-
-
 
 
 BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
@@ -1034,76 +884,6 @@ BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol
 	VariantClear(&vargData);
 	return TRUE;
 }
-/*
-BOOL CXLAutomation::ReadRangeToArray(SheetName sheet, CString range, int* dataArray, int rows, int cols)
-{
-	VARIANTARG vargRng, vargData;
-	if (!GetRange(sheet, range, &vargRng))
-		return FALSE;
-
-	// Excel 범위의 데이터를 가져옴
-	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0))
-	{
-		VariantClear(&vargRng);
-		return FALSE;
-	}
-
-	// SAFEARRAY 접근
-	SAFEARRAY* pSafeArray = vargData.parray;
-	VARIANT* pVarData = NULL;
-	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
-	if (FAILED(hr))
-	{
-		VariantClear(&vargRng);
-		VariantClear(&vargData);
-		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
-		return FALSE;
-	}
-
-	// SAFEARRAY에서 데이터 추출
-	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
-	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
-	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
-	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
-	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
-
-	// 모든 셀의 데이터를 한 번에 메모리로 가져옴
-	for (LONG r = lRowLBound; r <= lRowUBound; r++)
-	{
-		for (LONG c = lColLBound; c <= lColUBound; c++)
-		{
-			int tempI = 0;
-			LONG index[2] = { r, c };
-			VARIANT* pVarCell = &pVarData[(r - lRowLBound) * (lColUBound - lColLBound + 1) + (c - lColLBound)];
-
-			// 데이터 타입에 따라 처리
-			if (pVarCell->vt == VT_I4) // Integer
-			{
-				*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = pVarCell->lVal;
-			}
-			else if (pVarCell->vt == VT_R8) // Double, in case of float numbers
-			{
-				*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = (int)pVarCell->dblVal;
-			}
-			else if (pVarCell->vt == VT_BSTR) // String, if needed to handle
-			{
-				// You can handle string to integer conversion if necessary
-			}
-			else if (pVarCell->vt == VT_EMPTY) // Empty cell
-			{
-				*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = 0; // Or any default value
-			}
-		}
-	}
-
-	SafeArrayUnaccessData(pSafeArray);
-	VariantClear(&vargRng);
-	VariantClear(&vargData);
-	return TRUE;
-}
-*/
-
-
 
 // 엑셀 셀 값 가져오기 (기존 Variant 리턴 함수)
 BOOL CXLAutomation::GetCellValueVariant(SheetName sheet, int nColumn, int nRow, VARIANTARG* pValue)
@@ -1350,5 +1130,179 @@ BOOL CXLAutomation::SetCellValueDouble(SheetName sheet, int nColumn, int nRow, d
 	}
 
 	VariantClear(&vargRng);
+	return TRUE;
+}
+
+
+
+
+// ReadRangeToIntArray: Excel 범위 데이터를 int 배열로 읽어오기
+// ReadRangeToIntArray: Excel 범위 데이터를 int 배열로 읽어오기
+BOOL CXLAutomation::ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
+{
+	VARIANTARG vargRng, vargData;
+
+	// 범위를 설정하고 Excel에서 해당 범위의 IDispatch 포인터를 가져옵니다.
+	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+		return FALSE;
+
+	// Excel 범위의 데이터를 가져옴
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// SAFEARRAY 접근
+	SAFEARRAY* pSafeArray = vargData.parray;
+	VARIANT* pVarData = NULL;
+	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
+	if (FAILED(hr))
+	{
+		VariantClear(&vargRng);
+		VariantClear(&vargData);
+		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// SAFEARRAY에서 데이터 추출
+	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
+	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
+	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
+	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
+	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
+
+	for (LONG r = lRowLBound; r <= lRowUBound; r++)
+	{
+		for (LONG c = lColLBound; c <= lColUBound; c++)
+		{
+			LONG index[2] = { r, c };
+			VARIANT varCell;
+			VariantInit(&varCell);
+
+			// SAFEARRAY에서 직접 데이터 접근
+			hr = SafeArrayGetElement(pSafeArray, index, &varCell);
+			if (SUCCEEDED(hr))
+			{
+				if (varCell.vt == VT_I4) // Integer
+				{
+					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = varCell.lVal;
+				}
+				else if (varCell.vt == VT_R8) // Double
+				{
+					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = static_cast<int>(varCell.dblVal);
+				}
+				else if (varCell.vt == VT_R4) // Float
+				{
+					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = static_cast<int>(varCell.fltVal);
+				}
+				else if (varCell.vt == VT_EMPTY) // 비어있는 셀
+				{
+					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = 0; // 0으로 설정
+				}
+				else
+				{
+					// 정수, 더블, 플로트가 아닌 경우 에러 처리
+					MessageBox(NULL, _T("The cell value is not a number."), _T("Type Error"), MB_OK | MB_ICONERROR);
+					VariantClear(&varCell);
+					SafeArrayUnaccessData(pSafeArray);
+					VariantClear(&vargRng);
+					VariantClear(&vargData);
+					return FALSE;
+				}
+				VariantClear(&varCell); // 사용 후 VARIANT 정리
+			}
+			else
+			{
+				// SafeArrayGetElement 실패 처리
+				MessageBox(NULL, _T("Failed to retrieve element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+			}
+		}
+	}
+
+	SafeArrayUnaccessData(pSafeArray);
+	VariantClear(&vargRng);
+	VariantClear(&vargData);
+	return TRUE;
+}
+
+// ReadRangeToCStringArray: Excel 범위 데이터를 CString 배열로 읽어오기
+BOOL CXLAutomation::ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols)
+{
+	VARIANTARG vargRng, vargData;
+
+	// 범위를 설정하고 Excel에서 해당 범위의 IDispatch 포인터를 가져옵니다.
+	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+		return FALSE;
+
+	// Excel 범위의 데이터를 가져옴
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// SAFEARRAY 접근
+	SAFEARRAY* pSafeArray = vargData.parray;
+	VARIANT* pVarData = NULL;
+	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
+	if (FAILED(hr))
+	{
+		VariantClear(&vargRng);
+		VariantClear(&vargData);
+		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// SAFEARRAY에서 데이터 추출
+	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
+	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
+	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
+	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
+	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
+
+	for (LONG r = lRowLBound; r <= lRowUBound; r++)
+	{
+		for (LONG c = lColLBound; c <= lColUBound; c++)
+		{
+			LONG index[2] = { r, c };
+			VARIANT varCell;
+			VariantInit(&varCell);
+
+			// SAFEARRAY에서 직접 데이터 접근
+			hr = SafeArrayGetElement(pSafeArray, index, &varCell);
+			if (SUCCEEDED(hr))
+			{
+				if (varCell.vt == VT_BSTR) // 문자열
+				{
+					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = varCell.bstrVal;
+				}
+				else if (varCell.vt == VT_EMPTY) // 비어있는 셀
+				{
+					*(dataArray + (r - lRowLBound) * cols + (c - lColLBound)) = _T(""); // 빈 문자열로 설정
+				}
+				else
+				{
+					// 문자열이 아니면 에러 처리
+					MessageBox(NULL, _T("The cell value is not a string."), _T("Type Error"), MB_OK | MB_ICONERROR);
+					VariantClear(&varCell);
+					SafeArrayUnaccessData(pSafeArray);
+					VariantClear(&vargRng);
+					VariantClear(&vargData);
+					return FALSE;
+				}
+				VariantClear(&varCell); // 사용 후 VARIANT 정리
+			}
+			else
+			{
+				// SafeArrayGetElement 실패 처리
+				MessageBox(NULL, _T("Failed to retrieve element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+			}
+		}
+	}
+
+	SafeArrayUnaccessData(pSafeArray);
+	VariantClear(&vargRng);
+	VariantClear(&vargData);
 	return TRUE;
 }

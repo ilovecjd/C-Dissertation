@@ -48,7 +48,7 @@ public:
 	BOOL SaveAs(CString szFileName, int nFileFormat, CString szPassword, CString szWritePassword, BOOL bReadOnly, BOOL bBackUp);
 	BOOL DeleteRow(SheetName sheet, long nRow);
 	BOOL ReleaseExcel();
-	BOOL UpdatePlotRange(SheetName sheet, int nYColumn);
+
 	BOOL AddArgumentCStringArray(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR *paszStrings, int iCount);
 	BOOL SetRangeValueDouble(SheetName sheet, LPOLESTR lpszRef, double d);
 	BOOL SetCellsValueToString(SheetName sheet, double Column, double Row, CString szStr);
@@ -64,21 +64,23 @@ public:
 
 	//song 
 	BOOL SetRangeValueAndStyle(SheetName sheet, int startRow, int startCol, int** dataArray, int numRows, int numCols);
-	BOOL GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange);
-	//BOOL GetRange(SheetName sheet, CString rangeAddress, VARIANTARG* pRange);
-	//BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int rowCount, int colCount, int** dataArray);
-	//BOOL ReadRangeToArray(SheetName sheet, CString range, int* dataArray, int rows, int cols);
+	BOOL GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange);	
 	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
 	
 	BOOL GetCellValueInt(SheetName sheet, int nColumn, int nRow, int* pValue);
 	BOOL GetCellValueCString(SheetName sheet, int nColumn, int nRow, CString* pValue);
 	BOOL GetCellValueDouble(SheetName sheet, int nColumn, int nRow, double* pValue);
 	BOOL GetCellValueVariant(SheetName sheet, int nColumn, int nRow, VARIANTARG* pValue); // 범용 함수 선언
-																					  // 셀에 값을 설정하는 함수들 (오버로딩)
+
+	// 셀에 값을 설정하는 함수들 (오버로딩)
 	BOOL SetCellValueInt(SheetName sheet, int nColumn, int nRow, int value);
 	BOOL SetCellValueCString(SheetName sheet, int nColumn, int nRow, CString value);
 	BOOL SetCellValueDouble(SheetName sheet, int nColumn, int nRow, double value);
 	
+
+	BOOL ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, CString* dataArray, int rows, int cols);
+
 	//song
 
 	CXLAutomation();

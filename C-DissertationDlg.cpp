@@ -245,7 +245,7 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	delete Xl;
 }
 */
-
+/*
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
 	// CXLEzAutomation 객체 생성
@@ -316,7 +316,57 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	xlAutomation->ReleaseExcel();
 	delete xlAutomation;
 }
+*/
+
+void CCDissertationDlg::OnBnClickedCretatProject()
+{
+	// Excel 자동화 객체 생성
 
 
+	CXLEzAutomation* xlAutomation = new CXLEzAutomation(TRUE); // Excel을 보이도록 생성
+
+															   // 엑셀 파일 열기
+	if (!xlAutomation->OpenExcelFile(_T("d:\\1.xlsx")))
+	{
+		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
+		delete xlAutomation;
+		return;
+	}
+
+	// 데이터 배열 준비
+	int intArray[10][10]; // 적절한 크기로 설정하세요.
+	CString strArray[10][10]; // 적절한 크기로 설정하세요.
+
+						   // 범위의 데이터를 int 배열로 읽어오기
+	if (xlAutomation->ReadRangeToArray(PROJECT, 1, 1, 10, 10, (int*)intArray, 10, 10))
+	{
+		// intArray에서 데이터를 사용
+		// 예시로 첫 번째 데이터를 표시
+		CString msg;
+		msg.Format(_T("First integer value: %d"), intArray[0][0]);
+		MessageBox(msg, _T("Info"), MB_OK);
+	}
+	else
+	{
+		MessageBox(_T("Failed to read range to int array."), _T("Error"), MB_OK | MB_ICONERROR);
+	}
+
+	// 범위의 데이터를 CString 배열로 읽어오기
+	if (xlAutomation->ReadRangeToArray(PROJECT, 11, 1, 20, 10, (CString*)strArray, 10, 10))
+	{
+		// strArray에서 데이터를 사용
+		// 예시로 첫 번째 데이터를 표시
+		CString msg;
+		msg.Format(_T("First string value: %s"), strArray[0][0]);
+		MessageBox(msg, _T("Info"), MB_OK);
+	}
+	else
+	{
+		MessageBox(_T("Failed to read range to CString array."), _T("Error"), MB_OK | MB_ICONERROR);
+	}
+	// 엑셀 리소스 해제
+	xlAutomation->ReleaseExcel();
+	delete xlAutomation;
+}
 
 
