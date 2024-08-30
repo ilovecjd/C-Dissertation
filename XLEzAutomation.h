@@ -36,7 +36,7 @@ public:
 	// 배열을 Excel에 쓰기
 	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
 	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
-
+	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
 
 	BOOL DeleteRow(SheetName sheet, int nRow);
 

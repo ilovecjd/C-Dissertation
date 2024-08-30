@@ -17,7 +17,7 @@ public:
 	// song
 public :
 	BOOL Init(PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern);
-
+	
 // 프로젝트 속성
 	ACTIVITY m_activities[MAX_ACT]; // 활동에 관한 정보를 기록하는 배열
 

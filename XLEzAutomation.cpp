@@ -138,3 +138,9 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 		return FALSE;
 	return m_pXLServer->WriteArrayToRangeCString(sheet, startRow, startCol, dataArray, rows, cols);
 }
+
+BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
+	if (m_pXLServer == NULL)
+		return FALSE;
+	return m_pXLServer->WriteArrayToRangeVariant(sheet, startRow, startCol, dataArray, rows, cols);
+}

@@ -83,6 +83,7 @@ public:
 
 	BOOL WriteArrayToRangeInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
 	BOOL WriteArrayToRangeCString(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+	BOOL WriteArrayToRangeVariant(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
 
 	HRESULT AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...);
 	//song

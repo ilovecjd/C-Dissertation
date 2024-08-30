@@ -1431,9 +1431,146 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 	return TRUE;
 }
 
+BOOL CXLAutomation::WriteArrayToRangeVariant(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// Set the Excel range using the GetRange function
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Create a SAFEARRAY for the data
+	SAFEARRAYBOUND sab[2];
+	sab[0].lLbound = 1;
+	sab[0].cElements = rows;
+	sab[1].lLbound = 1;
+	sab[1].cElements = cols;
+
+	SAFEARRAY* pSafeArray = SafeArrayCreate(VT_VARIANT, 2, sab);
+	if (pSafeArray == NULL) {
+		MessageBox(NULL, _T("Failed to create SAFEARRAY."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// Fill the SAFEARRAY with data
+	for (long r = 1; r <= rows; ++r) {
+		for (long c = 1; c <= cols; ++c) {
+			VARIANT vtData;
+			VariantInit(&vtData);
+
+			// Handle each VARIANT type
+			switch (dataArray[(r - 1) * cols + (c - 1)].vt) {
+			case VT_INT:
+				vtData.vt = VT_INT;
+				vtData.intVal = dataArray[(r - 1) * cols + (c - 1)].intVal;
+				break;
+			case VT_I4:
+				vtData.vt = VT_I4;
+				vtData.lVal = dataArray[(r - 1) * cols + (c - 1)].lVal;
+				break;
+			case VT_R8:
+				vtData.vt = VT_R8;
+				vtData.dblVal = dataArray[(r - 1) * cols + (c - 1)].dblVal;
+				break;
+			case VT_BOOL:
+				vtData.vt = VT_BOOL;
+				vtData.boolVal = dataArray[(r - 1) * cols + (c - 1)].boolVal;
+				break;
+			case VT_BSTR:
+				vtData.vt = VT_BSTR;
+				vtData.bstrVal = SysAllocString(dataArray[(r - 1) * cols + (c - 1)].bstrVal);
+				if (vtData.bstrVal == NULL) {
+					MessageBox(NULL, _T("Failed to allocate memory for BSTR."), _T("Error"), MB_OK | MB_ICONERROR);
+					SafeArrayDestroy(pSafeArray);
+					VariantClear(&vargRng);
+					return FALSE;
+				}
+				break;
+			case VT_UI1:
+				vtData.vt = VT_UI1;
+				vtData.bVal = dataArray[(r - 1) * cols + (c - 1)].bVal;
+				break;
+			case VT_I2:
+				vtData.vt = VT_I2;
+				vtData.iVal = dataArray[(r - 1) * cols + (c - 1)].iVal;
+				break;
+			case VT_UI2:
+				vtData.vt = VT_UI2;
+				vtData.uiVal = dataArray[(r - 1) * cols + (c - 1)].uiVal;
+				break;
+			case VT_UI4:
+				vtData.vt = VT_UI4;
+				vtData.ulVal = dataArray[(r - 1) * cols + (c - 1)].ulVal;
+				break;
+			case VT_I8:
+				vtData.vt = VT_I8;
+				vtData.llVal = dataArray[(r - 1) * cols + (c - 1)].llVal;
+				break;
+			case VT_UI8:
+				vtData.vt = VT_UI8;
+				vtData.ullVal = dataArray[(r - 1) * cols + (c - 1)].ullVal;
+				break;
+			case VT_R4:
+				vtData.vt = VT_R4;
+				vtData.fltVal = dataArray[(r - 1) * cols + (c - 1)].fltVal;
+				break;
+			case VT_DATE:
+				vtData.vt = VT_DATE;
+				vtData.date = dataArray[(r - 1) * cols + (c - 1)].date;
+				break;
+			case VT_CY:
+				vtData.vt = VT_CY;
+				vtData.cyVal = dataArray[(r - 1) * cols + (c - 1)].cyVal;
+				break;
+			case VT_EMPTY:
+				vtData.vt = VT_EMPTY;
+				break;
+				// Add additional cases for other supported types if needed
+			default:
+				MessageBox(NULL, _T("Unsupported VARIANT type in data array."), _T("Error"), MB_OK | MB_ICONERROR);
+				SafeArrayDestroy(pSafeArray);
+				VariantClear(&vargRng);
+				return FALSE;
+			}
+
+			long indices[2] = { r, c }; // SAFEARRAY is 1-based
+			SafeArrayPutElement(pSafeArray, indices, &vtData);
+			VariantClear(&vtData); // Clear VARIANT after use
+		}
+	}
+
+	// Wrap the SAFEARRAY in a VARIANT
+	VARIANT vtArray;
+	VariantInit(&vtArray);
+	vtArray.vt = VT_ARRAY | VT_VARIANT;
+	vtArray.parray = pSafeArray;
+
+	// Write the SAFEARRAY data to the range
+	HRESULT hr = AutoWrap(DISPATCH_PROPERTYPUT, NULL, vargRng.pdispVal, L"Value", 1, vtArray);
+
+	// Clean up
+	VariantClear(&vargRng);
+	SafeArrayDestroy(pSafeArray);
+
+	// Check for errors
+	if (FAILED(hr)) {
+		MessageBox(NULL, _T("Failed to write data to Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+
 // Define the AutoWrap function
 HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...) {
-	// Begin variable-argument list...
+	// 시작 변수-인수 목록...
 	va_list marker;
 	va_start(marker, cArgs);
 
@@ -1442,7 +1579,7 @@ HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDis
 		return E_INVALIDARG;
 	}
 
-	// Variables used...
+	// 사용된 변수들...
 	DISPPARAMS dp = { NULL, NULL, 0, 0 };
 	DISPID dispidNamed = DISPID_PROPERTYPUT;
 	DISPID dispID;
@@ -1450,10 +1587,10 @@ HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDis
 	WCHAR buf[200];
 	char szName[200];
 
-	// Convert down to ANSI
+	// ANSI로 변환
 	WideCharToMultiByte(CP_ACP, 0, ptName, -1, szName, 256, NULL, NULL);
 
-	// Get DISPID for name passed...
+	// 전달된 이름에 대한 DISPID 가져오기...
 	hr = pDisp->GetIDsOfNames(IID_NULL, &ptName, 1, LOCALE_USER_DEFAULT, &dispID);
 	if (FAILED(hr)) {
 		wsprintf(buf, _T("IDispatch::GetIDsOfNames(\"%s\") failed w/err 0x%08lx"), ptName, hr);
@@ -1461,24 +1598,24 @@ HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDis
 		return hr;
 	}
 
-	// Allocate memory for arguments...
+	// 인수에 대한 메모리 할당...
 	VARIANT* pArgs = new VARIANT[cArgs + 1];
-	// Extract arguments...
+	// 인수 추출...
 	for (int i = 0; i < cArgs; i++) {
 		pArgs[i] = va_arg(marker, VARIANT);
 	}
 
-	// Build DISPPARAMS
+	// DISPPARAMS 생성
 	dp.cArgs = cArgs;
 	dp.rgvarg = pArgs;
 
-	// Handle special-case for property-puts!
+	// property-put의 특별한 경우 처리!
 	if (autoType & DISPATCH_PROPERTYPUT) {
 		dp.cNamedArgs = 1;
 		dp.rgdispidNamedArgs = &dispidNamed;
 	}
 
-	// Make the call!
+	// 호출 수행!
 	hr = pDisp->Invoke(dispID, IID_NULL, LOCALE_SYSTEM_DEFAULT, autoType, &dp, pvResult, NULL, NULL);
 	if (FAILED(hr)) {
 		wsprintf(buf, _T("IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx"), ptName, dispID, hr);
@@ -1486,7 +1623,7 @@ HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDis
 		return hr;
 	}
 
-	// End variable-argument section...
+	// 가변 인수 섹션 종료...
 	va_end(marker);
 
 	delete[] pArgs;
