@@ -75,10 +75,74 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	};
 	m_pXl->WriteArrayToRange(PROJECT, 1, 1, (CString*)strTitle, 2,16);
 
-	testFunction();
-	//PrintProjectInfo(&tempPrj);
+	//testFunction();
+	PrintProjectInfo(&tempPrj);
 	return TRUE;
 }
+void CCompany::PrintProjectInfo(CProject* pProject) {
+	
+	const int iWidth = 16;
+	const int iHeight = 7;
+	int posX, posY;
+
+	VARIANT projectInfo[iHeight][iWidth];  // VARIANT 배열 생성
+									 // 모든 VARIANT 요소를 VT_EMPTY로 초기화
+	for (int i = 0; i < iHeight; ++i) {
+		for (int j = 0; j < iWidth; ++j) {
+			VariantInit(&projectInfo[i][j]);
+			projectInfo[i][j].vt = VT_EMPTY;  // 초기화 상태를 VT_EMPTY로 설정
+		}
+	}
+
+	// 첫 번째 행 설정	
+	posX = 0; posY = 0;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectType;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectNum;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectDuration;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->possiblestartDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->endDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->orderDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->profit);
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->experience;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->successProbability;
+
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numCashFlows;									    
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[0];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[1];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[2];
+
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPayment;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->middlePayment;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPayment;
+
+	
+	// 두 번째 행 설정
+	posX = 0; posY = 1;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numActivities;
+
+	posX = 10;  // 빈 칸을 건너뛰기
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPaymentMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->middlePaymentMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPaymentMonth;
+	
+	// 활동 데이터 설정
+	for (int index = 0; index < pProject->numActivities; ++index) {
+		posX = 2; // 두 번째 행의 시작 위치
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].duration;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].startDate;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].endDate;
+
+		posX = 6;  // 두 열 건너뛰기
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].highSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].midSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].lowSkill;
+
+		posY++;
+	}
+
+	m_pXl->WriteArrayToRange(PROJECT, 4, 1, (VARIANT*)projectInfo, 7, 16);
+}
+
 
 void CCompany::testFunction()
 {
@@ -161,58 +225,4 @@ void CCompany::testFunction()
 		VariantClear(&variants[i]);
 	}
 
-}
-void CCompany::PrintProjectInfo(CProject* pProject) {
-	int posX = 0;
-	int posY = 0;
-
-	// 2차원 배열을 사용하여 프로젝트 정보를 저장 (최대 7행 x 16열)
-	int projectInfo[7][16] = { 0 }; // 배열을 0으로 초기화
-
-									// 첫 번째 행 설정
-	posX = 0; posY = 0;
-	projectInfo[posY][posX++] = pProject->projectType;
-	projectInfo[posY][posX++] = pProject->projectNum;
-	projectInfo[posY][posX++] = pProject->projectDuration;
-	projectInfo[posY][posX++] = pProject->possiblestartDate;
-	projectInfo[posY][posX++] = pProject->endDate;
-	projectInfo[posY][posX++] = pProject->orderDate;
-	projectInfo[posY][posX++] = static_cast<int>(pProject->profit);
-	projectInfo[posY][posX++] = pProject->experience;
-	projectInfo[posY][posX++] = pProject->successProbability;
-	projectInfo[posY][posX++] = pProject->numCashFlows;
-
-	for (int i = 0; i < 3; ++i) {
-		projectInfo[posY][posX++] = pProject->m_cashFlows[i];
-	}
-
-	projectInfo[posY][posX++] = pProject->firstPayment;
-	projectInfo[posY][posX++] = pProject->middlePayment;
-	projectInfo[posY][posX++] = pProject->finalPayment;
-
-	// 두 번째 행 설정
-	posX = 0; posY = 1;
-	projectInfo[posY][posX++] = pProject->numActivities;
-	posX += 9;  // 빈 칸을 건너뛰기
-	projectInfo[posY][posX++] = pProject->firstPaymentMonth;
-	projectInfo[posY][posX++] = pProject->middlePaymentMonth;
-	projectInfo[posY][posX++] = pProject->finalPaymentMonth;
-
-	// 활동 데이터 설정
-	for (int index = 0; index < pProject->numActivities; ++index) {
-		posX = 2; // 두 번째 행의 시작 위치
-		projectInfo[posY][posX++] = 0; // 예시로 0으로 설정
-		projectInfo[posY][posX++] = pProject->m_activities[index].duration;
-		projectInfo[posY][posX++] = pProject->m_activities[index].startDate;
-		projectInfo[posY][posX++] = pProject->m_activities[index].endDate;
-
-		posX += 2;  // 두 열 건너뛰기
-		projectInfo[posY][posX++] = pProject->m_activities[index].highSkill;
-		projectInfo[posY][posX++] = pProject->m_activities[index].midSkill;
-		projectInfo[posY][posX++] = pProject->m_activities[index].lowSkill;
-
-		posY++;
-	}
-
-	m_pXl->WriteArrayToRange(PROJECT, 4, 1, (int*)projectInfo, 7, 16);
 }
