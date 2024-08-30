@@ -10,8 +10,9 @@ CCompany::CCompany()
 	// 동적 할당
 	m_pGlobalEnv	= new GLOBAL_ENV;
 	m_pXl			= new CXLEzAutomation;	
-	m_pActPattern	= new ALL_ACT_PATTERN;
-	m_pActType		= new ACT_TYPE;
+	m_pActType		= new ALL_ACT_TYPE;
+	m_pActPattern	= new ALL_ACTIVITY_PATTERN;
+	
 }
 
 
@@ -20,8 +21,9 @@ CCompany::~CCompany()
 	// 동적 할당된 메모리 해제
 	delete m_pGlobalEnv;  // PGLOBAL_ENV 메모리 해제
 	delete m_pXl;         // CXLEzAutomation 메모리 해제
-	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제
 	delete m_pActType;    // PACT_TYPE 메모리 해제
+	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제
+	
 }
 
 // Proceed with the initialisation operation. This function shoule only be run once.
@@ -55,7 +57,7 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	m_pXl->ReadRangeToArray(ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
 	
 	CProject tempPrj;
-	tempPrj.Init();
+	tempPrj.Init(m_pActType, m_pActPattern);
 	// activitys 생성
 	//CreateActivities
 	return TRUE;

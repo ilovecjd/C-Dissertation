@@ -48,10 +48,10 @@ typedef struct {
 } ACT_TYPE, *PACT_TYPE; // 구조체 이름과 포인터 타입 별칭
 
 // activity의 속성에 대한 구조체와 정수 2차원 배열을 포함하는 유니온 정의
-//typedef union {
-//	ACT_TYPE actTypes[5];  // 5개의 타일 발생 데이터를 위한 구조체 배열
-//	int asIntArray[5][sizeof(ACT_TYPE) / sizeof(int)];  // 5개의 타일 데이터를 정수 배열로 접근 (2차원 배열)
-//} ALL_ACT_TYPE, *PALL_ACT_TYPE;
+typedef union {
+	ACT_TYPE actTypes[5];  // 5개의 타일 발생 데이터를 위한 구조체 배열
+	int asIntArray[5][sizeof(ACT_TYPE) / sizeof(int)];  // 5개의 타일 데이터를 정수 배열로 접근 (2차원 배열)
+} ALL_ACT_TYPE, *PALL_ACT_TYPE;
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -73,24 +73,24 @@ typedef struct {
 } ALL_ACT_PATTERN,*PALL_ACT_PATTERN;
 
 // 활동 패턴을 정수 2차원 배열로도 접근할 수 있는 유니온 정의
-//typedef union {
-//	ACTIVITY_ATTRIBUTES attributes[6];  // 6개의 활동 패턴을위한 구조체 배열
-//	int asIntArray[6][sizeof(ACTIVITY_ATTRIBUTES) / sizeof(int)];  // 6개의 활동 데이터를 정수 배열로 접근 (2차원 배열)
-//} ALL_ACTIVITY_PATTERN, *PALL_ACTIVITY_PATTERN;
+typedef union {
+	ALL_ACT_PATTERN pattern[6];  // 6개의 활동 패턴을위한 구조체 배열
+	int asIntArray[6][sizeof(ALL_ACT_PATTERN) / sizeof(int)];  // 6개의 활동 데이터를 정수 배열로 접근 (2차원 배열)
+} ALL_ACTIVITY_PATTERN, *PALL_ACTIVITY_PATTERN;
 //////////////////////////////////////////////////////////////////////////
-
 
 
 // Company 에서 사용
 typedef struct _ACTIVITY {
-	int	activityType;
-	int	duration;
-	int	startDate;
-	int	endDate;
-	int	highSkill;
-	int	midSkill;
-	int	lowSkill;
+	int activityType;  // 활동 유형
+    int duration;      // 활동 기간
+    int startDate;     // 시작 날짜
+    int endDate;       // 종료 날짜
+    int highSkill;     // 높은 기술 수준 인력 수
+    int midSkill;      // 중간 기술 수준 인력 수
+    int lowSkill;      // 낮은 기술 수준 인력 수
 } ACTIVITY, *PACTIVITY;
+
 
 
 class GlobalEnv
