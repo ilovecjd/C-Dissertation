@@ -29,21 +29,8 @@ bool GlobalEnv::Init() {
 		std::string strFilePath = std::string(szPath) + __STR_DATA_FILE;
 
 
-
-		xlWb.load(strFilePath);
-		
-		WsParameters = xlWb.active_sheet();;		// Parameters 시트 객체
-		//xlnt::Range r;
-		/*WsDashboard;		// Dashboard 시트 객체
-		WsProject;			// Project 시트 객체
-		WsActivity_Struct;	// Activity_Struct 시트 객체
-		WsDebugInfo;		// dbuginfo 시트 객체
-		*/
 		return true;
 	}
 	
 }
 
-void GlobalEnv::LoadEnvFromExcel() {
-
-}

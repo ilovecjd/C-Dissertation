@@ -2,11 +2,20 @@
 #include "Project.h"
 
 
-Project::Project()
+CProject::CProject()
 {
+
 }
 
 
-Project::~Project()
+CProject::~CProject()
 {
+}
+
+BOOL CProject::Init()
+{
+	//CreateActivities();
+	//CalculateHRandPfofit();
+	//CalculatePaymentSchedule();
+	return TRUE;
 }

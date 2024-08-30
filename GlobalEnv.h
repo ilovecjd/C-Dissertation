@@ -15,6 +15,83 @@
 #define __ACTIVITY_SHEET_NAME	= "activity_struct"
 #define __DEBUGINFO_SHEET_NAME	= "debuginfo"
 
+typedef struct {
+	int		SimulationWeeks;
+	int		Hr_TableSize;		//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	double	WeeklyProb;
+	int		Hr_Init_H;
+	int		Hr_Init_M;
+	int		Hr_Init_L;
+	int		Hr_LeadTime;
+	int		Cash_Init;
+	int		ProblemCnt;
+	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
+} GLOBAL_ENV, *PGLOBAL_ENV;
+
+
+// company 에서 사용
+
+//////////////////////////////////////////////////////////////////////////
+// activity의 타입에 대한 구조체
+// activity_struct 시트의 cells(3,2) ~ cells(7,14)의 값으로 채워진다.
+typedef struct {
+
+	int occurrenceRate;     // 타입별 발생 확률 (%)
+	int cumulativeRate;     // 누적 확률 (%)
+	int minPeriod;          // 최소 기간
+	int maxPeriod;          // 최대 기간
+	int patternCount;       // 패턴 수
+
+	// 반복되는 패턴 번호와 확률
+	int patterns[4][2];     // 최대 5개의 패턴 번호와 확률을 저장하는 2차원 배열
+
+} ACT_TYPE, *PACT_TYPE; // 구조체 이름과 포인터 타입 별칭
+
+// activity의 속성에 대한 구조체와 정수 2차원 배열을 포함하는 유니온 정의
+//typedef union {
+//	ACT_TYPE actTypes[5];  // 5개의 타일 발생 데이터를 위한 구조체 배열
+//	int asIntArray[5][sizeof(ACT_TYPE) / sizeof(int)];  // 5개의 타일 데이터를 정수 배열로 접근 (2차원 배열)
+//} ALL_ACT_TYPE, *PALL_ACT_TYPE;
+//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+// activity_struct 시트의 cells(15,2) ~ cells(20,27)의 값으로 채워진다.
+// 각 활동의 기간 비율과 인력 비율 패턴에 대한 구조체 정의
+typedef struct {
+	int minDurationRate;   // 최소 기간 비율 (%)
+	int maxDurationRate;   // 최대 기간 비율 (%)
+	int highHR;            // 고 인력 비율 (%)
+	int mediumHR;          // 중 인력 비율 (%)
+	int lowHR;             // 초 인력 비율 (%)
+} ACT_PATTERN,*PACT_PATTERN;
+
+// 모든 활동의 패턴을 포함하는 구조체 정의
+typedef struct {
+	int patternCount;    // 활동 패턴 갯수
+	ACT_PATTERN patterns[5];  // 5개의 활동 패턴
+} ALL_ACT_PATTERN,*PALL_ACT_PATTERN;
+
+// 활동 패턴을 정수 2차원 배열로도 접근할 수 있는 유니온 정의
+//typedef union {
+//	ACTIVITY_ATTRIBUTES attributes[6];  // 6개의 활동 패턴을위한 구조체 배열
+//	int asIntArray[6][sizeof(ACTIVITY_ATTRIBUTES) / sizeof(int)];  // 6개의 활동 데이터를 정수 배열로 접근 (2차원 배열)
+//} ALL_ACTIVITY_PATTERN, *PALL_ACTIVITY_PATTERN;
+//////////////////////////////////////////////////////////////////////////
+
+
+
+// Company 에서 사용
+typedef struct _ACTIVITY {
+	int	activityType;
+	int	duration;
+	int	startDate;
+	int	endDate;
+	int	highSkill;
+	int	midSkill;
+	int	lowSkill;
+} ACTIVITY, *PACTIVITY;
+
 
 class GlobalEnv
 {
@@ -27,16 +104,6 @@ public:
 	GlobalEnv();
 	~GlobalEnv();
 
-	
-	bool Init();
-	void LoadEnvFromExcel();
-
-	xlnt::workbook xlWb;				// workbook
-	xlnt::worksheet WsParameters;		// Parameters 시트 객체
-	xlnt::worksheet WsDashboard;		// Dashboard 시트 객체
-	xlnt::worksheet WsProject;			// Project 시트 객체
-	xlnt::worksheet WsActivity_Struct;	// Activity_Struct 시트 객체
-	xlnt::worksheet WsDebugInfo;		// dbuginfo 시트 객체
-	
+	bool Init();	
 };
 

@@ -232,6 +232,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="C-Dissertation.reg" />
+    <None Include="ClassDiagram.cd" />
     <None Include="res\CDissertation.rc2" />
   </ItemGroup>
   <ItemGroup>

@@ -44,4 +44,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedCretatProject();
+	afx_msg void OnBnClickedSimulationStart();
+
+// song
+public:
+	PGLOBAL_ENV		m_pGlobalEnv;
+
+private:
+// song
 };

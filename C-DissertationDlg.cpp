@@ -1,11 +1,12 @@
 ﻿
 // C-DissertationDlg.cpp : 구현 파일
 //
-
+  
 #include "stdafx.h"
 #include "XLEzAutomation.h"
 #include "C-Dissertation.h"
 #include "C-DissertationDlg.h"
+#include "Company.h"
 #include "DlgProxy.h"
 #include "afxdialogex.h"
 
@@ -24,6 +25,10 @@ CCDissertationDlg::CCDissertationDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pAutoProxy = NULL;
+
+	//song 
+	m_pGlobalEnv	= new GLOBAL_ENV;
+	
 }
 
 CCDissertationDlg::~CCDissertationDlg()
@@ -33,6 +38,12 @@ CCDissertationDlg::~CCDissertationDlg()
 	//  대화 상자가 삭제되었음을 알 수 있게 합니다.
 	if (m_pAutoProxy != NULL)
 		m_pAutoProxy->m_pDialog = NULL;
+
+	//song
+	if (m_pGlobalEnv != NULL)
+		delete m_pGlobalEnv;
+	//if (m_pActivityEnv != NULL)
+		//delete m_pActivityEnv;
 }
 
 void CCDissertationDlg::DoDataExchange(CDataExchange* pDX)
@@ -45,6 +56,7 @@ BEGIN_MESSAGE_MAP(CCDissertationDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_CRETAT_PROJECT, &CCDissertationDlg::OnBnClickedCretatProject)
+	ON_BN_CLICKED(IDC_SIMULATION_START, &CCDissertationDlg::OnBnClickedSimulationStart)
 END_MESSAGE_MAP()
 
 
@@ -60,6 +72,16 @@ BOOL CCDissertationDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	m_pGlobalEnv->SimulationWeeks	= 4 * 36;		// 4주 x 36 개월
+	m_pGlobalEnv->Hr_TableSize		= 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	m_pGlobalEnv->WeeklyProb		= 1.25;
+	m_pGlobalEnv->Hr_Init_H			= 13;
+	m_pGlobalEnv->Hr_Init_M			= 21;
+	m_pGlobalEnv->Hr_Init_L			= 6;
+	m_pGlobalEnv->Hr_LeadTime		= 3;
+	m_pGlobalEnv->Cash_Init			= 1000;
+	m_pGlobalEnv->ProblemCnt		= 100;
+	m_pGlobalEnv->status			= 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -139,237 +161,8 @@ BOOL CCDissertationDlg::CanExit()
 }
 
 
-/*
-void CCDissertationDlg::OnBnClickedCretatProject()
-{
-	// 엑셀 자동화 객체 생성
-	CXLAutomation* Xl = new CXLAutomation;
 
-	// 엑셀 파일 열기
-	if (!Xl->OpenExcelFile(_T("d:\\1.xlsx")))
-	{
-		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		delete Xl;
-		return;
-	}
-
-	// 데이터를 저장할 2차원 배열 선언
-	const int rows = 3;
-	const int cols = 5;
-	int dataArray[rows][cols] = { 0 };
-
-	// 엑셀 시트의 특정 범위를 읽어서 배열에 저장
-	int startRow = 8, startCol = 6, endRow = 8+2, endCol = 6+4;
-	if (!Xl->ReadRangeToArray(PROJECT, startRow, startCol, endRow, endCol, (int*)dataArray, rows, cols))
-	{
-		MessageBox(_T("엑셀 데이터 범위를 읽어올 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		Xl->ReleaseExcel();
-		delete Xl;
-		return;
-	}
-
-	// 가져온 데이터 배열 확인 (예시로 출력)
-	for (int i = 0; i < rows; i++)
-	{
-		for (int j = 0; j < cols; j++)
-		{
-			CString str;
-			str.Format(_T("dataArray[%d][%d] = %d"), i, j, dataArray[i][j]);
-			MessageBox(str, _T("Data"), MB_OK);
-		}
-	}
-
-
-	// 엑셀 리소스 해제
-	Xl->ReleaseExcel();
-	delete Xl;
-}*/
-
-
-/*
-void CCDissertationDlg::OnBnClickedCretatProject()
-{
-	// 엑셀 자동화 객체 생성
-	CXLAutomation* Xl = new CXLAutomation;
-
-	// 엑셀 파일 열기
-	if (!Xl->OpenExcelFile(_T("d:\\1.xlsx")))
-	{
-		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		delete Xl;
-		return;
-	}
-
-	int intValue = 0;
-	double doubleValue = 0.0;
-	CString strValue;
-
-	// 정수 값을 테스트하기 위해 셀 값을 가져오기
-	if (Xl->GetCellValueInt(PROJECT, 1, 1, &intValue))
-	{
-		CString message;
-		message.Format(_T("Integer value in cell (1,1) is: %d"), intValue);
-		MessageBox(message, _T("Integer Value"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("셀에서 정수 값을 가져오지 못했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 실수 값을 테스트하기 위해 셀 값을 가져오기
-	if (Xl->GetCellValueDouble(PROJECT, 2, 2, &doubleValue))
-	{
-		CString message;
-		message.Format(_T("Double value in cell (2,2) is: %f"), doubleValue);
-		MessageBox(message, _T("Double Value"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("셀에서 실수 값을 가져오지 못했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 문자열 값을 테스트하기 위해 셀 값을 가져오기
-	if (Xl->GetCellValueCString(PROJECT, 3, 3, &strValue))
-	{
-		CString message;
-		message.Format(_T("String value in cell (3,3) is: %s"), strValue);
-		MessageBox(message, _T("String Value"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("셀에서 문자열 값을 가져오지 못했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 엑셀 리소스 해제
-	Xl->ReleaseExcel();
-	delete Xl;
-}
-*/
-/*
-void CCDissertationDlg::OnBnClickedCretatProject()
-{
-	// CXLEzAutomation 객체 생성
-	CXLEzAutomation* xlAutomation = new CXLEzAutomation(TRUE); // Excel을 보이도록 생성
-
-															   // 엑셀 파일 열기
-	if (!xlAutomation->OpenExcelFile(_T("d:\\1.xlsx")))
-	{
-		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		delete xlAutomation;
-		return;
-	}
-
-	// 다양한 유형의 데이터를 Excel 셀에 설정하고 읽기
-	try
-	{
-		// 정수 값 설정 및 읽기
-		int intValue = 42;
-		xlAutomation->SetCellValue(PROJECT, 1, 1, intValue); // 1행 1열 (A1 셀)에 42 설정
-		int readIntValue;
-		if (xlAutomation->GetCellValue(PROJECT, 1, 1, &readIntValue))
-		{
-			CString msg;
-			msg.Format(_T("Read integer value: %d"), readIntValue);
-			MessageBox(msg, _T("Info"), MB_OK);
-		}
-		else
-		{
-			MessageBox(_T("정수 값을 읽어오는데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		}
-
-		// 문자열 값 설정 및 읽기
-		CString strValue = _T("Hello Excel");
-		xlAutomation->SetCellValue(PROJECT, 2, 1, strValue); // 1행 2열 (B1 셀)에 "Hello Excel" 설정
-		CString readStrValue;
-		if (xlAutomation->GetCellValue(PROJECT, 2, 1, &readStrValue))
-		{
-			CString msg;
-			msg.Format(_T("Read string value: %s"), readStrValue);
-			MessageBox(msg, _T("Info"), MB_OK);
-		}
-		else
-		{
-			MessageBox(_T("문자열 값을 읽어오는데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		}
-
-		// 실수 값 설정 및 읽기
-		double dblValue = 3.14159;
-		xlAutomation->SetCellValue(PROJECT, 3, 1, dblValue); // 1행 3열 (C1 셀)에 3.14159 설정
-		double readDblValue;
-		if (xlAutomation->GetCellValue(PROJECT, 3, 1, &readDblValue))
-		{
-			CString msg;
-			msg.Format(_T("Read double value: %f"), readDblValue);
-			MessageBox(msg, _T("Info"), MB_OK);
-		}
-		else
-		{
-			MessageBox(_T("실수 값을 읽어오는데 실패했습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		}
-	}
-	catch (const std::exception& e)
-	{
-		MessageBox(CString(e.what()), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 엑셀 리소스 해제
-	xlAutomation->ReleaseExcel();
-	delete xlAutomation;
-}
-*/
-/*
-void CCDissertationDlg::OnBnClickedCretatProject()
-{
-	// Excel 자동화 객체 생성
-
-
-	CXLEzAutomation* xlAutomation = new CXLEzAutomation(TRUE); // Excel을 보이도록 생성
-
-															   // 엑셀 파일 열기
-	if (!xlAutomation->OpenExcelFile(_T("d:\\1.xlsx")))
-	{
-		MessageBox(_T("엑셀 파일을 열 수 없습니다."), _T("Error"), MB_OK | MB_ICONERROR);
-		delete xlAutomation;
-		return;
-	}
-
-	// 데이터 배열 준비
-	int intArray[10][10]; // 적절한 크기로 설정하세요.
-	CString strArray[10][10]; // 적절한 크기로 설정하세요.
-
-						   // 범위의 데이터를 int 배열로 읽어오기
-	if (xlAutomation->ReadRangeToArray(PROJECT, 1, 1, 10, 10, (int*)intArray, 10, 10))
-	{
-		// intArray에서 데이터를 사용
-		// 예시로 첫 번째 데이터를 표시
-		CString msg;
-		msg.Format(_T("First integer value: %d"), intArray[0][0]);
-		MessageBox(msg, _T("Info"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("Failed to read range to int array."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-
-	// 범위의 데이터를 CString 배열로 읽어오기
-	if (xlAutomation->ReadRangeToArray(PROJECT, 11, 1, 20, 10, (CString*)strArray, 10, 10))
-	{
-		// strArray에서 데이터를 사용
-		// 예시로 첫 번째 데이터를 표시
-		CString msg;
-		msg.Format(_T("First string value: %s"), strArray[0][0]);
-		MessageBox(msg, _T("Info"), MB_OK);
-	}
-	else
-	{
-		MessageBox(_T("Failed to read range to CString array."), _T("Error"), MB_OK | MB_ICONERROR);
-	}
-	// 엑셀 리소스 해제
-	xlAutomation->ReleaseExcel();
-	delete xlAutomation;
-}
-*/
-
+/* Excel R/W test Function
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
 	// Excel 자동화 객체 생성
@@ -552,4 +345,16 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 		message.Format(_T("Read CString value from Excel: %s"), readStrValue);
 		MessageBox(message, _T("Read CString"), MB_OK);
 	}
+}
+*/
+
+void CCDissertationDlg::OnBnClickedCretatProject()
+{
+	CCompany* company = new CCompany; 
+	company->Init(m_pGlobalEnv, 1, TRUE);
+}
+
+void CCDissertationDlg::OnBnClickedSimulationStart()
+{
+	// TODO: Add your control notification handler code here
 }

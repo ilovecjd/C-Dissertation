@@ -1,8 +1,12 @@
 ﻿#pragma once
-class Project
+class CProject
 {
 public:
-	Project();
-	~Project();
+	CProject();
+	~CProject();
+
+	// song
+public :
+	BOOL Init();
 };
 
