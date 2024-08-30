@@ -2,6 +2,7 @@
 #include "Project.h"
 #include <cstdlib>   // std::srand, std::rand
 #include <ctime>     // std::time
+#include <cctype>   // toupper 함수를 사용하기 위해 필요
 
 CProject::CProject()
 {
@@ -34,7 +35,7 @@ BOOL CProject::Init(PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern)
 	
 
 	CreateActivities();
-	//CalculateHRandPfofit();
+	CalculateHRAndProfit();
 	//CalculatePaymentSchedule();
 	return TRUE;
 }
@@ -140,4 +141,82 @@ BOOL CProject::CreateActivities() {
 		}
 	}
 	return TRUE;
+}
+
+
+
+// 활동별 투입 인력 생성 및 프로젝트 전체 기대 수익 계산 함수
+void CProject::CalculateHRAndProfit() {
+	int high = 0, mid = 0, low = 0;
+
+	std::srand(static_cast<unsigned int>(std::time(0))); // 랜덤 시드 초기화
+
+	for (int index = 0; index < numActivities; ++index) {
+		int j = std::rand() % 100; // 0부터 99 사이의 랜덤 정수 생성
+		if (0 < j && j <= RND_HR_H) {
+			m_activities[index].highSkill = 1;
+			m_activities[index].midSkill = 0;
+			m_activities[index].lowSkill = 0;
+		}
+		else if (RND_HR_H < j && j <= RND_HR_M) {
+			m_activities[index].highSkill = 0;
+			m_activities[index].midSkill = 1;
+			m_activities[index].lowSkill = 0;
+		}
+		else {
+			m_activities[index].highSkill = 0;
+			m_activities[index].midSkill = 0;
+			m_activities[index].lowSkill = 1;
+		}
+	}
+
+	for (int index = 0; index < numActivities; ++index) {
+		high += m_activities[index].highSkill * m_activities[index].duration;
+		mid += m_activities[index].midSkill * m_activities[index].duration;
+		low += m_activities[index].lowSkill * m_activities[index].duration;
+	}
+
+	profit = CalculateTotalLaborCost(high, mid, low);
+}
+
+// 등급별 투입 인력 계산 및 프로젝트의 수익 생성 함수
+double CProject::CalculateTotalLaborCost(int highCount, int midCount, int lowCount) {
+	double highLaborCost = CalculateLaborCost("H") * highCount;
+	double midLaborCost = CalculateLaborCost("M") * midCount;
+	double lowLaborCost = CalculateLaborCost("L") * lowCount;
+
+	double totalLaborCost = highLaborCost + midLaborCost + lowLaborCost;
+	return totalLaborCost;
+}
+
+// 등급별 투입 인력에 따른 수익 계산 함수
+double CProject::CalculateLaborCost(const std::string& grade) {
+	double directLaborCost = 0.0;
+	double overheadCost = 0.0;
+	double technicalFee = 0.0;
+	double totalLaborCost = 0.0;
+
+	// 입력된 grade를 대문자로 변환
+	char upperGrade = std::toupper(static_cast<unsigned char>(grade[0]));
+
+	switch (upperGrade) {
+	case 'H':
+		directLaborCost = 50.0;
+		break;
+	case 'M':
+		directLaborCost = 39.0;
+		break;
+	case 'L':
+		directLaborCost = 25.0;
+		break;
+	default:
+		AfxMessageBox(_T("잘못된 등급입니다. 'H', 'M', 'L' 중 하나를 입력하세요."), MB_OK | MB_ICONERROR);
+		return 0.0; // 잘못된 입력 시 함수 종료
+	}
+
+	overheadCost = directLaborCost * 0.6; // 간접 비용 계산
+	technicalFee = (directLaborCost + overheadCost) * 0.2; // 기술 비용 계산
+	totalLaborCost = directLaborCost + overheadCost + technicalFee; // 총 인건비 계산
+
+	return totalLaborCost;
 }

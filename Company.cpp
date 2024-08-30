@@ -20,6 +20,8 @@ CCompany::~CCompany()
 {
 	// 동적 할당된 메모리 해제
 	delete m_pGlobalEnv;  // PGLOBAL_ENV 메모리 해제
+	if (m_pXl != NULL)
+		m_pXl->ReleaseExcel();
 	delete m_pXl;         // CXLEzAutomation 메모리 해제
 	delete m_pActType;    // PACT_TYPE 메모리 해제
 	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제

@@ -4,6 +4,10 @@
 #define MAX_PRJ_TYPE 5
 #define MAX_ACT  4
 
+#define RND_HR_H  20
+#define RND_HR_M  70
+
+
 class CProject
 {
 public:
@@ -49,5 +53,8 @@ private:
 	PALL_ACT_TYPE m_pActType;
 	PALL_ACTIVITY_PATTERN m_pActPattern;
 	BOOL CreateActivities();
+	void CalculateHRAndProfit();
+	double CalculateTotalLaborCost(int highCount, int midCount, int lowCount);
+	double CalculateLaborCost(const std::string& grade);
 };
 
