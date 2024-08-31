@@ -75,8 +75,19 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	m_pXl->WriteArrayToRange(PROJECT, 1, 1, (CString*)strTitle, 2,16);
 	m_pXl->SetRangeBorder(PROJECT, 1, 1, 2, 16,1,xlThin, RGB(0, 0, 0));
 
+	for (int i = 1; i < 5; i++)
+	{
+		CProject* pTempPrj;
+		pTempPrj = new CProject;
+
+		pTempPrj->Init(1, i, 1, m_pActType, m_pActPattern);
+		
+		PrintProjectInfo(pTempPrj);
+
+		delete pTempPrj;
+	}
+
 	//testFunction();
-	PrintProjectInfo(&tempPrj);
 	return TRUE;
 }
 void CCompany::PrintProjectInfo(CProject* pProject) {
@@ -151,7 +162,7 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 
 	int printY = 4 + (pProject->m_ID -1)*iHeight;
 	m_pXl->WriteArrayToRange(PROJECT, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
-	m_pXl->SetRangeBorderAround(PROJECT, printY, 1, iHeight + 4 - 1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
+	m_pXl->SetRangeBorderAround(PROJECT, printY, 1, printY + iHeight-1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
 }
 
 
