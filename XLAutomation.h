@@ -86,6 +86,8 @@ public:
 	BOOL WriteArrayToRangeVariant(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
 
 	HRESULT AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...);
+
+	BOOL SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
 	//song
 
 	CXLAutomation();

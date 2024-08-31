@@ -350,6 +350,8 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
+	// 난수 생성기 초기화 . 잊지 않게 company 에 넣을까?
+	srand((unsigned int)time(NULL));	
 	CCompany* company = new CCompany; 
 	company->Init(m_pGlobalEnv, 1, TRUE);
 }

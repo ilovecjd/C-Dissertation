@@ -12,7 +12,6 @@ CCompany::CCompany()
 	m_pXl			= new CXLEzAutomation;	
 	m_pActType		= new ALL_ACT_TYPE;
 	m_pActPattern	= new ALL_ACTIVITY_PATTERN;
-	
 }
 
 
@@ -59,7 +58,7 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	m_pXl->ReadRangeToArray(ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
 	
 	CProject tempPrj;
-	tempPrj.Init(m_pActType, m_pActPattern);
+	tempPrj.Init(1,1,1,m_pActType, m_pActPattern);
 
 	CString strTitle[2][16] = {
 		{
@@ -96,24 +95,24 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 
 	// 첫 번째 행 설정	
 	posX = 0; posY = 0;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectType;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectNum;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectDuration;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->possiblestartDate;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->endDate;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->orderDate;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->profit);
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->experience;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->successProbability;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_type;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_ID;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_duration;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_startAvail;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_endDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_orderDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->m_profit);
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_experience;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_winProb;
 
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numCashFlows;									    
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_nCashFlows;
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[0];
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[1];
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[2];
 
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPayment;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->middlePayment;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPayment;
+	projectInfo[posY][posX].vt = VT_R8; projectInfo[posY][posX++].dblVal = pProject->m_firstPay;
+	projectInfo[posY][posX].vt = VT_R8; projectInfo[posY][posX++].dblVal = pProject->m_secondPay;
+	projectInfo[posY][posX].vt = VT_R8; projectInfo[posY][posX++].dblVal = pProject->m_finalPay;
 
 	
 	// 두 번째 행 설정
@@ -121,9 +120,9 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numActivities;
 
 	posX = 10;  // 빈 칸을 건너뛰기
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPaymentMonth;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->middlePaymentMonth;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPaymentMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_firstPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_secondPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_finalPayMonth;
 	
 	// 활동 데이터 설정
 	for (int index = 0; index < pProject->numActivities; ++index) {
@@ -140,7 +139,8 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 		posY++;
 	}
 
-	m_pXl->WriteArrayToRange(PROJECT, 4, 1, (VARIANT*)projectInfo, 7, 16);
+	m_pXl->WriteArrayToRange(PROJECT, 4, 1, (VARIANT*)projectInfo, iHeight, iWidth);
+	m_pXl->SetRangeBorder(PROJECT, 4, 1, iHeight + 4 - 1, iWidth + 1 - 1, 1, 2, RGB(255, 0, 0));
 }
 
 

@@ -16,45 +16,52 @@ public:
 
 	// song
 public :
-	BOOL Init(PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern);
 	
-// 프로젝트 속성
+	
+	// 프로젝트 속성
 	ACTIVITY m_activities[MAX_ACT]; // 활동에 관한 정보를 기록하는 배열
 
-    int projectType;            // 프로젝트 타입 (0: 외부 / 1: 내부)
-    int projectNum;             // 프로젝트의 번호
+	// Init 함수에서 초기화
+	int m_type;			// 프로젝트 타입 (0: 외부 / 1: 내부)
+	int m_ID;			// 프로젝트의 번호
+	int m_orderDate;	// 발주일
+	int m_startAvail;	// 시작 가능일
+	int m_isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+	int m_experience;	// 경험 (0: 무경험 1: 유경험)
+	int m_winProb;		// 성공 확률
+	int m_nCashFlows;	// 비용 지급 횟수
 
-    int orderDate;              // 발주일
-    int possiblestartDate;      // 시작 가능일
-    int endDate;                // 프로젝트 종료일
-    int projectDuration;        // 프로젝트의 총 기간
-    int isStart;                // 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
-    double profit;              // 총 기대 수익 (HR 종속)
-    int experience;             // 경험 (0: 무경험 1: 유경험)
-    int successProbability;     // 성공 확률
+	// CreateActivities 함수에서 초기화
+	int m_endDate;		// 프로젝트 종료일
+	int m_duration;		// 프로젝트의 총 기간
 
-    // 현금 흐름
-    int numCashFlows;           // 비용 지급 횟수
-    std::array<int, MAX_N_CF> m_cashFlows; // 용역비를 받는 비율을 기록하는 배열
-    long firstPayment;          // 선금 액수
-    long middlePayment;         // 2차 지급 액수
-    long finalPayment;          // 3차 지급 액수
-    int firstPaymentMonth;      // 선금 지급일
-    int middlePaymentMonth;     // 2차 지급일
-    int finalPaymentMonth;      // 3차 지급일
+	// 
+	double m_profit;	// 총 기대 수익 (HR 종속)
 
-    // 활동
-    int numActivities;          // 총 활동 수
-//    std::array<Activity, MAX_ACT> m_activities; // 활동에 관한 정보를 기록하는 배열
-//    std::vector<std::variant<int, double, std::string>> activityAttribute; // 다양한 타입을 가질 수 있는 배열
-  //  std::vector<std::variant<int, double, std::string>> activityPattern;   // 다양한 타입을 가질 수 있는 배열
+	// 현금 흐름
+	int m_cashFlows[MAX_N_CF];	// 용역비를 받는 비율을 기록하는 배열
+	double m_firstPay;		// 선금 액수
+	double m_secondPay;		// 2차 지급 액수
+	double m_finalPay;		// 3차 지급 액수
+	int m_firstPayMonth;	// 선금 지급일
+	int m_secondPayMonth;	// 2차 지급일
+	int m_finalPayMonth;	// 3차 지급일
 
+	// 활동
+	int numActivities;          // 총 활동 수//    std::array<Activity, MAX_ACT> m_activities; // 활동에 관한 정보를 기록하는 배열
+
+	BOOL Init(int type, int ID, int ODate, PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern);
+	
 private:	
 	PALL_ACT_TYPE m_pActType;
 	PALL_ACTIVITY_PATTERN m_pActPattern;
 	BOOL CreateActivities();
-	void CalculateHRAndProfit();
+	double CalculateHRAndProfit();
 	double CalculateTotalLaborCost(int highCount, int midCount, int lowCount);
 	double CalculateLaborCost(const std::string& grade);
+	void CalculatePaymentSchedule();
+
+	int ZeroOrOneByProb(int probability);
+	int RandomBetween(int low, int high);
 };
 

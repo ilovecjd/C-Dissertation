@@ -1630,3 +1630,99 @@ HRESULT CXLAutomation::AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDis
 
 	return hr;
 }
+
+
+/*
+borderStyle: 엑셀의 xlContinuous, xlDash, xlDot 등과 같은 테두리 스타일 값을 전달합니다.
+borderWeight: 엑셀의 xlThin, xlMedium, xlThick와 같은 테두리 두께 값을 전달합니다.
+borderColor: RGB 값 또는 엑셀의 표준 색상 인덱스를 사용하여 테두리 색상을 설정합니다.
+
+***엑셀 테두리 값 상수**
+테두리 스타일 (LineStyle)
+	xlContinuous = 1 (연속선)
+	xlDash = -4115 (짧은 대시)
+	xlDashDot = 4 (대시와 점)
+	xlDashDotDot = 5 (대시와 두 점)
+	xlDot = -4118 (점선)
+	xlDouble = -4119 (이중선)
+	xlLineStyleNone = -4142 (없음)
+	xlSlantDashDot = 13 (경사 대시 점)
+
+테두리 두께 (Weight)
+	xlHairline = 1 (얇은 선)
+	xlThin = 2 (얇은 테두리)
+	xlMedium = -4138 (중간 두께)
+	xlThick = 4 (두꺼운 테두리)
+	
+사용예제
+	xlAutomation.SetRangeBorder(PROJECT, 1, 1, 5, 5, 1, 2, RGB(255, 0, 0));
+	PROJECT 시트의 (1,1)에서 (5,5) 범위에 연속선 스타일(1), 얇은 두께(2), 빨간색(RGB(255, 0, 0)) 테두리를 설정
+*/
+BOOL CXLAutomation::SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// Get the Excel range
+	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+	{
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Set borders for all edges (xlEdgeLeft, xlEdgeTop, xlEdgeBottom, xlEdgeRight, xlInsideVertical, xlInsideHorizontal)
+	int borders[] = { 7, 8, 9, 10, 11, 12 }; // xlEdgeLeft, xlEdgeTop, xlEdgeBottom, xlEdgeRight, xlInsideVertical, xlInsideHorizontal
+
+	for (int i = 0; i < sizeof(borders) / sizeof(borders[0]); i++)
+	{
+		VARIANTARG vargBorder;
+		VariantInit(&vargBorder);
+
+		// Access the Borders property of the Range
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borders[i]);
+		if (!ExlInvoke(vargRng.pdispVal, L"Borders", &vargBorder, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		{
+			VariantClear(&vargRng);
+			return FALSE;
+		}
+
+		// Set Border Style
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borderStyle);
+		if (!ExlInvoke(vargBorder.pdispVal, L"LineStyle", NULL, DISPATCH_PROPERTYPUT, 0))
+		{
+			VariantClear(&vargRng);
+			VariantClear(&vargBorder);
+			return FALSE;
+		}
+
+		// Set Border Weight
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borderWeight);
+		if (!ExlInvoke(vargBorder.pdispVal, L"Weight", NULL, DISPATCH_PROPERTYPUT, 0))
+		{
+			VariantClear(&vargRng);
+			VariantClear(&vargBorder);
+			return FALSE;
+		}
+
+		// Set Border Color
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borderColor);
+		if (!ExlInvoke(vargBorder.pdispVal, L"Color", NULL, DISPATCH_PROPERTYPUT, 0))
+		{
+			VariantClear(&vargRng);
+			VariantClear(&vargBorder);
+			return FALSE;
+		}
+
+		VariantClear(&vargBorder);
+	}
+
+	VariantClear(&vargRng);
+	return TRUE;
+}

@@ -144,3 +144,10 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 		return FALSE;
 	return m_pXLServer->WriteArrayToRangeVariant(sheet, startRow, startCol, dataArray, rows, cols);
 }
+
+
+BOOL CXLEzAutomation::SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
+{
+	// Call the underlying CXLAutomation function to set borders
+	return m_pXLServer->SetRangeBorder(sheet, startRow, startCol, endRow, endCol, borderStyle, borderWeight, borderColor);
+}
