@@ -57,8 +57,8 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	m_pXl->ReadRangeToArray(ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
 	m_pXl->ReadRangeToArray(ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
 	
-	CProject tempPrj;
-	tempPrj.Init(1,1,1,m_pActType, m_pActPattern);
+	//CProject tempPrj;
+	//tempPrj.Init(1,1,1,m_pActType, m_pActPattern);
 
 	CString strTitle[2][16] = {
 		{
@@ -75,7 +75,7 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	m_pXl->WriteArrayToRange(PROJECT, 1, 1, (CString*)strTitle, 2,16);
 	m_pXl->SetRangeBorder(PROJECT, 1, 1, 2, 16,1,xlThin, RGB(0, 0, 0));
 
-	for (int i = 1; i < 5; i++)
+	for (int i = 1; i < 200; i++)
 	{
 		CProject* pTempPrj;
 		pTempPrj = new CProject;

@@ -7,10 +7,7 @@
 CProject::CProject()
 {
 	m_pActType = new ALL_ACT_TYPE;
-	m_pActPattern = new ALL_ACTIVITY_PATTERN;
-	
-	srand((unsigned int)time(NULL));// 난수 생성기 초기화
-
+	m_pActPattern = new ALL_ACTIVITY_PATTERN;	
 }
 
 
