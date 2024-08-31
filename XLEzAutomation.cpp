@@ -151,3 +151,9 @@ BOOL CXLEzAutomation::SetRangeBorder(SheetName sheet, int startRow, int startCol
 	// Call the underlying CXLAutomation function to set borders
 	return m_pXLServer->SetRangeBorder(sheet, startRow, startCol, endRow, endCol, borderStyle, borderWeight, borderColor);
 }
+
+BOOL CXLEzAutomation::SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
+{	
+	// Call the function from CXLAutomation
+	return m_pXLServer->SetRangeBorderAround(sheet, startRow, startCol, endRow, endCol, borderStyle, borderWeight, borderColor);
+}

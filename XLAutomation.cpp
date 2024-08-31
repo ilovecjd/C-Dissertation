@@ -1726,3 +1726,72 @@ BOOL CXLAutomation::SetRangeBorder(SheetName sheet, int startRow, int startCol, 
 	VariantClear(&vargRng);
 	return TRUE;
 }
+
+BOOL CXLAutomation::SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
+{
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// Get the Excel range
+	if (!GetRange(sheet, startRow, startCol, endRow, endCol, &vargRng))
+	{
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Define the border edges for around (xlEdgeLeft, xlEdgeTop, xlEdgeBottom, xlEdgeRight)
+	int borders[] = { 7, 8, 9, 10 }; // xlEdgeLeft, xlEdgeTop, xlEdgeBottom, xlEdgeRight
+
+	for (int i = 0; i < sizeof(borders) / sizeof(borders[0]); i++)
+	{
+		VARIANTARG vargBorder;
+		VariantInit(&vargBorder);
+
+		// Access the Borders property of the Range
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borders[i]);
+		if (!ExlInvoke(vargRng.pdispVal, L"Borders", &vargBorder, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		{
+			VariantClear(&vargRng);
+			return FALSE;
+		}
+
+		// Set Border Style
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borderStyle);
+		if (!ExlInvoke(vargBorder.pdispVal, L"LineStyle", NULL, DISPATCH_PROPERTYPUT, 0))
+		{
+			VariantClear(&vargRng);
+			VariantClear(&vargBorder);
+			return FALSE;
+		}
+
+		// Set Border Weight
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borderWeight);
+		if (!ExlInvoke(vargBorder.pdispVal, L"Weight", NULL, DISPATCH_PROPERTYPUT, 0))
+		{
+			VariantClear(&vargRng);
+			VariantClear(&vargBorder);
+			return FALSE;
+		}
+
+		// Set Border Color
+		ClearAllArgs();
+		AddArgumentInt2(NULL, 0, borderColor);
+		if (!ExlInvoke(vargBorder.pdispVal, L"Color", NULL, DISPATCH_PROPERTYPUT, 0))
+		{
+			VariantClear(&vargRng);
+			VariantClear(&vargBorder);
+			return FALSE;
+		}
+
+		VariantClear(&vargBorder);
+	}
+
+	VariantClear(&vargRng);
+	return TRUE;
+}

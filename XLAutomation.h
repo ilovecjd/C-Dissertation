@@ -88,6 +88,9 @@ public:
 	HRESULT AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...);
 
 	BOOL SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	BOOL SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+
+	// 자동화 헬퍼 함수
 	//song
 
 	CXLAutomation();

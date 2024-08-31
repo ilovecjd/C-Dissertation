@@ -39,7 +39,8 @@ public:
 	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
 
 	BOOL SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
-
+	BOOL SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	
 	BOOL DeleteRow(SheetName sheet, int nRow);
 
 	BOOL ExportCString(SheetName sheet, CString szDataCollection);
