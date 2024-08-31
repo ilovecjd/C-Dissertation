@@ -22,7 +22,7 @@ public :
 	ACTIVITY m_activities[MAX_ACT]; // 활동에 관한 정보를 기록하는 배열
 
 	// Init 함수에서 초기화
-	int m_type;			// 프로젝트 타입 (0: 외부 / 1: 내부)
+	int m_category;		// 프로젝트 분류 (0: 외부 / 1: 내부)
 	int m_ID;			// 프로젝트의 번호
 	int m_orderDate;	// 발주일
 	int m_startAvail;	// 시작 가능일
@@ -49,6 +49,10 @@ public :
 
 	// 활동
 	int numActivities;          // 총 활동 수//    std::array<Activity, MAX_ACT> m_activities; // 활동에 관한 정보를 기록하는 배열
+
+	// 참고용변수
+	int m_projectType;		// activity_struct 시트의 어느 타입의 프로젝트인가
+	int m_activityPattern;	// activity_struct 시트의 어느 패턴인가
 
 	BOOL Init(int type, int ID, int ODate, PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern);
 	

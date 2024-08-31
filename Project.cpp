@@ -37,7 +37,7 @@ BOOL CProject::Init(int type, int ID, int ODate, PALL_ACT_TYPE pActType, PALL_AC
 	std::memcpy(m_pActType,		pActType,	 sizeof(ALL_ACT_TYPE));
 	std::memcpy(m_pActPattern,	pActPattern, sizeof(ALL_ACTIVITY_PATTERN));
 	
-	m_type			= type;		// 프로젝트 타입 (0: 외부 / 1: 내부)
+	m_category		= type;		// 프로젝트 분류 (0: 외부 / 1: 내부)
 	m_ID			= ID;		// 프로젝트의 번호	
 	m_orderDate		= ODate;	// 발주일
 	m_startAvail	= ODate + (rand() % 4);  // // 시작 가능일 ( 0에서 3 사이의 정수 난수 생성)
@@ -66,10 +66,7 @@ int CProject::RandomBetween(int low, int high) {
 }
 
 BOOL CProject::CreateActivities() {
-	//song 사용하지 않는 멤버 변수와 지역 변수들 삭제 하자
-
-	int prjType = 0;
-	int patternType = 0;
+	//song 사용하지 않는 멤버 변수와 지역 변수들 삭제 하자	
 	int i;
 	int probability;
 	int Lb = 0;
@@ -90,15 +87,15 @@ BOOL CProject::CreateActivities() {
 		UB += m_pActType->asIntArray[i][0];	// 엑셀 2열의 "발생 확률"
 
 		if (Lb <= probability && probability < UB) {
-			prjType = i;
+			m_projectType = i;
 			break;
 		}
 
 		Lb = UB;
 	}
 	
-	Lb = m_pActType->asIntArray[prjType][2];	// 엑셀 4열의 "최소기간"
-	UB = m_pActType->asIntArray[prjType][3];	// 엑셀 5열의 "최대기간"
+	Lb = m_pActType->asIntArray[m_projectType][2];	// 엑셀 4열의 "최소기간"
+	UB = m_pActType->asIntArray[m_projectType][3];	// 엑셀 5열의 "최대기간"
 
 	totalDuration = RandomBetween(Lb, UB);
 	m_duration = totalDuration;
@@ -106,14 +103,14 @@ BOOL CProject::CreateActivities() {
 
 	Lb = 0;
 	UB = 0;
-	maxLoop = m_pActType->asIntArray[prjType][4];//패턴수
+	maxLoop = m_pActType->asIntArray[m_projectType][4];//패턴수
 
 	// 패턴 타입 결정
 	for (i = 0; i < maxLoop; ++i) {
-		UB += m_pActType->asIntArray[prjType][6 + ((i) * 2)];//1번패턴 확률부터
+		UB += m_pActType->asIntArray[m_projectType][6 + ((i) * 2)];//1번패턴 확률부터
 
 		if (Lb <= probability && probability < UB) {
-			patternType = m_pActType->asIntArray[prjType][5 + ((i) * 2)];//1번패턴 패턴번호부터
+			m_activityPattern = m_pActType->asIntArray[m_projectType][5 + ((i) * 2)];//1번패턴 패턴번호부터
 			break;
 		}
 		Lb = UB;
@@ -124,13 +121,13 @@ BOOL CProject::CreateActivities() {
 	//프로젝트 패턴 관련 정보
 	Lb = 0;
 	UB = 0;
-	maxLoop = m_pActPattern->asIntArray[patternType-1][0];//활동수 !!! -1 에 주의
+	maxLoop = m_pActPattern->asIntArray[m_activityPattern-1][0];//활동수 !!! -1 에 주의
 	numActivities = maxLoop;
 
 	// 활동 생성
 	for (i = 0; i < maxLoop; ++i) {
-		Lb += m_pActPattern->asIntArray[patternType-1][1 + ((i) * 5)];// !!! -1 에 주의
-		UB += m_pActPattern->asIntArray[patternType-1][2 + ((i) * 5)];// !!! -1 에 주의
+		Lb += m_pActPattern->asIntArray[m_activityPattern-1][1 + ((i) * 5)];// !!! -1 에 주의
+		UB += m_pActPattern->asIntArray[m_activityPattern-1][2 + ((i) * 5)];// !!! -1 에 주의
 		probability = RandomBetween(Lb, UB);
 		tempDuration = totalDuration * probability / 100;
 

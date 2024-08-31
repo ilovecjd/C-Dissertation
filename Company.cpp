@@ -62,14 +62,14 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 
 	CString strTitle[2][16] = {
 		{
-			_T("pType"), _T("PRJ_ID"), _T("기간"), _T("시작가능"), _T("끝"),
+			_T("Category"), _T("PRJ_ID"), _T("기간"), _T("시작가능"), _T("끝"),
 			_T("발주일"), _T("총수익"), _T("경험"), _T("성공%"), _T("CF갯수"),
 			_T("CF1%"), _T("CF2%"), _T("CF3%"), _T("선금"), _T("중도"), _T("잔금")
 		},
 		{
 			_T("act갯수"), _T(""), _T("Dur"), _T("start"), _T("end"),
 			_T(""), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),
-			_T("mon_cf1"), _T("mon_cf2"), _T("mon_cf3"), _T(""), _T(""), _T("")
+			_T("mon_cf1"), _T("mon_cf2"), _T("mon_cf3"), _T(""), _T("prjType"), _T("actType")
 		}
 	};
 	m_pXl->WriteArrayToRange(PROJECT, 1, 1, (CString*)strTitle, 2,16);
@@ -95,7 +95,7 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 
 	// 첫 번째 행 설정	
 	posX = 0; posY = 0;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_type;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_category;
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_ID;
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_duration;
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_startAvail;
@@ -124,23 +124,33 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_secondPayMonth;
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_finalPayMonth;
 	
+	posX = 14;  // 빈 칸을 건너뛰기
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_projectType;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activityPattern;
+	
 	// 활동 데이터 설정
-	for (int index = 0; index < pProject->numActivities; ++index) {
-		posX = 2; // 두 번째 행의 시작 위치
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].duration;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].startDate;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].endDate;
+	for (int i = 0; i < pProject->numActivities; ++i) {
+		// 인덱스를 문자열로 변환하고 "Activity" 접두사 추가
+		CString strAct;		
+		strAct.Format(_T("Activity%02d"), i + 1);
+
+		posX = 1; // 엑셀의 2행 2열부터 적는다.
+		projectInfo[posY][posX].vt = VT_BSTR; projectInfo[posY][posX++].bstrVal = strAct.AllocSysString();
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].duration;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].startDate;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].endDate;
 
 		posX = 6;  // 두 열 건너뛰기
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].highSkill;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].midSkill;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[index].lowSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].highSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].midSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].lowSkill;
 
 		posY++;
 	}
 
-	m_pXl->WriteArrayToRange(PROJECT, 4, 1, (VARIANT*)projectInfo, iHeight, iWidth);
-	m_pXl->SetRangeBorder(PROJECT, 4, 1, iHeight + 4 - 1, iWidth + 1 - 1, 1, 2, RGB(255, 0, 0));
+	int printY = 4 + (pProject->m_ID -1)*iHeight;
+	m_pXl->WriteArrayToRange(PROJECT, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
+	m_pXl->SetRangeBorder(PROJECT, printY, 1, iHeight + 4 - 1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
 }
 
 
