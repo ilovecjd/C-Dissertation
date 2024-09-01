@@ -25,6 +25,7 @@ CCompany::~CCompany()
 	delete m_pXl;         // CXLEzAutomation 메모리 해제
 	delete m_pActType;    // PACT_TYPE 메모리 해제
 	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제
+	DeallocateManageTable(&m_manageTable); //song 확인하고 지우자
 
 }
 
@@ -83,11 +84,17 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 		_T(""),_T("여유"), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),_T("총원"), _T("HR_H"), _T("HR_M"), _T("HR_L") }
 	};
 	m_pXl->WriteArrayToRange(DASHBOARD, 2,  1, (CString*)strDBoardTitle, 18, 1); //세로로 출력
-	m_pXl->SetRangeBorder(DASHBOARD,    2,  1,  4, 16, lastWeek, xlThin, RGB(0, 0, 0));
-	m_pXl->SetRangeBorder(DASHBOARD,    7,  1,  9, 16, lastWeek, xlThin, RGB(0, 0, 0));
-	m_pXl->SetRangeBorder(DASHBOARD,    12, 1, 14, 16, lastWeek, xlThin, RGB(0, 0, 0));
-	m_pXl->SetRangeBorder(DASHBOARD,    17, 1, 19, 16, lastWeek, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(DASHBOARD,    2,  1,  4, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(DASHBOARD,    7,  1,  9, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+ 	m_pXl->SetRangeBorder(DASHBOARD,    12, 1, 14, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(DASHBOARD,    17, 1, 19, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
 	
+	// 
+	m_pXl->WriteArrayToRange(DASHBOARD, 2, 2, m_manageTable.pWeeksNum, 1, lastWeek); 
+	m_pXl->WriteArrayToRange(DASHBOARD, 3, 2, m_manageTable.pSum, 1, lastWeek);
+	m_pXl->WriteArrayToRange(DASHBOARD, 4, 2, m_manageTable.pOrder, 1, lastWeek);
+
+
 
 	/////////////////////////////////////////////////////////////////////////
 	// project 시트에 헤더 출력
@@ -116,9 +123,9 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	int endNum = 0;
 	int preTotal = 0;
 	
-	for (int week = 0; week < m_pGlobalEnv->SimulationWeeks; week++)
+	for (int week = 0; week < lastWeek; week++)
 	{
-		preTotal = m_manageTable.pOrder[week];			// 지난주까지의 발주 프로젝트 누계
+		preTotal = m_manageTable.pSum[week];			// 지난주까지의 발주 프로젝트 누계
 		startNum = preTotal + 1;						// 신규프로젝트이 시작번호 = 누계 +1
 		endNum = preTotal + m_manageTable.pOrder[week];	// 마지막 프로젝트의 시작번호 = 지난주 누계 + 이번주 발생건수
 
@@ -134,25 +141,6 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 				PrintProjectInfo(pTempPrj);				
 			}
 		}
-	}
-
-	DeallocateManageTable(&m_manageTable);
-
-	//CProject tempPrj;
-	//tempPrj.Init(1,1,1,m_pActType, m_pActPattern);
-
-	
-
-	for (int i = 1; i < 200; i++)
-	{
-		CProject* pTempPrj;
-		pTempPrj = new CProject;
-
-		pTempPrj->Init(1, i, 1, m_pActType, m_pActPattern);
-		
-		PrintProjectInfo(pTempPrj);
-
-		delete pTempPrj;
 	}
 
 	//testFunction();
