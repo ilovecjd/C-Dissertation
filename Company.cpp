@@ -12,6 +12,7 @@ CCompany::CCompany()
 	m_pXl			= new CXLEzAutomation;	
 	m_pActType		= new ALL_ACT_TYPE;
 	m_pActPattern	= new ALL_ACTIVITY_PATTERN;
+
 }
 
 
@@ -24,7 +25,7 @@ CCompany::~CCompany()
 	delete m_pXl;         // CXLEzAutomation 메모리 해제
 	delete m_pActType;    // PACT_TYPE 메모리 해제
 	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제
-	
+
 }
 
 // Proceed with the initialisation operation. This function shoule only be run once.
@@ -39,9 +40,7 @@ CCompany::~CCompany()
 
 BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 {	
-	
-	// song run once code 필요
-	
+	// song run once code 필요	
 	if (!m_pXl->OpenExcelFile(_T("d:\\1.xlsx")))
 	{
 		MessageBox(NULL, _T("Failed to open Excel file."), _T("Error"), MB_OK | MB_ICONERROR);
@@ -52,14 +51,46 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 		MessageBox(NULL, _T("pGlobalEnv is NULL."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
-	std::memcpy(m_pGlobalEnv, pGlobalEnv, sizeof(GLOBAL_ENV));
-		
+
+	/////////////////////////////////////////////////////////////////////////
+	// 전달 받은 환경 변수를 Company 로 복사
+	*m_pGlobalEnv = *pGlobalEnv;		
 	m_pXl->ReadRangeToArray(ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
 	m_pXl->ReadRangeToArray(ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
-	
-	//CProject tempPrj;
-	//tempPrj.Init(1,1,1,m_pActType, m_pActPattern);
 
+	int cnt = 0, sum = 0;
+	int lastWeek = m_pGlobalEnv->SimulationWeeks;
+
+	AllocateManageTable(&m_manageTable, lastWeek);
+
+	/////////////////////////////////////////////////////////////////////////
+	// 프로젝트 발주(발생) 현황 생성
+	for (int week = 0; week < lastWeek; week++)
+	{
+		cnt = PoissonRandom(m_pGlobalEnv->WeeklyProb); //        ' 이번주 발생하는 프로젝트 갯수
+		m_manageTable.pWeeksNum[week]	= week+1;	//' week 번호
+		m_manageTable.pSum[week]		= sum;	//' 누계
+		m_manageTable.pOrder[week]		= cnt;	//' 발생 프로젝트갯수
+
+		//' 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다. ==> 이전주까지 발생한 프로젝트 갯수후위연산. vba에서 do while 문법 모름... ㅎㅎ
+		sum = sum + cnt;
+	}
+	m_totalProjectNum = sum;
+
+	
+	CString strDBoardTitle[1][18] = {
+		{ _T("주"), _T("누계"), _T("발주"),_T(""), _T("투입"), _T("HR_H"), _T("HR_M"), _T("HR_L"),
+		_T(""),_T("여유"), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),_T("총원"), _T("HR_H"), _T("HR_M"), _T("HR_L") }
+	};
+	m_pXl->WriteArrayToRange(DASHBOARD, 2,  1, (CString*)strDBoardTitle, 18, 1); //세로로 출력
+	m_pXl->SetRangeBorder(DASHBOARD,    2,  1,  4, 16, lastWeek, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(DASHBOARD,    7,  1,  9, 16, lastWeek, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(DASHBOARD,    12, 1, 14, 16, lastWeek, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(DASHBOARD,    17, 1, 19, 16, lastWeek, xlThin, RGB(0, 0, 0));
+	
+
+	/////////////////////////////////////////////////////////////////////////
+	// project 시트에 헤더 출력
 	CString strTitle[2][16] = {
 		{
 			_T("Category"), _T("PRJ_ID"), _T("기간"), _T("시작가능"), _T("끝"),
@@ -72,8 +103,45 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 			_T("mon_cf1"), _T("mon_cf2"), _T("mon_cf3"), _T(""), _T("prjType"), _T("actType")
 		}
 	};
-	m_pXl->WriteArrayToRange(PROJECT, 1, 1, (CString*)strTitle, 2,16);
-	m_pXl->SetRangeBorder(PROJECT, 1, 1, 2, 16,1,xlThin, RGB(0, 0, 0));
+	m_pXl->WriteArrayToRange(PROJECT, 1, 1, (CString*)strTitle, 2, 16);
+	m_pXl->SetRangeBorder(PROJECT, 1, 1, 2, 16, 1, xlThin, RGB(0, 0, 0));
+
+
+	/////////////////////////////////////////////////////////////////////////
+	// 프로젝트 생성
+	m_ProjectTable = new CProject*[sum];
+
+	int projectId = 0;
+	int startNum = 0;
+	int endNum = 0;
+	int preTotal = 0;
+	
+	for (int week = 0; week < m_pGlobalEnv->SimulationWeeks; week++)
+	{
+		preTotal = m_manageTable.pOrder[week];			// 지난주까지의 발주 프로젝트 누계
+		startNum = preTotal + 1;						// 신규프로젝트이 시작번호 = 누계 +1
+		endNum = preTotal + m_manageTable.pOrder[week];	// 마지막 프로젝트의 시작번호 = 지난주 누계 + 이번주 발생건수
+
+		if ((startNum != 0) && (startNum <= endNum))
+		{
+			for (projectId = startNum; projectId <= endNum; projectId++)
+			{
+				CProject* pTempPrj;
+				pTempPrj = new CProject;
+				pTempPrj->Init(0, projectId, week, m_pActType, m_pActPattern);
+
+				m_ProjectTable[projectId - 1] = pTempPrj;
+				PrintProjectInfo(pTempPrj);				
+			}
+		}
+	}
+
+	DeallocateManageTable(&m_manageTable);
+
+	//CProject tempPrj;
+	//tempPrj.Init(1,1,1,m_pActType, m_pActPattern);
+
+	
 
 	for (int i = 1; i < 200; i++)
 	{
@@ -247,4 +315,37 @@ void CCompany::testFunction()
 		VariantClear(&variants[i]);
 	}
 
+}
+
+
+
+// Function to dynamically allocate memory for all int* members of the struct
+void CCompany:: AllocateManageTable(MANAGE_TABLE* table, int size) {
+	// Calculate the number of int* members dynamically
+	int memberCount = sizeof(MANAGE_TABLE) / sizeof(int*);
+
+	// Pointer to the start of the struct
+	char* baseAddress = reinterpret_cast<char*>(table);
+
+	// Loop through each int* member and allocate memory
+	for (int i = 0; i < memberCount; ++i) {
+		int** memberPtr = reinterpret_cast<int**>(baseAddress + i * sizeof(int*));
+		*memberPtr = new int[size]; // Allocate memory for each member
+	}
+}
+
+// Function to deallocate memory for all int* members of the struct
+void CCompany::DeallocateManageTable(MANAGE_TABLE* table) {
+	// Calculate the number of int* members dynamically
+	int memberCount = sizeof(MANAGE_TABLE) / sizeof(int*);
+
+	// Pointer to the start of the struct
+	char* baseAddress = reinterpret_cast<char*>(table);
+
+	// Loop through each int* member and deallocate memory
+	for (int i = 0; i < memberCount; ++i) {
+		int** memberPtr = reinterpret_cast<int**>(baseAddress + i * sizeof(int*));
+		delete[] * memberPtr; // Deallocate memory for each member
+		*memberPtr = nullptr; // Set pointer to nullptr to avoid dangling pointer
+	}
 }

@@ -1393,14 +1393,23 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 		for (long c = 1; c <= cols; ++c) {
 			VARIANT vtData;
 			VariantInit(&vtData);
-			vtData.vt = VT_BSTR; // String format
-			vtData.bstrVal = SysAllocString(dataArray[(r - 1) * cols + (c - 1)]); // Convert CString to BSTR
 
-			if (vtData.bstrVal == NULL) {
-				MessageBox(NULL, _T("Failed to allocate memory for BSTR."), _T("Error"), MB_OK | MB_ICONERROR);
-				SafeArrayDestroy(pSafeArray);
-				VariantClear(&vargRng);
-				return FALSE;
+			// Check if CString is empty
+			if (dataArray[(r - 1) * cols + (c - 1)].IsEmpty()) {
+				// Set the VARIANT type to VT_EMPTY if the CString is empty
+				vtData.vt = VT_EMPTY;
+			}
+			else {
+				// Otherwise, use the CString value
+				vtData.vt = VT_BSTR; // String format
+				vtData.bstrVal = SysAllocString(dataArray[(r - 1) * cols + (c - 1)]); // Convert CString to BSTR
+
+				if (vtData.bstrVal == NULL) {
+					MessageBox(NULL, _T("Failed to allocate memory for BSTR."), _T("Error"), MB_OK | MB_ICONERROR);
+					SafeArrayDestroy(pSafeArray);
+					VariantClear(&vargRng);
+					return FALSE;
+				}
 			}
 
 			long indices[2] = { r, c }; // SAFEARRAY is 1-based
@@ -1430,6 +1439,7 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 
 	return TRUE;
 }
+
 
 BOOL CXLAutomation::WriteArrayToRangeVariant(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
 	if (m_pdispWorksheets[sheet] == NULL)

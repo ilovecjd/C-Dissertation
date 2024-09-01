@@ -15,6 +15,10 @@
 #define __ACTIVITY_SHEET_NAME	= "activity_struct"
 #define __DEBUGINFO_SHEET_NAME	= "debuginfo"
 
+//int** allocAndInit2DArray(int rows, int cols);
+//int** del2DArray(int** array, int rows);
+int PoissonRandom(double lambda);
+
 typedef struct {
 	int		SimulationWeeks;
 	int		Hr_TableSize;		//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
@@ -91,7 +95,27 @@ typedef struct _ACTIVITY {
     int lowSkill;      // 낮은 기술 수준 인력 수
 } ACTIVITY, *PACTIVITY;
 
+typedef struct _MANAGE_TABLE{
 
+	// Order Table
+	int* pWeeksNum;	// 주 (1,2,3,4,.... last week num)
+	int* pSum;		// 누계
+	int* pOrder;    // 발주
+	
+	// HR Table 
+	int* pDoingHR_H;    // 주별 투입 된 고급 인력 
+	int* pDoingHR_M;    // 주별 투입 된 중급 인력 
+	int* pDoingHR_L;    // 주별 투입 된 초급 인력 
+
+	int* pFreeHR_H;    // 주별 여유 고급 인력 
+	int* pFreeHR_M;    // 주별 여유 중급 인력 
+	int* pFreeHR_L;    // 주별 여유 초급 인력 
+	
+	int* pTotalHR_H;    // 주별 보유 고급 인력 
+	int* pTotalHR_M;    // 주별 보유 중급 인력 
+	int* pTotalHR_L;    // 주별 보유 초급 인력 
+
+} MANAGE_TABLE, *PMANAGE_TABLE;
 
 class GlobalEnv
 {
@@ -106,4 +130,5 @@ public:
 
 	bool Init();	
 };
+
 
