@@ -3,6 +3,7 @@
 //
 
 #include "stdafx.h"
+#include "GlobalEnv.h"
 #include "C-Dissertation.h"
 #include "C-DissertationDlg.h"
 

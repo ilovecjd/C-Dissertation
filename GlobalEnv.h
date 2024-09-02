@@ -117,6 +117,19 @@ typedef struct _MANAGE_TABLE{
 
 } MANAGE_TABLE, *PMANAGE_TABLE;
 
+
+// Sheet enumeration for easy reference
+enum SheetName {
+	WS_NUM_PARAMETERS = 0,
+	WS_NUM_DASHBOARD,
+	WS_NUM_PROJECT,
+	WS_NUM_ACTIVITY_STRUCT,
+	WS_NUM_DEBUG_INFO,
+	WS_NUM_SHEET_COUNT // Total number of sheets
+};
+
+extern LPOLESTR gSheetNames[WS_NUM_SHEET_COUNT];// = { L"parameters", L"dashboard", L"project", L"activity_struct", L"debuginfo" };
+
 class GlobalEnv
 {
 

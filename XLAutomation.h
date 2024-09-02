@@ -9,14 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-// Sheet enumeration for easy reference
-enum SheetName {
-	PARAMETERS = 0,
-	DASHBOARD,
-	PROJECT,
-	ACTIVITY_STRUCT,
-	SHEET_COUNT // Total number of sheets
-};
+
 
 
 // CXLAutomation class definition
@@ -116,7 +109,7 @@ protected:
 		WORD wInvokeAction, WORD wFlags);
 	IDispatch* m_pdispExcelApp;
 	IDispatch* m_pdispWorkbook;
-	IDispatch* m_pdispWorksheets[SHEET_COUNT]; // Array to store worksheet dispatch interfaces
+	IDispatch* m_pdispWorksheets[WS_NUM_SHEET_COUNT]; // Array to store worksheet dispatch interfaces
 
 	BOOL StartExcel();
 	BOOL FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName, IDispatch** ppSheet);

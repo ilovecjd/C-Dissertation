@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "C-Dissertation.h"
+#include "globalenv.h"
 #include "XLAutomation.h"
 #include <ole2ver.h>
 #include <string.h>
@@ -16,6 +17,8 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+LPOLESTR gSheetNames[WS_NUM_SHEET_COUNT] = { L"parameters", L"dashboard", L"project", L"activity_struct", L"debuginfo" };
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -58,7 +61,7 @@ CXLAutomation::CXLAutomation()
 	// m_pdispActiveChart = NULL;
 
 	// Initialize worksheet pointers to NULL
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++)
 		m_pdispWorksheets[i] = NULL;
 
 	InitOLE();
@@ -74,7 +77,7 @@ CXLAutomation::CXLAutomation(BOOL bVisible)
 	// m_pdispActiveChart = NULL;
 
 	// Initialize worksheet pointers to NULL
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++)
 		m_pdispWorksheets[i] = NULL;
 
 	InitOLE();
@@ -613,7 +616,7 @@ void CXLAutomation::ReleaseDispatch()
 	}
 
 	// Release all worksheet dispatch pointers
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++) {
 		if (m_pdispWorksheets[i] != NULL) {
 			m_pdispWorksheets[i]->Release();
 			m_pdispWorksheets[i] = NULL;
@@ -747,11 +750,16 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName) {
 	m_pdispWorkbook = vargWorkbook.pdispVal;
 
 	// Sheet names to find
-	LPOLESTR sheetNames[4] = { L"parameters", L"dashboard", L"project", L"activity_struct" };
+	//	LPOLESTR sheetNames[WS_NUM_SHEET_COUNT];
+	//for (int i =0; i<WS_NUM_SHEET_COUNT; i++)
+	//{
+		// song 여기도 예쁘게 고치자
+		//gSheetNames[i] = { L"parameters", L"dashboard", L"project", L"activity_struct",L"debuginfo" };
+	//}
 
 	// Loop through sheet names and find corresponding worksheet objects
-	for (int i = 0; i < 4; i++) {
-		if (!FindAndStoreWorksheet(m_pdispWorkbook, sheetNames[i], &m_pdispWorksheets[i])) {
+	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++) {
+		if (!FindAndStoreWorksheet(m_pdispWorkbook, gSheetNames[i], &m_pdispWorksheets[i])) {
 			// Error handling if a sheet is not found
 			MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
 			return FALSE;

@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include "GlobalEnv.h"
 #include "Project.h"
 ////#include <cstdlib>   // std::srand, std::rand
 //#include <ctime>     // std::time

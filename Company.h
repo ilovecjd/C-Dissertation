@@ -12,6 +12,10 @@ public:
 
 	void AllocateManageTable(MANAGE_TABLE* table, int size);
 	void DeallocateManageTable(MANAGE_TABLE* table);
+
+	BOOL LoadProjectsFromExcel();
+	BOOL CreateProjects();
+
 	void testFunction();
 
 	MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화

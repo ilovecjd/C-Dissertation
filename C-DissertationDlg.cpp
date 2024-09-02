@@ -3,6 +3,7 @@
 //
   
 #include "stdafx.h"
+#include "GlobalEnv.h"
 #include "XLEzAutomation.h"
 #include "C-Dissertation.h"
 #include "C-DissertationDlg.h"
@@ -354,7 +355,7 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	srand((unsigned int)time(NULL));	
 
 	CCompany* company = new CCompany; 
-	company->Init(m_pGlobalEnv, 1, TRUE);
+	company->Init(m_pGlobalEnv, 1, FALSE);
 	if(company)
 	{
 		delete company;	

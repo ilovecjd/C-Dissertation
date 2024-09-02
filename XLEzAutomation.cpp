@@ -6,6 +6,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "GlobalEnv.h"
 #include "C-Dissertation.h"
 #include "XLEzAutomation.h"
 
