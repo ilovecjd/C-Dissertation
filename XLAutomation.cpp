@@ -1813,3 +1813,105 @@ BOOL CXLAutomation::SetRangeBorderAround(SheetName sheet, int startRow, int star
 	VariantClear(&vargRng);
 	return TRUE;
 }
+
+BOOL CXLAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols) {
+	if (m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng, vargData;
+	VariantInit(&vargRng);
+	VariantInit(&vargData);
+
+	// Get the range from Excel
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Read the data from the range
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargData, DISPATCH_PROPERTYGET, 0)) {
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	// Access the SAFEARRAY data
+	SAFEARRAY* pSafeArray = vargData.parray;
+	VARIANT* pVarData = NULL;
+	HRESULT hr = SafeArrayAccessData(pSafeArray, (void**)&pVarData);
+	if (FAILED(hr)) {
+		VariantClear(&vargRng);
+		VariantClear(&vargData);
+		MessageBox(NULL, _T("Failed to access SafeArray data."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Extract data from SAFEARRAY
+	LONG lRowLBound, lRowUBound, lColLBound, lColUBound;
+	SafeArrayGetLBound(pSafeArray, 1, &lRowLBound);
+	SafeArrayGetUBound(pSafeArray, 1, &lRowUBound);
+	SafeArrayGetLBound(pSafeArray, 2, &lColLBound);
+	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
+
+	for (LONG r = 0; r < rows; r++) {
+		for (LONG c = 0; c < cols; c++) {
+			LONG index[2] = { r + lRowLBound, c + lColLBound }; // Corrected indices for column-major order
+
+			VARIANT varCell;
+			VariantInit(&varCell);
+			HRESULT hr = SafeArrayGetElement(pSafeArray, index, &varCell);
+
+			if (FAILED(hr)) {
+				SafeArrayUnaccessData(pSafeArray);
+				VariantClear(&vargRng);
+				VariantClear(&vargData);
+				MessageBox(NULL, _T("Failed to get element from SafeArray."), _T("Error"), MB_OK | MB_ICONERROR);
+				return FALSE;
+			}
+
+			// Convert to int or set to 0 if not a number
+			switch (varCell.vt) {
+			case VT_I4:
+				dataArray[r * cols + c] = varCell.lVal;
+				break;
+			case VT_I2:
+				dataArray[r * cols + c] = static_cast<int>(varCell.iVal);
+				break;
+			case VT_INT:
+				dataArray[r * cols + c] = varCell.intVal;
+				break;
+			case VT_UI1:
+				dataArray[r * cols + c] = static_cast<int>(varCell.bVal);
+				break;
+			case VT_UI2:
+				dataArray[r * cols + c] = static_cast<int>(varCell.uiVal);
+				break;
+			case VT_UI4:
+				dataArray[r * cols + c] = static_cast<int>(varCell.ulVal);
+				break;
+			case VT_I8:
+				dataArray[r * cols + c] = static_cast<int>(varCell.llVal);
+				break;
+			case VT_UI8:
+				dataArray[r * cols + c] = static_cast<int>(varCell.ullVal);
+				break;
+			case VT_R4:
+				dataArray[r * cols + c] = static_cast<int>(varCell.fltVal);
+				break;
+			case VT_R8:
+				dataArray[r * cols + c] = static_cast<int>(varCell.dblVal);
+				break;
+			default:
+				// Set to 0 for non-numeric types or unsupported types
+				dataArray[r * cols + c] = 0;
+				break;
+			}
+
+			VariantClear(&varCell);
+		}
+	}
+
+	SafeArrayUnaccessData(pSafeArray);
+	VariantClear(&vargRng);
+	VariantClear(&vargData);
+	return TRUE;
+}

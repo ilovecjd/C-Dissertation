@@ -158,3 +158,9 @@ BOOL CXLEzAutomation::SetRangeBorderAround(SheetName sheet, int startRow, int st
 	// Call the function from CXLAutomation
 	return m_pXLServer->SetRangeBorderAround(sheet, startRow, startCol, endRow, endCol, borderStyle, borderWeight, borderColor);
 }
+
+BOOL CXLEzAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
+{
+	// Call the function from CXLAutomation
+	return m_pXLServer->ReadExRangeConvertInt(sheet, startRow, startCol, dataArray, rows, cols);
+}

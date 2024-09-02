@@ -63,11 +63,10 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 		LoadProjectsFromExcel();
 	else
 		CreateProjects();
-
 	return TRUE;
 }
 
-void CCompany::PrintProjectInfo(CProject* pProject) {
+void CCompany::PrintProjectInfo(SheetName sheet, CProject* pProject) {
 	
 	const int iWidth = 16;
 	const int iHeight = 7;
@@ -99,9 +98,9 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[1];
 	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[2];
 
-	projectInfo[posY][posX].vt = VT_R8; projectInfo[posY][posX++].dblVal = pProject->m_firstPay;
-	projectInfo[posY][posX].vt = VT_R8; projectInfo[posY][posX++].dblVal = pProject->m_secondPay;
-	projectInfo[posY][posX].vt = VT_R8; projectInfo[posY][posX++].dblVal = pProject->m_finalPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_firstPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_secondPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_finalPay;
 
 	
 	// 두 번째 행 설정
@@ -138,8 +137,8 @@ void CCompany::PrintProjectInfo(CProject* pProject) {
 	}
 
 	int printY = 4 + (pProject->m_ID -1)*iHeight;
-	m_pXl->WriteArrayToRange(WS_NUM_PROJECT, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
-	m_pXl->SetRangeBorderAround(WS_NUM_PROJECT, printY, 1, printY + iHeight-1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
+	m_pXl->WriteArrayToRange(sheet, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
+	m_pXl->SetRangeBorderAround(sheet, printY, 1, printY + iHeight-1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
 }
 
 
@@ -342,7 +341,7 @@ BOOL CCompany::CreateProjects()
 				pTempPrj->Init(0, projectId, week, m_pActType, m_pActPattern);
 
 				m_ProjectTable[projectId - 1] = pTempPrj;
-				PrintProjectInfo(pTempPrj);
+				PrintProjectInfo(WS_NUM_PROJECT, pTempPrj);
 			}
 		}
 	}
@@ -353,5 +352,113 @@ BOOL CCompany::CreateProjects()
 
 BOOL CCompany::LoadProjectsFromExcel()
 {
+	int cnt = 0, sum = 0;
+	int lastWeek = m_pGlobalEnv->SimulationWeeks;
+	
+	// song ==> 이걸로 할지 확인하고 넣을지 생각해 보자
+	AllocateManageTable(&m_manageTable, lastWeek);
+
+	/////////////////////////////////////////////////////////////////////////
+	// 프로젝트 발주(발생) 현황 로드
+	 //다음 내용을 가져오자
+	//ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
+	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 2, 2, m_manageTable.pWeeksNum, 1, lastWeek);
+	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, m_manageTable.pSum, 1, lastWeek);
+	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 4, 2, m_manageTable.pOrder, 1, lastWeek);
+
+	m_totalProjectNum = m_manageTable.pSum[lastWeek-1] + m_manageTable.pOrder[lastWeek-1];
+	
+	/////////////////////////////////////////////////////////////////////////
+	// project 시트에 헤더 출력
+	
+	/////////////////////////////////////////////////////////////////////////
+	// 프로젝트 생성 후 내용은 로드
+	// song ==> project 의 생성자와 소멸자, init 함수를 확인해 놓자.
+	
+	m_ProjectTable = new CProject*[m_totalProjectNum];
+	int* pProjectInfo;
+
+	LONG lInfoSize = 7 * m_totalProjectNum * 16;
+	pProjectInfo = new int[lInfoSize];
+	m_pXl->ReadExRangeConvertInt(WS_NUM_PROJECT, 4, 1, pProjectInfo, m_totalProjectNum * 7, 16);
+
+	for (int i = 0; i < m_totalProjectNum; i++)
+	{	
+		LONG lBaseAddress = 0;
+		LONG lTemp = 0;
+		
+		lBaseAddress = 7* i * 16;
+
+		CProject* pTempPrj;
+		pTempPrj = new CProject;
+		//pTempPrj->Init( m_pActType, m_pActPattern);
+
+		// 첫 번째 행 설정			
+		pTempPrj->m_category				= *(pProjectInfo+lBaseAddress++);
+		pTempPrj->m_ID						= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_duration				= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_startAvail				= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_endDate					= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_orderDate				= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_profit					= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_experience	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_winProb		= *(pProjectInfo + lBaseAddress++);
+		
+		pTempPrj->m_nCashFlows	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_cashFlows[0]	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_cashFlows[1]	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_cashFlows[2]	= *(pProjectInfo + lBaseAddress++);
+		
+		pTempPrj->m_firstPay		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_secondPay		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_finalPay		= *(pProjectInfo + lBaseAddress++);
+
+		// 두 번째 행 
+		lTemp = lBaseAddress;
+
+		pTempPrj->numActivities = *(pProjectInfo + lBaseAddress++);
+		
+		// 활동 데이터 설정
+		for (int j = 0; j < pTempPrj->numActivities; j++)
+		{
+			lBaseAddress += 1;// 빈 칸을 건너뛰기 (Activity01)
+			pTempPrj->m_activities[j].duration = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->m_activities[j].startDate = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->m_activities[j].endDate = *(pProjectInfo + lBaseAddress++);
+			
+			lBaseAddress += 1;  // 빈 칸을 건너뛰기
+			pTempPrj->m_activities[j].highSkill = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->m_activities[j].midSkill = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->m_activities[j].lowSkill = *(pProjectInfo + lBaseAddress++);
+
+			if (j == 0)
+			{
+				lBaseAddress += 1;  // 빈 칸을 건너뛰기
+				pTempPrj->m_firstPayMonth = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->m_secondPayMonth = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->m_finalPayMonth = *(pProjectInfo + lBaseAddress++);
+
+				lBaseAddress += 1;  // 빈 칸을 건너뛰기
+				pTempPrj->m_projectType = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->m_activityPattern = *(pProjectInfo + lBaseAddress++);
+
+				lBaseAddress += 1;  // 빈 칸을 건너뛰기
+			}
+			else 
+			{
+				lBaseAddress += 8;  // 빈 칸을 건너뛰기
+			}
+		}
+
+		pTempPrj->m_isStart = 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+		
+		m_ProjectTable[i] = pTempPrj;
+		PrintProjectInfo(WS_NUM_DEBUG_INFO, pTempPrj);
+		lBaseAddress = lTemp + 6 * 16;
+	}
+	
+	delete[] pProjectInfo;
+	pProjectInfo = NULL;
+
 	return TRUE;
 }

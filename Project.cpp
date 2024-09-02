@@ -160,7 +160,7 @@ BOOL CProject::CreateActivities() {
 
 
 // 활동별 투입 인력 생성 및 프로젝트 전체 기대 수익 계산 함수
-double CProject::CalculateHRAndProfit() {
+int CProject::CalculateHRAndProfit() {
 	int high = 0, mid = 0, low = 0;
 
 	for (int i = 0; i < numActivities; ++i) {
@@ -250,17 +250,17 @@ void CProject::CalculatePaymentSchedule() {
 
 		switch (paymentType) {
 		case 1:
-			m_firstPay = m_profit * 0.3;
+			m_firstPay = (int)ceil((double)m_profit * 0.3);
 			m_cashFlows[0] = 30;
 			m_cashFlows[1] = 70;
 			break;
 		case 2:
-			m_firstPay = m_profit * 0.4;
+			m_firstPay = (int)ceil((double)m_profit * 0.4);
 			m_cashFlows[0] = 40;
 			m_cashFlows[1] = 60;
 			break;
 		case 3:
-			m_firstPay = m_profit * 0.5;
+			m_firstPay = (int)ceil((double)m_profit * 0.5);
 			m_cashFlows[0] = 50;
 			m_cashFlows[1] = 50;
 			break;
@@ -280,17 +280,17 @@ void CProject::CalculatePaymentSchedule() {
 
 			switch (paymentRatio) {
 			case 1:
-				m_firstPay = m_profit * 0.3;
+				m_firstPay = (int)ceil((double)m_profit * 0.3);
 				m_cashFlows[0] = 30;
 				m_cashFlows[1] = 70;
 				break;
 			case 2:
-				m_firstPay = m_profit * 0.4;
+				m_firstPay = (int)ceil((double)m_profit * 0.4);
 				m_cashFlows[0] = 40;
 				m_cashFlows[1] = 60;
 				break;
 			case 3:
-				m_firstPay = m_profit * 0.5;
+				m_firstPay = (int)ceil((double)m_profit * 0.5);
 				m_cashFlows[0] = 50;
 				m_cashFlows[1] = 50;
 				break;
@@ -304,15 +304,15 @@ void CProject::CalculatePaymentSchedule() {
 			paymentRatio = rand() % 10 + 1;  // 1에서 10 사이의 난수 생성
 
 			if (paymentRatio <= 6) {
-				m_firstPay = m_profit * 0.3;
-				m_secondPay = m_profit * 0.3;
+				m_firstPay = (int)ceil((double)m_profit * 0.3);
+				m_secondPay = (int)ceil((double)m_profit * 0.3);
 				m_cashFlows[0] = 30;
 				m_cashFlows[1] = 30;
 				m_cashFlows[2] = 40;
 			}
 			else {
-				m_firstPay = m_profit * 0.3;
-				m_secondPay = m_profit * 0.4;
+				m_firstPay = (int)ceil((double)m_profit * 0.3);
+				m_secondPay = (int)ceil((double)m_profit * 0.4);
 				m_cashFlows[0] = 30;
 				m_cashFlows[1] = 40;
 				m_cashFlows[2] = 30;
@@ -327,8 +327,8 @@ void CProject::CalculatePaymentSchedule() {
 
 	// 1년 이상의 프로젝트는 3회에 걸처서 받는다.
 	else {
-		m_firstPay = m_profit * 0.3;
-		m_secondPay = m_profit * 0.4;
+		m_firstPay = (int)ceil((double)m_profit * 0.3);
+		m_secondPay = (int)ceil((double)m_profit * 0.4);
 		m_finalPay = m_profit - m_firstPay - m_secondPay;
 
 		m_cashFlows[0] = 30;

@@ -8,7 +8,7 @@ public:
 	CCompany();
 	~CCompany();
 	BOOL Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad);
-	void PrintProjectInfo(CProject* pProject);
+	void PrintProjectInfo(SheetName sheet, CProject* pProject);
 
 	void AllocateManageTable(MANAGE_TABLE* table, int size);
 	void DeallocateManageTable(MANAGE_TABLE* table);

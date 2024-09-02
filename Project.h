@@ -36,13 +36,13 @@ public :
 	int m_duration;		// 프로젝트의 총 기간
 
 	// 
-	double m_profit;	// 총 기대 수익 (HR 종속)
+	int m_profit;	// 총 기대 수익 (HR 종속)
 
 	// 현금 흐름
 	int m_cashFlows[MAX_N_CF];	// 용역비를 받는 비율을 기록하는 배열
-	double m_firstPay;		// 선금 액수
-	double m_secondPay;		// 2차 지급 액수
-	double m_finalPay;		// 3차 지급 액수
+	int m_firstPay;		// 선금 액수
+	int m_secondPay;		// 2차 지급 액수
+	int m_finalPay;		// 3차 지급 액수
 	int m_firstPayMonth;	// 선금 지급일
 	int m_secondPayMonth;	// 2차 지급일
 	int m_finalPayMonth;	// 3차 지급일
@@ -60,7 +60,7 @@ private:
 	PALL_ACT_TYPE m_pActType;
 	PALL_ACTIVITY_PATTERN m_pActPattern;
 	BOOL CreateActivities();
-	double CalculateHRAndProfit();
+	int CalculateHRAndProfit();
 	double CalculateTotalLaborCost(int highCount, int midCount, int lowCount);
 	double CalculateLaborCost(const std::string& grade);
 	void CalculatePaymentSchedule();
