@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
 #include "GlobalEnv.h"
 #include "Project.h"
-////#include <cstdlib>   // std::srand, std::rand
-//#include <ctime>     // std::time
 #include <cctype>   // toupper 함수를 사용하기 위해 필요
 
 CProject::CProject()
@@ -10,7 +8,6 @@ CProject::CProject()
 	m_pActType = new ALL_ACT_TYPE;
 	m_pActPattern = new ALL_ACTIVITY_PATTERN;	
 }
-
 
 CProject::~CProject()
 {	
@@ -114,7 +111,6 @@ BOOL CProject::CreateActivities() {
 		Lb = UB;
 	}
 
-
 	//////////////////////////////////////////////////////////////////
 	//프로젝트 패턴 관련 정보
 	Lb = 0;
@@ -156,8 +152,6 @@ BOOL CProject::CreateActivities() {
 	}
 	return TRUE;
 }
-
-
 
 // 활동별 투입 인력 생성 및 프로젝트 전체 기대 수익 계산 함수
 int CProject::CalculateHRAndProfit() {

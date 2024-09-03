@@ -28,47 +28,9 @@ bool GlobalEnv::Init() {
 		// 파일 이름을 결합하여 전체 경로 생성
 		std::string strFilePath = std::string(szPath) + __STR_DATA_FILE;
 
-
 		return true;
-	}
-	
+	}	
 }
-
-
-//// Function to dynamically allocate a 2D array and initialize it to 0
-//int** allocAndInit2DArray(int rows, int cols) {
-//	// Step 1: Allocate memory for an array of int pointers (each pointer represents a row)
-//	int** array = new int*[rows];
-//
-//	// Step 2: Allocate memory for each row and initialize to 0
-//	for (int i = 0; i < rows; ++i) {
-//		array[i] = new int[cols];
-//		// Initialize each element in the row to 0
-//		for (int j = 0; j < cols; ++j) {
-//			array[i][j] = 0;
-//		}
-//	}
-//
-//	return array;
-//}
-//
-//
-//
-//// Function to deallocate a dynamically allocated 2D array
-//int** del2DArray(int** array, int rows) {
-//	if (array != nullptr) {
-//		// Deallocate memory for each row
-//		for (int i = 0; i < rows; ++i) {
-//			delete[] array[i];
-//		}
-//
-//		// Deallocate the array of pointers
-//		delete[] array;
-//	}
-//
-//	// Return nullptr to assign to the pointer
-//	return nullptr;
-//}
 
 
 int PoissonRandom(double lambda) {
@@ -83,4 +45,3 @@ int PoissonRandom(double lambda) {
 
 	return k - 1;
 }
-

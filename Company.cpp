@@ -13,7 +13,6 @@ CCompany::CCompany()
 	m_pXl			= new CXLEzAutomation;	
 	m_pActType		= new ALL_ACT_TYPE;
 	m_pActPattern	= new ALL_ACTIVITY_PATTERN;
-
 }
 
 
@@ -25,8 +24,7 @@ CCompany::~CCompany()
 		m_pXl->ReleaseExcel();
 	delete m_pXl;         // CXLEzAutomation 메모리 해제
 	delete m_pActType;    // PACT_TYPE 메모리 해제
-	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제
-	//DeallocateManageTable(&m_manageTable); //song 확인하고 지우자
+	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제	
 
 }
 
@@ -74,12 +72,13 @@ void CCompany::PrintProjectInfo(SheetName sheet, CProject* pProject) {
 	const int iHeight = 7;
 	int posX, posY;
 
-	VARIANT projectInfo[iHeight][iWidth];  // VARIANT 배열 생성
-									 // 모든 VARIANT 요소를 VT_EMPTY로 초기화
+	// VARIANT 배열 생성 하고 VT_EMPTY로 초기화
+	VARIANT projectInfo[iHeight][iWidth];  
+	
 	for (int i = 0; i < iHeight; ++i) {
 		for (int j = 0; j < iWidth; ++j) {
 			VariantInit(&projectInfo[i][j]);
-			projectInfo[i][j].vt = VT_EMPTY;  // 초기화 상태를 VT_EMPTY로 설정
+			projectInfo[i][j].vt = VT_EMPTY;
 		}
 	}
 
@@ -144,148 +143,23 @@ void CCompany::PrintProjectInfo(SheetName sheet, CProject* pProject) {
 }
 
 
-void CCompany::testFunction()
-{
-	const int variantCount = 20;  // 주요 VARIANT 타입의 개수를 정의
-	VARIANT variants[variantCount];  // VARIANT 배열 생성
-
-									 // 모든 VARIANT 요소를 VT_EMPTY로 초기화
-	for (int i = 0; i < variantCount; ++i) {
-		VariantInit(&variants[i]);
-		variants[i].vt = VT_EMPTY;  // 초기화 상태를 VT_EMPTY로 설정
-	}
-
-	// VARIANT 타입에 맞게 값 설정
-	int index = 0;
-
-	// VT_INT
-	variants[index].vt = VT_INT;
-	variants[index++].intVal = 42;
-
-	index++;
-	index++;
-
-	// VT_I4 (32-bit signed integer)
-	variants[index].vt = VT_I4;
-	variants[index++].lVal = 100;
-
-	// VT_R8 (64-bit floating-point number)
-	variants[index].vt = VT_R8;
-	variants[index++].dblVal = 3.14;
-
-	// VT_BOOL (Boolean value)
-	variants[index].vt = VT_BOOL;
-	variants[index++].boolVal = VARIANT_TRUE;  // VARIANT_TRUE 또는 VARIANT_FALSE
-
-											   // VT_BSTR (String)
-	variants[index].vt = VT_BSTR;
-	variants[index++].bstrVal = SysAllocString(L"Hello, VARIANT!");
-
-	// VT_UI1 (8-bit unsigned integer)
-	variants[index].vt = VT_UI1;
-	variants[index++].bVal = 255;
-
-	// VT_I2 (16-bit signed integer)
-	variants[index].vt = VT_I2;
-	variants[index++].iVal = 32767;
-
-	// VT_UI2 (16-bit unsigned integer)
-	variants[index].vt = VT_UI2;
-	variants[index++].uiVal = 65535;
-
-	// VT_UI4 (32-bit unsigned integer)
-	variants[index].vt = VT_UI4;
-	variants[index++].ulVal = 4294967295;
-
-	// VT_I8 (64-bit signed integer)
-	variants[index].vt = VT_I8;
-	variants[index++].llVal = 9223372036854775807LL;
-
-	// VT_UI8 (64-bit unsigned integer)
-	variants[index].vt = VT_UI8;
-	variants[index++].ullVal = 18446744073709551615ULL;
-
-	// VT_R4 (32-bit floating-point number)
-	variants[index].vt = VT_R4;
-	variants[index++].fltVal = 2.71f;
-
-	// VT_DATE (Date)
-	variants[index].vt = VT_DATE;
-	variants[index++].date = 44191.0;  // 예: 2021-01-01의 OLE 날짜
-
-									   // VT_CY (Currency)
-	variants[index].vt = VT_CY;
-	variants[index++].cyVal.int64 = 10000;
-
-
-	m_pXl->WriteArrayToRange(WS_NUM_PROJECT, 1, 1, variants, 1, 20);
-
-	// 메모리 정리
-	for (int i = 0; i < variantCount; ++i) {
-		VariantClear(&variants[i]);
-	}
-
-}
-
-
-
-//// Function to dynamically allocate memory for all int* members of the struct
-//void CCompany:: AllocateManageTable(MANAGE_TABLE* table, int size) {
-//	// Calculate the number of int* members dynamically
-//	int memberCount = sizeof(MANAGE_TABLE) / sizeof(int*);
-//
-//	// Pointer to the start of the struct
-//	char* baseAddress = reinterpret_cast<char*>(table);
-//
-//	// Loop through each int* member and allocate memory
-//	for (int i = 0; i < memberCount; ++i) {
-//		int** memberPtr = reinterpret_cast<int**>(baseAddress + i * sizeof(int*));
-//		*memberPtr = new int[size]; // Allocate memory for each member
-//	}
-//}
-//
-//// Function to deallocate memory for all int* members of the struct
-//void CCompany::DeallocateManageTable(MANAGE_TABLE* table) 
-//{
-//	// Calculate the number of int* members dynamically
-//	int memberCount = sizeof(MANAGE_TABLE) / sizeof(int*);
-//
-//	// Pointer to the start of the struct
-//	char* baseAddress = reinterpret_cast<char*>(table);
-//
-//	// Loop through each int* member and deallocate memory
-//	for (int i = 0; i < memberCount; ++i) 
-//	{
-//		int** memberPtr = reinterpret_cast<int**>(baseAddress + i * sizeof(int*));
-//		delete[] * memberPtr; // Deallocate memory for each member
-//		*memberPtr = nullptr; // Set pointer to nullptr to avoid dangling pointer
-//	}
-//}
-
 BOOL CCompany::CreateProjects()
 {
 	int cnt = 0, sum = 0;
 	int lastWeek = m_pGlobalEnv->SimulationWeeks;
 
-	//AllocateManageTable(&m_manageTable, lastWeek);
-
 	/////////////////////////////////////////////////////////////////////////
 	// 프로젝트 발주(발생) 현황 생성
 	for (int week = 0; week < lastWeek; week++)
 	{
-		cnt = PoissonRandom(m_pGlobalEnv->WeeklyProb); //        ' 이번주 발생하는 프로젝트 갯수		
-		m_orderTable[ORDER_SUM][week] = sum;	//' 누계
-		m_orderTable[ORDER_ORD][week] = cnt;	//' 발생 프로젝트갯수
-
-											//' 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다. ==> 이전주까지 발생한 프로젝트 갯수후위연산. vba에서 do while 문법 모름... ㅎㅎ
-		sum = sum + cnt;
+		cnt = PoissonRandom(m_pGlobalEnv->WeeklyProb);	// 이번주 발생하는 프로젝트 갯수		
+		m_orderTable[ORDER_SUM][week] = sum;			// 누계
+		m_orderTable[ORDER_ORD][week] = cnt;			// 발생 프로젝트갯수
+		sum = sum + cnt;	// 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다.
 	}
 	m_totalProjectNum = sum;
-
-
 	PrintDBTitle();
 
-	
 	/////////////////////////////////////////////////////////////////////////
 	// project 시트에 헤더 출력	
 	CString strTitle[2][16] = {
@@ -344,14 +218,9 @@ BOOL CCompany::LoadProjectsFromExcel()
 	int lastWeek = m_pGlobalEnv->SimulationWeeks;
 	
 	/////////////////////////////////////////////////////////////////////////
-	// 프로젝트 발주(발생) 현황 로드
-	 //다음 내용을 가져오자
-	//ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
+	// 프로젝트 발주(발생) 현황 로드	 
 	int* tempBuf = new int[ORDER_COUNT*lastWeek];
 	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, tempBuf, 2, lastWeek);
-	//m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 2, 2, m_manageTable.pWeeksNum, 1, lastWeek);
-	//m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, m_manageTable.pSum, 1, lastWeek);
-	//m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 4, 2, m_manageTable.pOrder, 1, lastWeek);
 	m_orderTable.copyFromContinuousMemory(tempBuf, ORDER_COUNT, lastWeek);
 	m_totalProjectNum = m_orderTable[ORDER_SUM][lastWeek-1] + m_orderTable[ORDER_ORD][lastWeek-1];
 	
@@ -379,8 +248,7 @@ BOOL CCompany::LoadProjectsFromExcel()
 
 		CProject* pTempPrj;
 		pTempPrj = new CProject;
-		//pTempPrj->Init( m_pActType, m_pActPattern);
-
+		
 		// 첫 번째 행 설정			
 		pTempPrj->m_category				= *(pProjectInfo+lBaseAddress++);
 		pTempPrj->m_ID						= *(pProjectInfo + lBaseAddress++);
@@ -563,11 +431,6 @@ void CCompany::PrintDBTitle()
 	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 7, 1, 9, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
 	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 12, 1, 14, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
 	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 17, 1, 19, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
-
-	// 
-	/*m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 2, 2, m_manageTable.pWeeksNum, 1, lastWeek);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, m_manageTable.pSum, 1, lastWeek);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 4, 2, m_manageTable.pOrder, 1, lastWeek);*/
 
 	int rows = m_orderTable.getRows();
 	int cols = m_orderTable.getCols();
