@@ -13,12 +13,9 @@
 #define __STR_END_EXCEL
 #define __NUN_OF_COMPANY	1 // 
 
-#define __PARAMETERS_SHEET_NAME = "parameters"
-#define __DBOARD_SHEET_NAME		= "dashboard"
-#define __PROJECT_SHEET_NAME	= "project"
-#define __ACTIVITY_SHEET_NAME	= "activity_struct"
-#define __DEBUGINFO_SHEET_NAME	= "debuginfo"
 
+#define MAX_CANDIDATES 50
+#define ADD_HR_SIZE 80
 //int** allocAndInit2DArray(int rows, int cols);
 //int** del2DArray(int** array, int rows);
 int PoissonRandom(double lambda);
@@ -154,6 +151,15 @@ private:
 
 public:
 	Dynamic2DArray() {}
+
+	Dynamic2DArray(const Dynamic2DArray& other) : data(other.data) {} // 복사 생성자
+
+	Dynamic2DArray& operator=(const Dynamic2DArray& other) { // 할당 연산자
+		if (this != &other) {
+			data = other.data;
+		}
+		return *this;
+	}
 
 	class Proxy {
 	private:

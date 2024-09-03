@@ -355,7 +355,13 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	srand((unsigned int)time(NULL));	
 
 	CCompany* company = new CCompany; 
-	company->Init(m_pGlobalEnv, 1, true);
+	company->Init(m_pGlobalEnv, 1, TRUE);
+	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
+	{
+		company->Decision(i);   // i번째 기간에 결정해야 할 일들
+		//Company.DebugDashboard(index)
+	}
+		
 	if(company)
 	{
 		delete company;	

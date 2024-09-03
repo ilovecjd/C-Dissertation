@@ -33,14 +33,13 @@ public:
 	BOOL CreateProjects();
 
 	void Decision(int thisWeek);
-	void CheckLastWeek(int thisWeek);
-	void testFunction();
+	
 
 	Dynamic2DArray m_orderTable;
 
-	Dynamic2DArray m_freeHR;
 	Dynamic2DArray m_doingHR;
-	Dynamic2DArray m_doneHR;
+	Dynamic2DArray m_freeHR;
+	Dynamic2DArray m_totalHR;
 	
 	Dynamic2DArray m_doingTable;
 	Dynamic2DArray m_doneTable;
@@ -58,6 +57,14 @@ private:
 
 	void AllTableInit(int nWeeks);
 	void PrintDBTitle();
+	void CheckLastWeek(int thisWeek);
+	void SelectCandidates(int thisWeek);
+	BOOL IsEnoughHR(int thisWeek, CProject* project);
+	void SelectNewProject(int thisWeek);
+	void PrintDBData();
+
+	int m_candidateTable[MAX_CANDIDATES] = { 0, };
+	void AddProjectEntry(CProject* project, int addWeek);
 	
 }; 
 

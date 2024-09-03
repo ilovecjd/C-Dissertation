@@ -57,8 +57,12 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
 	m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
 
+	// !!!!!! song --> 프로그램 종료시 배열들의 크기 동적으로 바뀐적이 있는지는 체크하는 루틴을 꼭 넣자
 	AllTableInit(m_pGlobalEnv->SimulationWeeks); //dash boar 용 배열들의 크기 조절	
-
+	m_totalHR[HR_HIG][0] = m_freeHR[HR_HIG][0] = m_pGlobalEnv->Hr_Init_H;
+	m_totalHR[HR_MID][0] = m_freeHR[HR_MID][0] = m_pGlobalEnv->Hr_Init_M;
+	m_totalHR[HR_LOW][0] = m_freeHR[HR_LOW][0] = m_pGlobalEnv->Hr_Init_L;
+	
 	if (shouldLoad)
 		LoadProjectsFromExcel();
 	else
@@ -309,7 +313,7 @@ BOOL CCompany::LoadProjectsFromExcel()
 		pTempPrj->m_isStart = 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
 		
 		m_AllProjects[i] = pTempPrj;
-		PrintProjectInfo(WS_NUM_DEBUG_INFO, pTempPrj);
+		// 디버깅 때만 사용 ==> PrintProjectInfo(WS_NUM_DEBUG_INFO, pTempPrj);
 		lBaseAddress = lTemp + 6 * 16;
 	}
 	
@@ -322,19 +326,17 @@ BOOL CCompany::LoadProjectsFromExcel()
 // 이번 기간에 결정할 일들. 프로젝트의 신규진행, 멈춤, 인원증감 결정
 void CCompany::Decision(int thisWeek ) {
 
-	if (0 == thisWeek) // 첫주는 체크할 지난주가 없음
-		return;
-
 	// 1. 지난주에 진행중인 프로젝트중 완료되지 않은 프로젝트들만 이번주로 이관
 	CheckLastWeek(thisWeek);
 
 	// 2. 진행 가능한 후보프로젝트들을  candidateTable에 모은다
-	//SelectionOfCandidates(thisWeek);
+	SelectCandidates(thisWeek);
 
 	// 3. 신규 프로젝트 선택 및 진행프로젝트 업데이트
 	// 이번주에 발주된 프로젝트중 시작할 것이 있으면 진행 프로젝트로 기록
-	//SelectNewProject(thisWeek);
+	SelectNewProject(thisWeek);
 
+	PrintDBData();
 	// Call comPrintDashboard()
 	
 }
@@ -345,73 +347,169 @@ void CCompany::Decision(int thisWeek ) {
 // 3. 완료된 프로젝트들만 이번기간에서 삭제
 void CCompany::CheckLastWeek(int thisWeek )
 {	
+	// 추후에도 총원은 변동 없음. 이건 충원이나 감원쪽에서 필요시 다시 수정하게 된다.
+	// 아직 아무것도 결정한것 없으니까.
+	for (int i = thisWeek; i <m_pGlobalEnv->SimulationWeeks-1 ;i++)
+	{
+		m_totalHR[HR_HIG][i + 1] = m_totalHR[HR_HIG][i];
+		m_totalHR[HR_MID][i + 1] = m_totalHR[HR_MID][i];
+		m_totalHR[HR_LOW][i + 1] = m_totalHR[HR_LOW][i];
+
+		m_freeHR[HR_HIG][i + 1] = m_freeHR[HR_HIG][i];
+		m_freeHR[HR_MID][i + 1] = m_freeHR[HR_MID][i];
+		m_freeHR[HR_LOW][i + 1] = m_freeHR[HR_LOW][i];
+	}
+	
+
 	// 수입과 지출 테이블은 매주 업데이트 한다.
 	//m_incomeTable(thisWeek) = m_totalIncome;
 	//m_costsTable(thisWeek) = m_Totalcosts;
 
-	
-	int nLastProjects = m_doingTable[0][thisWeek - 1];//지난주에 진행 중이던 프로젝트의 갯수
-	if (0 == nLastProjects)//song ==> 지난주에 진행중이던 프로젝트가 없다.
+
+	if (0 == thisWeek) // 첫주는 체크할 지난주가 없음
 		return;
 
+	
+
+	int nLastProjects = m_doingTable[ORDER_SUM][thisWeek - 1];//지난주에 진행 중이던 프로젝트의 갯수
+	
 	for (int i = 0; i < nLastProjects; i++)
 	{
 		int prjId = m_doingTable[i + 1][thisWeek - 1];
 		if (prjId == 0)
 			return;
 
-		CProject* project = m_AllProjects[prjId];
+		CProject* project = m_AllProjects[prjId-1];
 
 		// 1. payment 를 계산한다. 선금은 시작시 받기로 한다. 조건완료후 1주 후 수금			
 		// 2. 지출을 계산한다.
 		//' 3. 진행중인 프로젝트를 이관해서 기록한다.
+		int sum = m_doingTable[ORDER_SUM][thisWeek];
 		if (thisWeek < (project->m_isStart + project->m_duration - 1)) // ' 아직 안끝났으면
-		{
-			int sum = m_doingTable[0][thisWeek];
-			m_doingTable[sum][thisWeek] = project->m_ID;// 테이블 크기는 자동으로 변경된다.
-			sum += 1;
-			m_doingTable[0][thisWeek] = sum;
+		{			
+			m_doingTable[sum + 1][thisWeek] = project->m_ID;// 테이블 크기는 자동으로 변경된다.
+			m_doingTable[ORDER_SUM][thisWeek] = sum + 1;
 		}
 	}
 }
 
 
 //
-//void CCompany::SelectCandidates(thisWeek)
-//{
-//	for (int i = 0 ; i< MAX_CANDIDATES; i++)
-//	{
-//		m_candidateTable[i] = 0;
-//	}
-//
-//	int sum = m_manageTable.pSum[week];	// 누계
-//	int nOrder = m_manageTable.pOrder[week];	//' 발생 프로젝트갯수
-//
-//	startProjectNum = sum + 1;  // 이번기간의 처음 프로젝트
-//	endProjectNum = m_manageTable.pOrder[week] + cnt;  // 이번기간의 마지막 프로젝트
-//
-//	for (int id = startProjectNum; id < endProjectNum; id++)
-//	{
-//		project = m_projectTable[id - 1];
-//
-//		if () // 인원 체크
-//		{
-//
-//		}
-//	}
-//	
-//
-//}
+void CCompany::SelectCandidates(int thisWeek)
+{
+
+	int lastID = m_orderTable[ORDER_SUM][thisWeek] ;	// 지난달까지 누계
+	int endID = m_orderTable[ORDER_ORD][thisWeek] + lastID;  // 지난달까지 누계 + 이번주 발생 갯수 - 1
+	for(int i=0; i< MAX_CANDIDATES; i++)
+		m_candidateTable[i] = 0;
+
+	int j = 0; 
+	for (int i = lastID; i < endID; i++)
+	{
+		CProject* project = m_AllProjects[i];
+
+		if (IsEnoughHR(thisWeek, project)) // 인원 체크
+		{
+			m_candidateTable[j++] = project->m_ID;
+		}
+	}
+}
+
+BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
+{
+	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
+	Dynamic2DArray doingHR = m_doingHR;
+		
+	// 2중 루프 activity->기간-> 등급업데이트 순서로 activity들을 순서대로 가져온다.
+	int numAct = project->numActivities;
+	for (int i = 0 ; i < numAct ;i++)
+	{
+		PACTIVITY pActivity = &(project->m_activities[i]);
+		for (int j = 0; j < pActivity->duration; j++)
+		{
+			doingHR[HR_HIG][j + pActivity->startDate] += pActivity->highSkill;
+			doingHR[HR_MID][j + pActivity->startDate] += pActivity->midSkill;
+			doingHR[HR_LOW][j + pActivity->startDate] += pActivity->lowSkill;
+		}		
+	}
+
+	for (int i = thisWeek; i < m_pGlobalEnv->SimulationWeeks; i++) 
+	{
+		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
+			return FALSE;
+
+		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
+			return FALSE;
+
+		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
+			return FALSE;
+	}
+	
+
+	return TRUE;
+}
+
+void CCompany::SelectNewProject(int thisWeek)
+{
+	m_candidateTable;
+	int i = 0;
+	while(m_candidateTable[i] != 0) {
+
+		if (i > MAX_CANDIDATES) break;
+
+		int id = m_candidateTable[i++];
+		CProject* project = m_AllProjects[id-1];
+
+		if (project->m_startAvail < m_pGlobalEnv->SimulationWeeks)
+		{
+			if (IsEnoughHR(thisWeek,project))
+			{	
+				AddProjectEntry(project, thisWeek);
+			}
+		}		
+	} 
+}
+
+// 모든 체크가 끝나고 호출된다. 
+// 단지 변수들만 셑팅하자.
+void CCompany::AddProjectEntry(CProject* project,  int addWeek)
+{	
+	project->m_isStart = project->m_startAvail;
+
+	// HR 정보 업데이트
+	// 2중 루프 activity->기간-> 등급업데이트 순서로 activity들을 순서대로 가져온다.
+	int numAct = project->numActivities;
+	for (int i = 0; i < numAct; i++)
+	{
+		PACTIVITY pActivity = &(project->m_activities[i]);
+		for (int j = 0; j < pActivity->duration; j++)
+		{
+			int col = j + pActivity->startDate;
+			m_doingHR[HR_HIG][col] += pActivity->highSkill;
+			m_doingHR[HR_MID][col] += pActivity->midSkill;
+			m_doingHR[HR_LOW][col] += pActivity->lowSkill;
+
+			m_freeHR[HR_HIG][col] = m_totalHR[HR_HIG][col] - m_doingHR[HR_HIG][col];
+			m_freeHR[HR_MID][col] = m_totalHR[HR_MID][col] - m_doingHR[HR_MID][col];
+			m_freeHR[HR_LOW][col] = m_totalHR[HR_LOW][col] - m_doingHR[HR_LOW][col];
+		}
+	}
+
+	// 현황판 업데이트
+	int sum = m_doingTable[0][addWeek];
+	m_doingTable[sum + 1][addWeek] = project->m_ID;
+	m_doingTable[0][addWeek] = sum + 1;
+}
 
 
 // dash boar 용 배열들의 크기 조절	
 void CCompany::AllTableInit(int nWeeks)
 {
-	m_orderTable.Resize(2, nWeeks);;
+	m_orderTable.Resize(2, nWeeks);
 
-	m_freeHR.Resize(3, nWeeks);;
-	m_doingHR.Resize(3, nWeeks);;
-	m_doneHR.Resize(3, nWeeks);;
+	m_doingHR.Resize(3, nWeeks + ADD_HR_SIZE);
+	m_freeHR.Resize(3, nWeeks + ADD_HR_SIZE);
+	m_totalHR.Resize(3, nWeeks + ADD_HR_SIZE);
 
 	m_doingTable.Resize(11, nWeeks);
 	m_doneTable.Resize(11, nWeeks);
@@ -445,5 +543,61 @@ void CCompany::PrintDBTitle()
 	}
 	m_orderTable.copyToContinuousMemory(tempBuf, totalSize);
 	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, tempBuf, rows, cols);
+
+	int* pWeeks = new int[m_pGlobalEnv->SimulationWeeks];
+	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
+	{
+		pWeeks[i] = i + 1;
+	}
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 2, 2, pWeeks, 1, m_pGlobalEnv->SimulationWeeks);
+
+}
+
+
+void CCompany::PrintDBData()
+{
+	// 다같은 사이즈 이니 한번만 계산해서 사용하자
+	int rows = m_doingHR.getRows();
+	int cols = m_doingHR.getCols();
+
+	int totalSize = rows * cols;  // Total number of elements
+	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+
+	if (3*(m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE) != totalSize)
+	{
+		MessageBox(NULL, _T("버퍼 사이즈를 확인하세요"), _T("Error"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	// HR 정보 출력
+	m_doingHR.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7, 2, tempBuf, rows, cols);
+
+	m_freeHR.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12, 2, tempBuf, rows, cols);
+
+	m_totalHR.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17, 2, tempBuf, rows, cols);
+
+	delete[] tempBuf;
+
+
+	// 진행 현황 출력
+	rows = m_doingTable.getRows();
+	cols = m_doingTable.getCols();
+
+	totalSize = rows * cols;  // Total number of elements
+	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+
+	m_doingTable.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 22, 2, tempBuf, rows, cols);
+
+	m_doneTable.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 34, 2, tempBuf, rows, cols);
+
+	m_defferTable.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 46, 2, tempBuf, rows, cols);
+
+	delete[] tempBuf;
 
 }
