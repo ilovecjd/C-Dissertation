@@ -18,3 +18,26 @@ case 'H':
 3)
 선금, 중도금, 잔금은 double 로 계산하고 표시는 정수로 하고 차액은 보정하자
 추후 기대수익으로 변환해서 결정하는 순간의 가치로 평가하자.
+
+*/
+
+
+
+// Activity structure definition
+// All activity type definition
+// Union for activity types
+
+// Activity pattern structure
+// Structure for all activity patterns
+// Union for activity patterns
+
+enum SheetName {
+	WS_NUM_PARAMETERS = 0,
+	WS_NUM_DASHBOARD,
+	WS_NUM_PROJECT,
+	WS_NUM_ACTIVITY_STRUCT,
+	WS_NUM_DEBUG_INFO,
+	WS_NUM_SHEET_COUNT // Total number of sheets
+};
+
+

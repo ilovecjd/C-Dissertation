@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
 // 엑셀 파일 관리
 // 전역 환경변수 관리
 
@@ -95,27 +99,27 @@ typedef struct _ACTIVITY {
     int lowSkill;      // 낮은 기술 수준 인력 수
 } ACTIVITY, *PACTIVITY;
 
-typedef struct _MANAGE_TABLE{
-
-	// Order Table
-	int* pWeeksNum;	// 주 (1,2,3,4,.... last week num)
-	int* pSum;		// 누계
-	int* pOrder;    // 발주
-	
-	// HR Table 
-	int* pDoingHR_H;    // 주별 투입 된 고급 인력 
-	int* pDoingHR_M;    // 주별 투입 된 중급 인력 
-	int* pDoingHR_L;    // 주별 투입 된 초급 인력 
-
-	int* pFreeHR_H;    // 주별 여유 고급 인력 
-	int* pFreeHR_M;    // 주별 여유 중급 인력 
-	int* pFreeHR_L;    // 주별 여유 초급 인력 
-	
-	int* pTotalHR_H;    // 주별 보유 고급 인력 
-	int* pTotalHR_M;    // 주별 보유 중급 인력 
-	int* pTotalHR_L;    // 주별 보유 초급 인력 
-
-} MANAGE_TABLE, *PMANAGE_TABLE;
+//typedef struct _MANAGE_TABLE{
+//
+//	// Order Table
+//	//int* pWeeksNum;	// 주 (1,2,3,4,.... last week num)
+//	//int* pSum;		// 누계
+//	//int* pOrder;    // 발주
+//	//
+//	// HR Table 
+//	//int* pDoingHR_H;    // 주별 투입 된 고급 인력 
+//	//int* pDoingHR_M;    // 주별 투입 된 중급 인력 
+//	//int* pDoingHR_L;    // 주별 투입 된 초급 인력 
+//
+//	//int* pFreeHR_H;    // 주별 여유 고급 인력 
+//	//int* pFreeHR_M;    // 주별 여유 중급 인력 
+//	//int* pFreeHR_L;    // 주별 여유 초급 인력 
+//	//
+//	//int* pTotalHR_H;    // 주별 보유 고급 인력 
+//	//int* pTotalHR_M;    // 주별 보유 중급 인력 
+//	//int* pTotalHR_L;    // 주별 보유 초급 인력 
+//
+//} MANAGE_TABLE, *PMANAGE_TABLE;
 
 
 // Sheet enumeration for easy reference
@@ -144,4 +148,69 @@ public:
 	bool Init();	
 };
 
+class Dynamic2DArray {
+private:
+	std::vector<std::vector<int>> data;
+
+public:
+	Dynamic2DArray() {}
+
+	class Proxy {
+	private:
+		Dynamic2DArray& array;
+		int rowIndex;
+
+	public:
+		Proxy(Dynamic2DArray& arr, int index) : array(arr), rowIndex(index) {}
+
+		int& operator[](int colIndex) {
+			if (colIndex >= array.data[rowIndex].size()) {
+				array.data[rowIndex].resize(colIndex + 1, 0);
+			}
+			return array.data[rowIndex][colIndex];
+		}
+	};
+
+	Proxy operator[](int rowIndex) {
+		if (rowIndex >= data.size()) {
+			data.resize(rowIndex + 1);
+		}
+		return Proxy(*this, rowIndex);
+	}
+
+	void Resize(int x, int y) {
+		data.resize(x);
+		for (int i = 0; i < x; ++i) {
+			data[i].resize(y, 0);
+		}
+	}
+
+	void copyFromContinuousMemory(int* src, int rows, int cols) {
+		Resize(rows, cols);
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+				data[i][j] = src[i * cols + j];
+			}
+		}
+	}
+
+	// Copy data to an external continuous memory block
+	void copyToContinuousMemory(int* dest, int maxElements) {
+		int index = 0;
+		for (int i = 0; i < data.size() && index < maxElements; ++i) {
+			for (int j = 0; j < data[i].size() && index < maxElements; ++j) {
+				dest[index++] = data[i][j];
+			}
+		}
+	}
+
+	int getRows() const {
+		return data.size();
+	}
+
+	int getCols() const {
+		if (!data.empty()) return data[0].size();
+		return 0;
+	}
+};
 
