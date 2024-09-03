@@ -581,6 +581,6 @@ void CCompany::PrintDBTitle()
 		return;
 	}
 	m_orderTable.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, tempBuf, 4, lastWeek);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, tempBuf, rows, cols);
 
 }

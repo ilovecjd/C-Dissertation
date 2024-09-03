@@ -355,7 +355,7 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	srand((unsigned int)time(NULL));	
 
 	CCompany* company = new CCompany; 
-	company->Init(m_pGlobalEnv, 1, TRUE);
+	company->Init(m_pGlobalEnv, 1, true);
 	if(company)
 	{
 		delete company;	
