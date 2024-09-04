@@ -20,25 +20,6 @@
 //int** del2DArray(int** array, int rows);
 int PoissonRandom(double lambda);
 
-typedef struct {
-	int		SimulationWeeks;
-	int		Hr_TableSize;		//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
-	double	WeeklyProb;
-	int		Hr_Init_H;
-	int		Hr_Init_M;
-	int		Hr_Init_L;
-	int		Hr_LeadTime;
-	int		Cash_Init;
-	int		ProblemCnt;
-	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
-	//////////////////////////////////////
-	// 정책을 설정한다.
-	double	ExpenseRate;		//비용계산에 사용되는 제경비 비율
-	double	profitRate;// 프로젝트 총비용 계산에 사용되는 제경비 비율
-
-} GLOBAL_ENV, *PGLOBAL_ENV;
-
-
 // company 에서 사용
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,29 +82,6 @@ typedef struct _ACTIVITY {
     int lowSkill;      // 낮은 기술 수준 인력 수
 } ACTIVITY, *PACTIVITY;
 
-//typedef struct _MANAGE_TABLE{
-//
-//	// Order Table
-//	//int* pWeeksNum;	// 주 (1,2,3,4,.... last week num)
-//	//int* pSum;		// 누계
-//	//int* pOrder;    // 발주
-//	//
-//	// HR Table 
-//	//int* pDoingHR_H;    // 주별 투입 된 고급 인력 
-//	//int* pDoingHR_M;    // 주별 투입 된 중급 인력 
-//	//int* pDoingHR_L;    // 주별 투입 된 초급 인력 
-//
-//	//int* pFreeHR_H;    // 주별 여유 고급 인력 
-//	//int* pFreeHR_M;    // 주별 여유 중급 인력 
-//	//int* pFreeHR_L;    // 주별 여유 초급 인력 
-//	//
-//	//int* pTotalHR_H;    // 주별 보유 고급 인력 
-//	//int* pTotalHR_M;    // 주별 보유 중급 인력 
-//	//int* pTotalHR_L;    // 주별 보유 초급 인력 
-//
-//} MANAGE_TABLE, *PMANAGE_TABLE;
-
-
 // Sheet enumeration for easy reference
 enum SheetName {
 	WS_NUM_PARAMETERS = 0,
@@ -133,6 +91,37 @@ enum SheetName {
 	WS_NUM_DEBUG_INFO,
 	WS_NUM_SHEET_COUNT // Total number of sheets
 };
+
+
+
+typedef struct {
+	int		SimulationWeeks;
+	int		Hr_TableSize;		//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	double	WeeklyProb;
+	int		Hr_Init_H;
+	int		Hr_Init_M;
+	int		Hr_Init_L;
+	int		Hr_LeadTime;
+	int		Cash_Init;
+	int		ProblemCnt;
+	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
+
+								//////////////////////////////////////
+								// 엑셀파일 오픈을 막자
+	PALL_ACT_TYPE pActType;
+	PALL_ACTIVITY_PATTERN pActPattern;
+
+	// 정책을 설정한다.
+	double	ExpenseRate;	// 비용계산에 사용되는 제경비 비율
+	//double	profitRate;		// 프로젝트 총비용 계산에 사용되는 제경비 비율
+
+	int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+
+	int		recruit;		// 충원에 필요한 운영비 (몇주분량인가?)
+	int		layoff;			// 감원에 필요한 운영비 (몇주분량인가?)
+
+} GLOBAL_ENV, *PGLOBAL_ENV;
+
 
 extern LPOLESTR gSheetNames[WS_NUM_SHEET_COUNT];// = { L"parameters", L"dashboard", L"project", L"activity_struct", L"debuginfo" };
 

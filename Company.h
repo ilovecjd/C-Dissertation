@@ -71,6 +71,8 @@ private:
 
 	int m_candidateTable[MAX_CANDIDATES] = { 0, };
 	void AddProjectEntry(CProject* project, int addWeek);
+	void AddHR(int grade, int addWeek);
+	void RemoveHR(int grade, int addWeek);
 	
 }; 
 
