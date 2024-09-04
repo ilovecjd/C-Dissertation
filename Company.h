@@ -33,6 +33,7 @@ public:
 	BOOL CreateProjects();
 
 	void Decision(int thisWeek);
+	int CalculateFinalResult();
 	
 
 	Dynamic2DArray m_orderTable;
@@ -44,6 +45,11 @@ public:
 	Dynamic2DArray m_doingTable;
 	Dynamic2DArray m_doneTable;
 	Dynamic2DArray m_defferTable;
+
+	Dynamic2DArray m_incomeTable;
+	Dynamic2DArray m_expensesTable;
+
+	Dynamic2DArray m_debugInfo;
 
 	//MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화
 	int		m_totalProjectNum;

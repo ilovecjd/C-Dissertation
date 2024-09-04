@@ -196,6 +196,7 @@ double CProject::CalculateTotalLaborCost(int highCount, int midCount, int lowCou
 }
 
 // 등급별 투입 인력에 따른 수익 계산 함수
+// 수정시 다음도 수정 필요 BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 double CProject::CalculateLaborCost(const std::string& grade) {
 	double directLaborCost	= 0;
 	double overheadCost	= 0;

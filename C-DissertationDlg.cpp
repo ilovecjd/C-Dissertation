@@ -358,9 +358,9 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	company->Init(m_pGlobalEnv, 1, TRUE);
 	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
 	{
-		company->Decision(i);   // i번째 기간에 결정해야 할 일들
-		//Company.DebugDashboard(index)
+		company->Decision(i);   // i번째 기간에 결정해야 할 일들		
 	}
+	int result = company->CalculateFinalResult();
 		
 	if(company)
 	{

@@ -59,10 +59,7 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 
 	// !!!!!! song --> 프로그램 종료시 배열들의 크기 동적으로 바뀐적이 있는지는 체크하는 루틴을 꼭 넣자
 	AllTableInit(m_pGlobalEnv->SimulationWeeks); //dash boar 용 배열들의 크기 조절	
-	m_totalHR[HR_HIG][0] = m_freeHR[HR_HIG][0] = m_pGlobalEnv->Hr_Init_H;
-	m_totalHR[HR_MID][0] = m_freeHR[HR_MID][0] = m_pGlobalEnv->Hr_Init_M;
-	m_totalHR[HR_LOW][0] = m_freeHR[HR_LOW][0] = m_pGlobalEnv->Hr_Init_L;
-	
+
 	if (shouldLoad)
 		LoadProjectsFromExcel();
 	else
@@ -337,8 +334,6 @@ void CCompany::Decision(int thisWeek ) {
 	SelectNewProject(thisWeek);
 
 	PrintDBData();
-	// Call comPrintDashboard()
-	
 }
 
 // 완료프로젝트 검사 및 진행프로젝트 업데이트
@@ -347,29 +342,8 @@ void CCompany::Decision(int thisWeek ) {
 // 3. 완료된 프로젝트들만 이번기간에서 삭제
 void CCompany::CheckLastWeek(int thisWeek )
 {	
-	// 추후에도 총원은 변동 없음. 이건 충원이나 감원쪽에서 필요시 다시 수정하게 된다.
-	// 아직 아무것도 결정한것 없으니까.
-	for (int i = thisWeek; i <m_pGlobalEnv->SimulationWeeks-1 ;i++)
-	{
-		m_totalHR[HR_HIG][i + 1] = m_totalHR[HR_HIG][i];
-		m_totalHR[HR_MID][i + 1] = m_totalHR[HR_MID][i];
-		m_totalHR[HR_LOW][i + 1] = m_totalHR[HR_LOW][i];
-
-		m_freeHR[HR_HIG][i + 1] = m_freeHR[HR_HIG][i];
-		m_freeHR[HR_MID][i + 1] = m_freeHR[HR_MID][i];
-		m_freeHR[HR_LOW][i + 1] = m_freeHR[HR_LOW][i];
-	}
-	
-
-	// 수입과 지출 테이블은 매주 업데이트 한다.
-	//m_incomeTable(thisWeek) = m_totalIncome;
-	//m_costsTable(thisWeek) = m_Totalcosts;
-
-
 	if (0 == thisWeek) // 첫주는 체크할 지난주가 없음
 		return;
-
-	
 
 	int nLastProjects = m_doingTable[ORDER_SUM][thisWeek - 1];//지난주에 진행 중이던 프로젝트의 갯수
 	
@@ -397,7 +371,6 @@ void CCompany::CheckLastWeek(int thisWeek )
 //
 void CCompany::SelectCandidates(int thisWeek)
 {
-
 	int lastID = m_orderTable[ORDER_SUM][thisWeek] ;	// 지난달까지 누계
 	int endID = m_orderTable[ORDER_ORD][thisWeek] + lastID;  // 지난달까지 누계 + 이번주 발생 갯수 - 1
 	for(int i=0; i< MAX_CANDIDATES; i++)
@@ -444,7 +417,6 @@ BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
 		if (m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
 			return FALSE;
 	}
-	
 
 	return TRUE;
 }
@@ -464,7 +436,18 @@ void CCompany::SelectNewProject(int thisWeek)
 		{
 			if (IsEnoughHR(thisWeek,project))
 			{	
-				AddProjectEntry(project, thisWeek);
+				AddProjectEntry(project, thisWeek);	
+
+				///int lows = m_debugInfo.getRows();
+				
+				int tempTotal = project->m_firstPay + project->m_secondPay + project->m_finalPay;
+
+				int cols = m_debugInfo.getCols();
+				m_debugInfo.Resize(2, cols+1);
+
+				m_debugInfo[0][cols] = project->m_ID;
+				m_debugInfo[1][cols] = tempTotal;
+
 			}
 		}		
 	} 
@@ -499,6 +482,22 @@ void CCompany::AddProjectEntry(CProject* project,  int addWeek)
 	int sum = m_doingTable[0][addWeek];
 	m_doingTable[sum + 1][addWeek] = project->m_ID;
 	m_doingTable[0][addWeek] = sum + 1;
+
+	// 수입 테이블 업데이트. 지출은 인원 관리쪽에서 한다.	
+	int incomeDate;
+
+	if (project->m_isStart <addWeek)
+	{
+		MessageBox(NULL, _T("m_isStart miss"), _T("Error"), MB_OK | MB_ICONERROR);
+	}
+	incomeDate = project->m_isStart + project->m_firstPayMonth;	// 선금 지급일
+	m_incomeTable[0][incomeDate] += project->m_firstPay;
+	
+	incomeDate = project->m_isStart + project->m_secondPayMonth;	// 2차 지급일
+	m_incomeTable[0][incomeDate] += project->m_secondPay;
+
+	incomeDate = project->m_isStart + project->m_finalPayMonth;	// 3차 지급일
+	m_incomeTable[0][incomeDate] += project->m_finalPay;
 }
 
 
@@ -514,6 +513,26 @@ void CCompany::AllTableInit(int nWeeks)
 	m_doingTable.Resize(11, nWeeks);
 	m_doneTable.Resize(11, nWeeks);
 	m_defferTable.Resize(11, nWeeks);
+
+	m_incomeTable.Resize(1, nWeeks);
+	m_expensesTable.Resize(1, nWeeks);
+
+
+	// 이건 충원이나 감원쪽에서 필요시 다시 수정하게 된다.	
+	m_totalHR[HR_HIG][0] = m_freeHR[HR_HIG][0] = m_pGlobalEnv->Hr_Init_H;
+	m_totalHR[HR_MID][0] = m_freeHR[HR_MID][0] = m_pGlobalEnv->Hr_Init_M;
+	m_totalHR[HR_LOW][0] = m_freeHR[HR_LOW][0] = m_pGlobalEnv->Hr_Init_L;
+
+	// 소요 비용 계산. 수정시 다음도 수정 필요 CProject::CalculateLaborCost(const std::string& grade)
+	int expenses = (m_pGlobalEnv->Hr_Init_H * 50) + (m_pGlobalEnv->Hr_Init_M * 39 ) + (m_pGlobalEnv->Hr_Init_L * 25 );
+
+	for (int i = 0; i < nWeeks + ADD_HR_SIZE; i++)
+	{
+		m_totalHR[HR_HIG][i] = m_pGlobalEnv->Hr_Init_H;
+		m_totalHR[HR_MID][i] = m_pGlobalEnv->Hr_Init_M;
+		m_totalHR[HR_LOW][i] = m_pGlobalEnv->Hr_Init_L;
+		m_expensesTable[0][i] = expenses;
+	}
 }
 
 void CCompany::PrintDBTitle()
@@ -556,12 +575,24 @@ void CCompany::PrintDBTitle()
 
 void CCompany::PrintDBData()
 {
-	// 다같은 사이즈 이니 한번만 계산해서 사용하자
-	int rows = m_doingHR.getRows();
-	int cols = m_doingHR.getCols();
+	int rows = m_debugInfo.getRows();
+	int cols = m_debugInfo.getCols();
 
 	int totalSize = rows * cols;  // Total number of elements
 	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+
+	// cash flow
+	m_debugInfo.copyToContinuousMemory(tempBuf, totalSize);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7, 2, tempBuf, rows, cols);
+
+	delete[] tempBuf;
+
+	// 다같은 사이즈 이니 한번만 계산해서 사용하자
+	rows = m_doingHR.getRows();
+	cols = m_doingHR.getCols();
+
+	totalSize = rows * cols;  // Total number of elements
+	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
 
 	if (3*(m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE) != totalSize)
 	{
@@ -569,20 +600,21 @@ void CCompany::PrintDBData()
 		return;
 	}
 
+	
 	// HR 정보 출력
 	m_doingHR.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7+3, 2, tempBuf, rows, cols);
 
 	m_freeHR.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12 + 3, 2, tempBuf, rows, cols);
 
 	m_totalHR.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17 + 3, 2, tempBuf, rows, cols);
 
 	delete[] tempBuf;
 
 
-	int printRow = 22;
+	int printRow = 22 + 3;
 	// 진행 현황 출력
 	rows = m_doingTable.getRows();
 	cols = m_doingTable.getCols();
@@ -616,4 +648,30 @@ void CCompany::PrintDBData()
 
 	delete[] tempBuf;
 
+}
+
+int CCompany::CalculateFinalResult() 
+{
+	int result = m_pGlobalEnv->Cash_Init;
+
+	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
+	{
+		result += (m_incomeTable[0][i]- m_expensesTable[0][i]);
+	}
+
+
+
+	int tempTotalIncome = m_pGlobalEnv->Cash_Init;
+	int tempOutcome = m_expensesTable[0][10];
+	int tempTetoalOutcome = (tempOutcome*144);
+	
+	int cols = m_debugInfo.getCols();
+	for (int i = 0; i < cols; i++)
+	{		
+		tempTotalIncome += m_debugInfo[1][i];
+	}
+	int tempResult = tempTotalIncome- tempTetoalOutcome;
+	
+	//return result;
+	return tempResult;
 }
