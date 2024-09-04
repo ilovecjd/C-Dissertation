@@ -21,10 +21,16 @@ CCompany::~CCompany()
 	// 동적 할당된 메모리 해제
 	delete m_pGlobalEnv;  // PGLOBAL_ENV 메모리 해제
 	if (m_pXl != NULL)
+	{
 		m_pXl->ReleaseExcel();
-	delete m_pXl;         // CXLEzAutomation 메모리 해제
-	delete m_pActType;    // PACT_TYPE 메모리 해제
-	delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제	
+		delete m_pXl;         // CXLEzAutomation 메모리 해제
+	}
+
+	if (m_pActType != NULL)
+		delete m_pActType;    // PACT_TYPE 메모리 해제
+
+	if (m_pActPattern != NULL)
+		delete m_pActPattern; // PALL_ACT_PATTERN 메모리 해제	
 
 }
 
@@ -55,9 +61,11 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	// 전달 받은 환경 변수를 Company 로 복사
 	*m_pGlobalEnv = *pGlobalEnv;	
 
-	m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
-	m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
-
+	//m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
+	//m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
+	*m_pActType = *m_pGlobalEnv->pActType;
+	*m_pActPattern = *m_pGlobalEnv->pActPattern;
+	
 	// !!!!!! song --> 프로그램 종료시 배열들의 크기 동적으로 바뀐적이 있는지는 체크하는 루틴을 꼭 넣자
 	AllTableInit(m_pGlobalEnv->SimulationWeeks); //dash boar 용 배열들의 크기 조절	
 
@@ -222,6 +230,7 @@ BOOL CCompany::LoadProjectsFromExcel()
 	/////////////////////////////////////////////////////////////////////////
 	// 프로젝트 발주(발생) 현황 로드	 
 	int* tempBuf = new int[ORDER_COUNT*lastWeek];
+
 	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, tempBuf, 2, lastWeek);
 	m_orderTable.copyFromContinuousMemory(tempBuf, ORDER_COUNT, lastWeek);
 	m_totalProjectNum = m_orderTable[ORDER_SUM][lastWeek-1] + m_orderTable[ORDER_ORD][lastWeek-1];
@@ -252,17 +261,17 @@ BOOL CCompany::LoadProjectsFromExcel()
 		pTempPrj = new CProject;
 		
 		// 첫 번째 행 설정			
-		pTempPrj->m_category				= *(pProjectInfo+lBaseAddress++);
-		pTempPrj->m_ID						= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_duration				= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_startAvail				= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_endDate					= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_orderDate				= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_profit					= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_experience	= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_winProb		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_category		= *(pProjectInfo+lBaseAddress++);
+		pTempPrj->m_ID				= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_duration		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_startAvail		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_endDate			= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_orderDate		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_profit			= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_experience		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_winProb			= *(pProjectInfo + lBaseAddress++);
 		
-		pTempPrj->m_nCashFlows	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->m_nCashFlows		= *(pProjectInfo + lBaseAddress++);
 		pTempPrj->m_cashFlows[0]	= *(pProjectInfo + lBaseAddress++);
 		pTempPrj->m_cashFlows[1]	= *(pProjectInfo + lBaseAddress++);
 		pTempPrj->m_cashFlows[2]	= *(pProjectInfo + lBaseAddress++);
@@ -274,7 +283,7 @@ BOOL CCompany::LoadProjectsFromExcel()
 		// 두 번째 행 
 		lTemp = lBaseAddress;
 
-		pTempPrj->numActivities = *(pProjectInfo + lBaseAddress++);
+		pTempPrj->numActivities		= *(pProjectInfo + lBaseAddress++);
 		
 		// 활동 데이터 설정
 		for (int j = 0; j < pTempPrj->numActivities; j++)
@@ -366,10 +375,81 @@ void CCompany::CheckLastWeek(int thisWeek )
 			m_doingTable[ORDER_SUM][thisWeek] = sum + 1;
 		}
 	}
+
+	// 자금 현황을 체크하자.
+	// 나중에 후회 해도 일단은 편하게 코딩.
+	int Cash = m_pGlobalEnv->Cash_Init;
+
+	for (int i = 0; i < thisWeek; i++)
+	{
+		Cash += (m_incomeTable[0][i] - m_expensesTable[0][i]);
+	}
+	if (Cash<0)// 파산
+	{
+		
+	}
+
+	if (3 < thisWeek)
+	{
+		/// 인원 증감을 결정하자.
+		int temp = m_expensesTable[0][thisWeek] * m_pGlobalEnv->recruit;
+		if (temp < Cash)
+		{
+			int i = rand() % 3;
+			AddHR(i, thisWeek + m_pGlobalEnv->Hr_LeadTime);// 인원 충원 리드 타임
+		}
+
+		temp = m_expensesTable[0][thisWeek] * m_pGlobalEnv->layoff;
+		if (temp > Cash)
+		{
+			int i = rand() % 3;
+			RemoveHR(i, thisWeek + m_pGlobalEnv->Hr_LeadTime);// 인원 감원 리드 타임
+		}
+	}
+	
+}
+
+void CCompany::AddHR(int grade ,int addWeek)
+{
+	// 충원 / 감원 인원 추가
+	// 나머지 기간 업데이트
+	// 나머지 기간의 비용 업데이트
+	m_totalHR[grade][addWeek] = m_totalHR[grade][addWeek] + 1;
+
+	// 소요 비용 계산. 수정시 다음도 수정 필요 CProject::CalculateLaborCost(const std::string& grade)
+	double rate = m_pGlobalEnv->ExpenseRate;
+	int expenses = (m_totalHR[0][addWeek] * 50 * rate) + (m_totalHR[1][addWeek] * 39 * rate) + (m_totalHR[2][addWeek] * 25 * rate);
+
+	for (int i = addWeek; i < m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE; i++)
+	{
+		m_totalHR[HR_HIG][i] = m_totalHR[HR_HIG][addWeek];
+		m_totalHR[HR_MID][i] = m_totalHR[HR_MID][addWeek];
+		m_totalHR[HR_LOW][i] = m_totalHR[HR_LOW][addWeek];
+		m_expensesTable[0][i] = expenses;
+	}
+}
+//
+void CCompany::RemoveHR(int grade, int removeWeek)
+{
+	// 감원 인원 
+	// 나머지 기간 업데이트
+	// 나머지 기간의 비용 업데이트
+	m_totalHR[grade][removeWeek] = m_totalHR[grade][removeWeek] + 1;
+
+	// 소요 비용 계산. 수정시 다음도 수정 필요 CProject::CalculateLaborCost(const std::string& grade)
+	double rate = m_pGlobalEnv->ExpenseRate;
+	int expenses = (m_totalHR[0][removeWeek] * 50 * rate) + (m_totalHR[1][removeWeek] * 39 * rate) + (m_totalHR[2][removeWeek] * 25 * rate);
+
+	for (int i = removeWeek; i < m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE; i++)
+	{
+		m_totalHR[HR_HIG][i] = m_totalHR[HR_HIG][removeWeek];
+		m_totalHR[HR_MID][i] = m_totalHR[HR_MID][removeWeek];
+		m_totalHR[HR_LOW][i] = m_totalHR[HR_LOW][removeWeek];
+		m_expensesTable[0][i] = expenses;
+	}
 }
 
 
-//
 void CCompany::SelectCandidates(int thisWeek)
 {
 	int lastID = m_orderTable[ORDER_SUM][thisWeek] ;	// 지난달까지 누계
@@ -462,8 +542,22 @@ void CCompany::SelectNewProject(int thisWeek)
 		valueArray[j] = project->m_profit;
 		j = j + 1;
 	}
-	//sortArrayAscending(m_candidateTable, valueArray, j);	// 내림차순 정렬	
-	//sortArrayDescending(m_candidateTable, valueArray, j);// 오름차순 정렬	
+	
+	switch (m_pGlobalEnv->selectOrder)
+	{
+	case 1: // 발생 순서대로
+		break;
+	case 2:
+		sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 내림차순 정렬	
+		break;
+	case 3:
+		sortArrayDescending(m_candidateTable, valueArray, j); // 금액 오름차순 정렬	
+		break;
+	default : 
+		break;
+	}
+	
+	
 
 
 	int i = 0;
