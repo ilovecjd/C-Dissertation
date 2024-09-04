@@ -53,7 +53,8 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 	}
 	/////////////////////////////////////////////////////////////////////////
 	// 전달 받은 환경 변수를 Company 로 복사
-	*m_pGlobalEnv = *pGlobalEnv;		
+	*m_pGlobalEnv = *pGlobalEnv;	
+
 	m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
 	m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
 
@@ -421,15 +422,57 @@ BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
 	return TRUE;
 }
 
+// 후보군들을 선택 정책에 따라서 순서를 변경한다.
+
+// 2차원 배열을 오름차순으로 정렬하는 함수
+void sortArrayAscending(int* indexArray, int* valueArray, int size) {
+	// 두 배열을 정렬하기 위해 값과 인덱스를 페어로 묶어야 합니다.
+	for (int i = 0; i < size - 1; i++) {
+		for (int j = i + 1; j < size; j++) {
+			if (valueArray[i] > valueArray[j]) {
+				// 값(value)을 기준으로 정렬하고, 인덱스도 함께 변경합니다.
+				std::swap(valueArray[i], valueArray[j]);
+				std::swap(indexArray[i], indexArray[j]);
+			}
+		}
+	}
+}
+
+// 2차원 배열을 내림차순으로 정렬하는 함수
+void sortArrayDescending(int* indexArray, int* valueArray, int size) {
+	for (int i = 0; i < size - 1; i++) {
+		for (int j = i + 1; j < size; j++) {
+			if (valueArray[i] < valueArray[j]) {
+				// 값(value)을 기준으로 내림차순으로 정렬하고, 인덱스도 함께 변경합니다.
+				std::swap(valueArray[i], valueArray[j]);
+				std::swap(indexArray[i], indexArray[j]);
+			}
+		}
+	}
+}
 void CCompany::SelectNewProject(int thisWeek)
-{
-	m_candidateTable;
+{	
+	
+	int valueArray[MAX_CANDIDATES] = {0, };  // 값 배열
+	int j = 0;
+
+	while (m_candidateTable[j] != 0) {
+		int id = m_candidateTable[j];
+		CProject* project = m_AllProjects[id - 1];
+		valueArray[j] = project->m_profit;
+		j = j + 1;
+	}
+	//sortArrayAscending(m_candidateTable, valueArray, j);	// 내림차순 정렬	
+	//sortArrayDescending(m_candidateTable, valueArray, j);// 오름차순 정렬	
+
+
 	int i = 0;
 	while(m_candidateTable[i] != 0) {
 
 		if (i > MAX_CANDIDATES) break;
 
 		int id = m_candidateTable[i++];
+
 		CProject* project = m_AllProjects[id-1];
 
 		if (project->m_startAvail < m_pGlobalEnv->SimulationWeeks)
@@ -659,9 +702,7 @@ int CCompany::CalculateFinalResult()
 	{
 		result += (m_incomeTable[0][i]- m_expensesTable[0][i]);
 	}
-
-
-
+	
 	int tempTotalIncome = m_pGlobalEnv->Cash_Init;
 	int tempOutcome = m_expensesTable[0][10];
 	int tempTetoalOutcome = (tempOutcome*144);
