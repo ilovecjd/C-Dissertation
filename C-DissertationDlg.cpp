@@ -76,9 +76,9 @@ BOOL CCDissertationDlg::OnInitDialog()
 	m_pGlobalEnv->SimulationWeeks	= 4 * 36;		// 4주 x 36 개월
 	m_pGlobalEnv->Hr_TableSize		= 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
 	m_pGlobalEnv->WeeklyProb		= 1.25;
-	m_pGlobalEnv->Hr_Init_H			= 13;
-	m_pGlobalEnv->Hr_Init_M			= 21;
-	m_pGlobalEnv->Hr_Init_L			= 6;
+	m_pGlobalEnv->Hr_Init_H			= 1;
+	m_pGlobalEnv->Hr_Init_M			= 2;
+	m_pGlobalEnv->Hr_Init_L			= 3;
 	m_pGlobalEnv->Hr_LeadTime		= 3;
 	m_pGlobalEnv->Cash_Init			= 1000;
 	m_pGlobalEnv->ProblemCnt		= 100;

@@ -438,10 +438,10 @@ BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
 		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
 			return FALSE;
 
-		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
+		if (m_totalHR[HR_MID][i] < doingHR[HR_MID][i])
 			return FALSE;
 
-		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
+		if (m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
 			return FALSE;
 	}
 	
@@ -582,21 +582,37 @@ void CCompany::PrintDBData()
 	delete[] tempBuf;
 
 
+	int printRow = 22;
 	// 진행 현황 출력
 	rows = m_doingTable.getRows();
 	cols = m_doingTable.getCols();
-
 	totalSize = rows * cols;  // Total number of elements
 	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
 
 	m_doingTable.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 22, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
+	printRow += rows + 1;
+	delete[] tempBuf;
 
+	////////////////////////////////////////////////	
+	rows = m_doneTable.getRows();
+	cols = m_doneTable.getCols();
+	totalSize = rows * cols;  // Total number of elements
+	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+		
 	m_doneTable.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 34, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
+	printRow += rows + 1;
+	delete[] tempBuf;
+
+	////////////////////////////////////////////////
+	rows = m_defferTable.getRows();
+	cols = m_defferTable.getCols();
+	totalSize = rows * cols;  // Total number of elements
+	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
 
 	m_defferTable.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 46, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
 
 	delete[] tempBuf;
 
