@@ -72,7 +72,9 @@ BOOL CCDissertationDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	// TODO: 여기에 추가 초기화 작업을 추가합니다.	
+	srand((unsigned int)time(NULL));				// 난수 생성기 초기화
+
 	m_pGlobalEnv->SimulationWeeks	= 4 * 36;		// 4주 x 36 개월
 	m_pGlobalEnv->Hr_TableSize		= 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
 	m_pGlobalEnv->WeeklyProb		= 1.25;
@@ -83,7 +85,7 @@ BOOL CCDissertationDlg::OnInitDialog()
 	m_pGlobalEnv->Cash_Init			= 1000;
 	m_pGlobalEnv->ProblemCnt		= 100;
 	m_pGlobalEnv->status			= 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
-
+	m_pGlobalEnv->ExpenseRate		= 1.6;
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -351,9 +353,6 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
-	// 난수 생성기 초기화 ==> 여기도 괜찮치만..  OnInit 에서 해주자.
-	srand((unsigned int)time(NULL));	
-
 	CCompany* company = new CCompany; 
 	company->Init(m_pGlobalEnv, 1, TRUE);
 	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)

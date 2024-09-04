@@ -31,6 +31,11 @@ typedef struct {
 	int		Cash_Init;
 	int		ProblemCnt;
 	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
+	//////////////////////////////////////
+	// 정책을 설정한다.
+	double	ExpenseRate;		//비용계산에 사용되는 제경비 비율
+	double	profitRate;// 프로젝트 총비용 계산에 사용되는 제경비 비율
+
 } GLOBAL_ENV, *PGLOBAL_ENV;
 
 

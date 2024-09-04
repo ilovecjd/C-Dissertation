@@ -524,7 +524,8 @@ void CCompany::AllTableInit(int nWeeks)
 	m_totalHR[HR_LOW][0] = m_freeHR[HR_LOW][0] = m_pGlobalEnv->Hr_Init_L;
 
 	// 소요 비용 계산. 수정시 다음도 수정 필요 CProject::CalculateLaborCost(const std::string& grade)
-	int expenses = (m_pGlobalEnv->Hr_Init_H * 50) + (m_pGlobalEnv->Hr_Init_M * 39 ) + (m_pGlobalEnv->Hr_Init_L * 25 );
+	double rate = m_pGlobalEnv->ExpenseRate;
+	int expenses = (m_pGlobalEnv->Hr_Init_H * 50* rate) + (m_pGlobalEnv->Hr_Init_M * 39* rate) + (m_pGlobalEnv->Hr_Init_L * 25 * rate);
 
 	for (int i = 0; i < nWeeks + ADD_HR_SIZE; i++)
 	{
@@ -673,5 +674,5 @@ int CCompany::CalculateFinalResult()
 	int tempResult = tempTotalIncome- tempTetoalOutcome;
 	
 	//return result;
-	return tempResult;
+	return tempResult; // 기대수익?? 포함 (수주 수익 포함)
 }
