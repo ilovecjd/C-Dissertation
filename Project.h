@@ -14,11 +14,11 @@ public :
 	PRJ_VAR prj_var;
 	
 
-	BOOL Init(int type, int ID, int ODate, PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern);
+	BOOL Init(int type, int ID, int ODate, ALL_ACT_TYPE* pActType, ALL_ACTIVITY_PATTERN* pActPattern);
 	
 private:	
-	PALL_ACT_TYPE m_pActType;
-	PALL_ACTIVITY_PATTERN m_pActPattern;
+	ALL_ACT_TYPE m_ActType;
+	ALL_ACTIVITY_PATTERN m_ActPattern;
 	BOOL CreateActivities();
 	int CalculateHRAndProfit();
 	double CalculateTotalLaborCost(int highCount, int midCount, int lowCount);

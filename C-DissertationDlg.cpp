@@ -383,8 +383,8 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	//m_pGlobalEnv->ProblemCnt = 100;
 	//m_pGlobalEnv->status = 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
 
-	m_pGlobalEnv->pActType = (PALL_ACT_TYPE)actTemp;
-	m_pGlobalEnv->pActPattern = (PALL_ACTIVITY_PATTERN)patternTemp;
+	m_pGlobalEnv->ActType = (ALL_ACT_TYPE*)actTemp;
+	m_pGlobalEnv->ActPattern = (ALL_ACTIVITY_PATTERN*)patternTemp;
 
 	//m_pGlobalEnv->ExpenseRate = 1.6;
 	////m_pGlobalEnv->profitRate = ;
@@ -410,9 +410,7 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 		Decision(i,TRUE,result);
 		weeks = result[0];
 		profit = result[2];
-	}
-
-		
+	}	
 }
 
 void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])

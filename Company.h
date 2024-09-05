@@ -43,18 +43,18 @@ public:
 	void SaveProjectToAhn();
 	void LoadProjectFromAhn();
 		
-	Dynamic2DArray m_orderTable;
+	int** m_orderTable;
 
-	Dynamic2DArray m_doingHR;
-	Dynamic2DArray m_freeHR;
-	Dynamic2DArray m_totalHR;
+	int** m_doingHR;
+	int** m_freeHR;
+	int** m_totalHR;
 	
 	Dynamic2DArray m_doingTable;
 	Dynamic2DArray m_doneTable;
 	Dynamic2DArray m_defferTable;
 
-	Dynamic2DArray m_incomeTable;
-	Dynamic2DArray m_expensesTable;
+	int** m_incomeTable;
+	int** m_expensesTable;
 
 	Dynamic2DArray m_debugInfo;
 	
@@ -67,8 +67,8 @@ public:
 private:
 	PGLOBAL_ENV m_pGlobalEnv;
 	CXLEzAutomation* m_pXl; // 엑셀을 다루기 위한 클래스	
-	PALL_ACT_TYPE	m_pActType;
-	PALL_ACTIVITY_PATTERN m_pActPattern;
+	ALL_ACT_TYPE*	m_pActType;
+	ALL_ACTIVITY_PATTERN* m_pActPattern;
 
 	void AllTableInit(int nWeeks);
 	void PrintDBTitle();

@@ -5,32 +5,20 @@
 
 CProject::CProject()
 {
-	m_pActType = new ALL_ACT_TYPE;
-	m_pActPattern = new ALL_ACTIVITY_PATTERN;	
+	
 }
 
 CProject::~CProject()
 {	
-	delete m_pActType;
-	delete m_pActPattern;
 }
 
-BOOL CProject::Init(int type, int ID, int ODate, PALL_ACT_TYPE pActType, PALL_ACTIVITY_PATTERN pActPattern)
+BOOL CProject::Init(int type, int ID, int ODate, ALL_ACT_TYPE* pActType, ALL_ACTIVITY_PATTERN* pActPattern)
 {
 	// song 한번만 실행되게 하는 코드 추가 필요
-	if (m_pActType == nullptr || pActType == nullptr) {
-		MessageBox(NULL, _T("pActType is NULL."), _T("Error"), MB_OK | MB_ICONERROR);
-		return FALSE;
-	}
-
-	if (m_pActPattern == nullptr || pActPattern == nullptr) {
-		MessageBox(NULL, _T("pActPattern is NULL."), _T("Error"), MB_OK | MB_ICONERROR);
-		return FALSE;
-	}
-	
+		
 	// 시작 가능일 계산
-	std::memcpy(m_pActType,		pActType,	 sizeof(ALL_ACT_TYPE));
-	std::memcpy(m_pActPattern,	pActPattern, sizeof(ALL_ACTIVITY_PATTERN));
+	std::memcpy(&m_ActType,		pActType,	 sizeof(ALL_ACT_TYPE));
+	std::memcpy(&m_ActPattern,	pActPattern, sizeof(ALL_ACTIVITY_PATTERN));
 	
 	prj_var.m_category		= type;		// 프로젝트 분류 (0: 외부 / 1: 내부)
 	prj_var.m_ID			= ID;		// 프로젝트의 번호	
@@ -79,18 +67,17 @@ BOOL CProject::CreateActivities() {
 	////////////////////////////////////////////
 	// 프로젝트 타입관련 정보	
 	for (i = 0; i < maxLoop; ++i) { // 프로젝트 타입을 결정한다
-		UB += m_pActType->asIntArray[i][0];	// 엑셀 2열의 "발생 확률"
+		UB += m_ActType.asIntArray[i][0];	// 엑셀 2열의 "발생 확률"
 
 		if (Lb <= probability && probability < UB) {
 			prj_var.m_projectType = i;
 			break;
 		}
-
 		Lb = UB;
 	}
 	
-	Lb = m_pActType->asIntArray[prj_var.m_projectType][2];	// 엑셀 4열의 "최소기간"
-	UB = m_pActType->asIntArray[prj_var.m_projectType][3];	// 엑셀 5열의 "최대기간"
+	Lb = m_ActType.asIntArray[prj_var.m_projectType][2];	// 엑셀 4열의 "최소기간"
+	UB = m_ActType.asIntArray[prj_var.m_projectType][3];	// 엑셀 5열의 "최대기간"
 
 	totalDuration = RandomBetween(Lb, UB);
 	prj_var.m_duration = totalDuration;
@@ -98,14 +85,14 @@ BOOL CProject::CreateActivities() {
 
 	Lb = 0;
 	UB = 0;
-	maxLoop = m_pActType->asIntArray[prj_var.m_projectType][4];//패턴수
+	maxLoop = m_ActType.asIntArray[prj_var.m_projectType][4];//패턴수
 
 	// 패턴 타입 결정
 	for (i = 0; i < maxLoop; ++i) {
-		UB += m_pActType->asIntArray[prj_var.m_projectType][6 + ((i) * 2)];//1번패턴 확률부터
+		UB += m_ActType.asIntArray[prj_var.m_projectType][6 + ((i) * 2)];//1번패턴 확률부터
 
 		if (Lb <= probability && probability < UB) {
-			prj_var.m_activityPattern = m_pActType->asIntArray[prj_var.m_projectType][5 + ((i) * 2)];//1번패턴 패턴번호부터
+			prj_var.m_activityPattern = m_ActType.asIntArray[prj_var.m_projectType][5 + ((i) * 2)];//1번패턴 패턴번호부터
 			break;
 		}
 		Lb = UB;
@@ -115,13 +102,13 @@ BOOL CProject::CreateActivities() {
 	//프로젝트 패턴 관련 정보
 	Lb = 0;
 	UB = 0;
-	maxLoop = m_pActPattern->asIntArray[prj_var.m_activityPattern-1][0];//활동수 !!! -1 에 주의
+	maxLoop = m_ActPattern.asIntArray[prj_var.m_activityPattern-1][0];//활동수 !!! -1 에 주의
 	prj_var.numActivities = maxLoop;
 
 	// 활동 생성
 	for (i = 0; i < maxLoop; ++i) {
-		Lb += m_pActPattern->asIntArray[prj_var.m_activityPattern-1][1 + ((i) * 5)];// !!! -1 에 주의
-		UB += m_pActPattern->asIntArray[prj_var.m_activityPattern-1][2 + ((i) * 5)];// !!! -1 에 주의
+		Lb += m_ActPattern.asIntArray[prj_var.m_activityPattern-1][1 + ((i) * 5)];// !!! -1 에 주의
+		UB += m_ActPattern.asIntArray[prj_var.m_activityPattern-1][2 + ((i) * 5)];// !!! -1 에 주의
 		probability = RandomBetween(Lb, UB);
 		tempDuration = totalDuration * probability / 100;
 
@@ -334,6 +321,5 @@ void CProject::CalculatePaymentSchedule() {
 		prj_var.m_secondPayMonth = (int)ceil((double)prj_var.m_duration / 2);
 		prj_var.m_finalPayMonth = prj_var.m_duration;
 	}
-
 	prj_var.m_nCashFlows = totalPayments;
 }

@@ -33,7 +33,7 @@ int PoissonRandom(double lambda);
 //////////////////////////////////////////////////////////////////////////
 // activity의 타입에 대한 구조체
 // activity_struct 시트의 cells(3,2) ~ cells(7,14)의 값으로 채워진다.
-typedef struct {
+struct ACT_TYPE {
 
 	int occurrenceRate;     // 타입별 발생 확률 (%)
 	int cumulativeRate;     // 누적 확률 (%)
@@ -43,33 +43,32 @@ typedef struct {
 
 	// 반복되는 패턴 번호와 확률
 	int patterns[4][2];     // 최대 5개의 패턴 번호와 확률을 저장하는 2차원 배열
-
-} ACT_TYPE, *PACT_TYPE; // 구조체 이름과 포인터 타입 별칭
+}; 
 
 // activity의 속성에 대한 구조체와 정수 2차원 배열을 포함하는 유니온 정의
-typedef union {
+union ALL_ACT_TYPE {
 	ACT_TYPE actTypes[5];  // 5개의 타일 발생 데이터를 위한 구조체 배열
 	int asIntArray[5][sizeof(ACT_TYPE) / sizeof(int)];  // 5개의 타일 데이터를 정수 배열로 접근 (2차원 배열)
-} ALL_ACT_TYPE, *PALL_ACT_TYPE;
+} ;
 //////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////
 // activity_struct 시트의 cells(15,2) ~ cells(20,27)의 값으로 채워진다.
 // 각 활동의 기간 비율과 인력 비율 패턴에 대한 구조체 정의
-typedef struct {
+struct ACT_PATTERN {
 	int minDurationRate;   // 최소 기간 비율 (%)
 	int maxDurationRate;   // 최대 기간 비율 (%)
 	int highHR;            // 고 인력 비율 (%)
 	int mediumHR;          // 중 인력 비율 (%)
 	int lowHR;             // 초 인력 비율 (%)
-} ACT_PATTERN,*PACT_PATTERN;
+};
 
 // 모든 활동의 패턴을 포함하는 구조체 정의
-typedef struct {
+struct ALL_ACT_PATTERN {
 	int patternCount;    // 활동 패턴 갯수
 	ACT_PATTERN patterns[5];  // 5개의 활동 패턴
-} ALL_ACT_PATTERN,*PALL_ACT_PATTERN;
+} ;
 
 // 활동 패턴을 정수 2차원 배열로도 접근할 수 있는 유니온 정의
 typedef union {
@@ -115,8 +114,8 @@ typedef struct {
 	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
 								//////////////////////////////////////
 								// 엑셀파일 오픈을 막자
-	PALL_ACT_TYPE pActType;
-	PALL_ACTIVITY_PATTERN pActPattern;
+	ALL_ACT_TYPE* ActType;
+	ALL_ACTIVITY_PATTERN* ActPattern;
 
 	// 정책을 설정한다.
 	double	ExpenseRate;	// 비용계산에 사용되는 제경비 비율
@@ -251,4 +250,12 @@ public:
 		return 0;
 	}
 };
+
+
+int** Newallocate2DArray(int rows, int cols);
+void Newinitialize2DArray(int** array, int rows, int cols, int value);
+void Newdeallocate2DArray(int** array, int rows);
+void Newcopy2DArray(int** source, int** destination, int rows, int cols);
+
+//	int** array = allocate2DArray(rows, cols);
 

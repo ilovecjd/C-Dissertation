@@ -65,8 +65,8 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 
 	//m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 3, 2, (int*)m_pActType, 5, 13);
 	//m_pXl->ReadRangeToArray(WS_NUM_ACTIVITY_STRUCT, 15, 2, (int*)m_pActPattern, 6, 26);
-	*m_pActType = *m_pGlobalEnv->pActType;
-	*m_pActPattern = *m_pGlobalEnv->pActPattern;
+	*m_pActType = *m_pGlobalEnv->ActType;
+	*m_pActPattern = *m_pGlobalEnv->ActPattern;
 	
 	// !!!!!! song --> 프로그램 종료시 배열들의 크기 동적으로 바뀐적이 있는지는 체크하는 루틴을 꼭 넣자
 	AllTableInit(m_pGlobalEnv->SimulationWeeks); //dash boar 용 배열들의 크기 조절	
@@ -230,11 +230,10 @@ BOOL CCompany::LoadProjectsFromExcel()
 	int lastWeek = m_pGlobalEnv->SimulationWeeks;
 	
 	/////////////////////////////////////////////////////////////////////////
-	// 프로젝트 발주(발생) 현황 로드	 
-	int* tempBuf = new int[ORDER_COUNT*lastWeek];
-
-	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, tempBuf, 2, lastWeek);
-	m_orderTable.copyFromContinuousMemory(tempBuf, ORDER_COUNT, lastWeek);
+	// 프로젝트 발주(발생) 현황 로드	 	
+	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, m_orderTable[0], 1, lastWeek);
+	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 4, 2, m_orderTable[1], 1, lastWeek);
+	
 	com_var.m_totalProjectNum = m_orderTable[ORDER_SUM][lastWeek-1] + m_orderTable[ORDER_ORD][lastWeek-1];
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -481,7 +480,8 @@ void CCompany::SelectCandidates(int thisWeek)
 BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
 {
 	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
-	Dynamic2DArray doingHR = m_doingHR;
+	int** doingHR = Newallocate2DArray(3, m_pGlobalEnv->SimulationWeeks+ ADD_HR_SIZE);
+	Newcopy2DArray(m_doingHR, doingHR, 3, m_pGlobalEnv->SimulationWeeks+ ADD_HR_SIZE);
 		
 	// 2중 루프 activity->기간-> 등급업데이트 순서로 activity들을 순서대로 가져온다.
 	int numAct = project->prj_var.numActivities;
@@ -499,15 +499,26 @@ BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
 	for (int i = thisWeek; i < m_pGlobalEnv->SimulationWeeks; i++) 
 	{
 		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i])
+		{
+			Newdeallocate2DArray(doingHR, 3);
 			return FALSE;
+		}
+			
 
 		if (m_totalHR[HR_MID][i] < doingHR[HR_MID][i])
+		{
+			Newdeallocate2DArray(doingHR, 3);
 			return FALSE;
+		}
 
 		if (m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
+		{
+			Newdeallocate2DArray(doingHR, 3);
 			return FALSE;
+		}
 	}
 
+	Newdeallocate2DArray(doingHR, 3);
 	return TRUE;
 }
 
@@ -650,18 +661,18 @@ void CCompany::AddProjectEntry(CProject* project,  int addWeek)
 // dash boar 용 배열들의 크기 조절	
 void CCompany::AllTableInit(int nWeeks)
 {
-	m_orderTable.Resize(2, nWeeks);
+	m_orderTable = Newallocate2DArray(2, nWeeks);
 
-	m_doingHR.Resize(3, nWeeks + ADD_HR_SIZE);
-	m_freeHR.Resize(3, nWeeks + ADD_HR_SIZE);
-	m_totalHR.Resize(3, nWeeks + ADD_HR_SIZE);
+	m_doingHR = Newallocate2DArray(3, nWeeks + ADD_HR_SIZE);
+	m_freeHR = Newallocate2DArray(3, nWeeks + ADD_HR_SIZE);
+	m_totalHR = Newallocate2DArray(3, nWeeks + ADD_HR_SIZE);
 
 	m_doingTable.Resize(11, nWeeks);
 	m_doneTable.Resize(11, nWeeks);
 	m_defferTable.Resize(11, nWeeks);
 
-	m_incomeTable.Resize(1, nWeeks);
-	m_expensesTable.Resize(1, nWeeks);
+	m_incomeTable = Newallocate2DArray(1, nWeeks);
+	m_expensesTable = Newallocate2DArray(1, nWeeks);
 
 
 	// 이건 충원이나 감원쪽에서 필요시 다시 수정하게 된다.	
@@ -696,19 +707,8 @@ void CCompany::PrintDBTitle()
 	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 12, 1, 14, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
 	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 17, 1, 19, lastWeek + 1, xlContinuous, xlThin, RGB(0, 0, 0));
 
-	int rows = m_orderTable.getRows();
-	int cols = m_orderTable.getCols();
-
-	int totalSize = rows * cols;  // Total number of elements
-	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
-	
-	if ((ORDER_COUNT*lastWeek)!=totalSize)
-	{
-		MessageBox(NULL, _T("버퍼 사이즈를 확인하세요"), _T("Error"), MB_OK | MB_ICONERROR);
-		return;
-	}
-	m_orderTable.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, m_orderTable[0], 1, m_pGlobalEnv->SimulationWeeks);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 4, 2, m_orderTable[1], 1, m_pGlobalEnv->SimulationWeeks);
 
 	int* pWeeks = new int[m_pGlobalEnv->SimulationWeeks];
 	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
@@ -735,32 +735,22 @@ void CCompany::PrintDBData()
 	delete[] tempBuf;
 
 	// 다같은 사이즈 이니 한번만 계산해서 사용하자
-	rows = m_doingHR.getRows();
-	cols = m_doingHR.getCols();
 
-	totalSize = rows * cols;  // Total number of elements
-	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
-
-	if (3*(m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE) != totalSize)
-	{
-		MessageBox(NULL, _T("버퍼 사이즈를 확인하세요"), _T("Error"), MB_OK | MB_ICONERROR);
-		return;
-	}
-
+	cols = m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE;
 	
-	// HR 정보 출력
-	m_doingHR.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7+3, 2, tempBuf, rows, cols);
+	// HR 정보 출력	
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7 + 3, 2, m_doingHR[0], 1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7 + 4, 2, m_doingHR[1],1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7 + 5, 2, m_doingHR[2], 1, cols);
 
-	m_freeHR.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12 + 3, 2, tempBuf, rows, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12 + 3, 2, m_freeHR[0], 1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12 + 4, 2, m_freeHR[1], 1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12 + 5, 2, m_freeHR[2], 1, cols);
 
-	m_totalHR.copyToContinuousMemory(tempBuf, totalSize);
-	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17 + 3, 2, tempBuf, rows, cols);
-
-	delete[] tempBuf;
-
-
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17 + 3, 2, m_totalHR[0], 1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17 + 4, 2, m_totalHR[1], 1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17 + 5, 2, m_totalHR[2], 1, cols);
+	
 	int printRow = 22 + 3;
 	// 진행 현황 출력
 	rows = m_doingTable.getRows();
@@ -778,7 +768,7 @@ void CCompany::PrintDBData()
 	cols = m_doneTable.getCols();
 	totalSize = rows * cols;  // Total number of elements
 	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
-		
+
 	m_doneTable.copyToContinuousMemory(tempBuf, totalSize);
 	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
 	printRow += rows + 1;
@@ -794,7 +784,6 @@ void CCompany::PrintDBData()
 	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
 
 	delete[] tempBuf;
-
 }
 
 int CCompany::CalculateFinalResult() 
