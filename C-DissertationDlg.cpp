@@ -398,12 +398,19 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	int weeks = result[0];
 	int profit = result[1];
 
-	for (int i = 1; i <= 10; i++)
+	// 바이너리 저장 테스트
+	CCompany* company = new CCompany;
+	company->Init(m_pGlobalEnv, 1, TRUE);
+	company->SaveProjectToAhn();
+	company->LoadProjectFromAhn();
+	delete company;
+
+	/*for (int i = 1; i <= 10; i++)
 	{
 		Decision(i,TRUE,result);
 		weeks = result[0];
 		profit = result[2];
-	}
+	}*/
 
 		
 }

@@ -35,6 +35,9 @@ public:
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
 	
+	void SaveProjectToAhn();
+	void LoadProjectFromAhn();
+
 	int				m_ID;
 	Dynamic2DArray m_orderTable;
 
