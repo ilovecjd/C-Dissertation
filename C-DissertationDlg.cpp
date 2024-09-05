@@ -394,30 +394,43 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
 	m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
 
-	CCompany* company = new CCompany; 
-	company->Init(m_pGlobalEnv, 1, TRUE);
-
-	int i = 0;
-	while ( i < m_pGlobalEnv->SimulationWeeks)
-	{
-		if (FALSE == company->Decision(i) )  // i번째 기간에 결정해야 할 일들		
-			i = m_pGlobalEnv->SimulationWeeks+1;
-
-		i++;
-	}
-
-	int result[2];
-	company->CalculateFinalResult(result);
-	
+	int result[3];
 	int weeks = result[0];
 	int profit = result[1];
 
-		
-	if(company)
+	for (int i = 1; i <= 10; i++)
 	{
-		delete company;	
+		Decision(i,TRUE,result);
+		weeks = result[0];
+		profit = result[2];
 	}
+
 		
+}
+
+void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])
+{
+	CCompany* company = new CCompany;
+	company->Init(m_pGlobalEnv, id, shouldLoad);
+
+	int i = 0;
+	while (i < m_pGlobalEnv->SimulationWeeks)
+	{
+		if (FALSE == company->Decision(i))  // i번째 기간에 결정해야 할 일들		
+			i = m_pGlobalEnv->SimulationWeeks + 1;
+
+		i++;
+	}
+	
+	int profit = company->CalculateFinalResult();
+	result[0] = company->m_ID;
+	result[1] = company->m_lastDecisionWeek;
+	result[2] = profit;
+
+	if (company)
+	{
+		delete company;
+	}
 }
 
 void CCDissertationDlg::OnBnClickedSimulationStart()

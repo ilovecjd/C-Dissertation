@@ -57,6 +57,8 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 		MessageBox(NULL, _T("pGlobalEnv is NULL."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
+
+	m_ID = Id;
 	/////////////////////////////////////////////////////////////////////////
 	// 전달 받은 환경 변수를 Company 로 복사
 	*m_pGlobalEnv = *pGlobalEnv;	
@@ -795,7 +797,7 @@ void CCompany::PrintDBData()
 
 }
 
-void CCompany::CalculateFinalResult(int retValue[2]) 
+int CCompany::CalculateFinalResult() 
 {
 	int result = m_pGlobalEnv->Cash_Init;
 
@@ -817,9 +819,7 @@ void CCompany::CalculateFinalResult(int retValue[2])
 	int tempResult = tempTotalIncome- tempTetoalOutcome;
 	*/
 	//return result;
-	//return tempResult; // 기대수익?? 포함 (수주 수익 포함)
-	retValue[0] = m_lastDecisionWeek;
-	retValue[2]= result;
-	return;
+	//return tempResult; // 기대수익?? 포함 (수주 수익 포함)	
+	return result;
 }
 

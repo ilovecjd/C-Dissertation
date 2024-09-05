@@ -33,9 +33,9 @@ public:
 	BOOL CreateProjects();
 
 	BOOL Decision(int thisWeek);
-	void CalculateFinalResult(int result[2]);
+	int CalculateFinalResult();
 	
-
+	int				m_ID;
 	Dynamic2DArray m_orderTable;
 
 	Dynamic2DArray m_doingHR;
