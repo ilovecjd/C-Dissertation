@@ -1,7 +1,7 @@
 ﻿
 #include "stdafx.h"
-#include "C-Dissertation.h"
 #include "GlobalEnv.h"
+#include "C-Dissertation.h"
 #include "XLEzAutomation.h"
 #include "Company.h"
 #include "Project.h"
@@ -58,7 +58,7 @@ BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
 		return FALSE;
 	}
 
-	m_ID = Id;
+	com_var.m_ID = Id;
 	/////////////////////////////////////////////////////////////////////////
 	// 전달 받은 환경 변수를 Company 로 복사
 	*m_pGlobalEnv = *pGlobalEnv;	
@@ -96,60 +96,60 @@ void CCompany::PrintProjectInfo(SheetName sheet, CProject* pProject) {
 
 	// 첫 번째 행 설정	
 	posX = 0; posY = 0;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_category;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_ID;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_duration;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_startAvail;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_endDate;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_orderDate;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->m_profit);
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_experience;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_winProb;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_category;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_ID;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_duration;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_startAvail;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_endDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_orderDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->prj_var.m_profit);
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_experience;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_winProb;
 
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_nCashFlows;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[0];
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[1];
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_cashFlows[2];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_nCashFlows;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_cashFlows[0];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_cashFlows[1];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_cashFlows[2];
 
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_firstPay;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_secondPay;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_finalPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_firstPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_secondPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_finalPay;
 
 	
 	// 두 번째 행 설정
 	posX = 0; posY = 1;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numActivities;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.numActivities;
 
 	posX = 10;  // 빈 칸을 건너뛰기
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_firstPayMonth;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_secondPayMonth;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_finalPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_firstPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_secondPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_finalPayMonth;
 	
 	posX = 14;  // 빈 칸을 건너뛰기
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_projectType;
-	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activityPattern;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_projectType;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activityPattern;
 	
 	// 활동 데이터 설정
-	for (int i = 0; i < pProject->numActivities; ++i) {
+	for (int i = 0; i < pProject->prj_var.numActivities; ++i) {
 		// 인덱스를 문자열로 변환하고 "Activity" 접두사 추가
 		CString strAct;		
 		strAct.Format(_T("Activity%02d"), i + 1);
 
 		posX = 1; // 엑셀의 2행 2열부터 적는다.
 		projectInfo[posY][posX].vt = VT_BSTR; projectInfo[posY][posX++].bstrVal = strAct.AllocSysString();
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].duration;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].startDate;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].endDate;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activities[i].duration;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activities[i].startDate;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activities[i].endDate;
 
 		posX = 6;  // 두 열 건너뛰기
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].highSkill;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].midSkill;
-		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->m_activities[i].lowSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activities[i].highSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activities[i].midSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->prj_var.m_activities[i].lowSkill;
 
 		posY++;
 	}
 
-	int printY = 4 + (pProject->m_ID -1)*iHeight;
+	int printY = 4 + (pProject->prj_var.m_ID -1)*iHeight;
 	m_pXl->WriteArrayToRange(sheet, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
 	m_pXl->SetRangeBorderAround(sheet, printY, 1, printY + iHeight-1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
 }
@@ -169,7 +169,7 @@ BOOL CCompany::CreateProjects()
 		m_orderTable[ORDER_ORD][week] = cnt;			// 발생 프로젝트갯수
 		sum = sum + cnt;	// 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다.
 	}
-	m_totalProjectNum = sum;
+	com_var.m_totalProjectNum = sum;
 	PrintDBTitle();
 
 	/////////////////////////////////////////////////////////////////////////
@@ -235,7 +235,7 @@ BOOL CCompany::LoadProjectsFromExcel()
 
 	m_pXl->ReadRangeToArray(WS_NUM_DASHBOARD, 3, 2, tempBuf, 2, lastWeek);
 	m_orderTable.copyFromContinuousMemory(tempBuf, ORDER_COUNT, lastWeek);
-	m_totalProjectNum = m_orderTable[ORDER_SUM][lastWeek-1] + m_orderTable[ORDER_ORD][lastWeek-1];
+	com_var.m_totalProjectNum = m_orderTable[ORDER_SUM][lastWeek-1] + m_orderTable[ORDER_ORD][lastWeek-1];
 	
 	/////////////////////////////////////////////////////////////////////////
 	// project 시트에 헤더 출력
@@ -245,14 +245,14 @@ BOOL CCompany::LoadProjectsFromExcel()
 	// song ==> project 의 생성자와 소멸자, init 함수를 확인해 놓자.
 	
 	// song ==> NULL 체크 하자
-	m_AllProjects = new CProject*[m_totalProjectNum];
+	m_AllProjects = new CProject*[com_var.m_totalProjectNum];
 	int* pProjectInfo;
 
-	LONG lInfoSize = 7 * m_totalProjectNum * 16;
+	LONG lInfoSize = 7 * com_var.m_totalProjectNum * 16;
 	pProjectInfo = new int[lInfoSize];
-	m_pXl->ReadExRangeConvertInt(WS_NUM_PROJECT, 4, 1, pProjectInfo, m_totalProjectNum * 7, 16);
+	m_pXl->ReadExRangeConvertInt(WS_NUM_PROJECT, 4, 1, pProjectInfo, com_var.m_totalProjectNum * 7, 16);
 
-	for (int i = 0; i < m_totalProjectNum; i++)
+	for (int i = 0; i < com_var.m_totalProjectNum; i++)
 	{	
 		LONG lBaseAddress = 0;
 		LONG lTemp = 0;
@@ -263,53 +263,53 @@ BOOL CCompany::LoadProjectsFromExcel()
 		pTempPrj = new CProject;
 		
 		// 첫 번째 행 설정			
-		pTempPrj->m_category		= *(pProjectInfo+lBaseAddress++);
-		pTempPrj->m_ID				= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_duration		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_startAvail		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_endDate			= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_orderDate		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_profit			= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_experience		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_winProb			= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_category		= *(pProjectInfo+lBaseAddress++);
+		pTempPrj->prj_var.m_ID				= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_duration		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_startAvail		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_endDate			= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_orderDate		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_profit			= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_experience		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_winProb			= *(pProjectInfo + lBaseAddress++);
 		
-		pTempPrj->m_nCashFlows		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_cashFlows[0]	= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_cashFlows[1]	= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_cashFlows[2]	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_nCashFlows		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_cashFlows[0]	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_cashFlows[1]	= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_cashFlows[2]	= *(pProjectInfo + lBaseAddress++);
 		
-		pTempPrj->m_firstPay		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_secondPay		= *(pProjectInfo + lBaseAddress++);
-		pTempPrj->m_finalPay		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_firstPay		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_secondPay		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.m_finalPay		= *(pProjectInfo + lBaseAddress++);
 
 		// 두 번째 행 
 		lTemp = lBaseAddress;
 
-		pTempPrj->numActivities		= *(pProjectInfo + lBaseAddress++);
+		pTempPrj->prj_var.numActivities		= *(pProjectInfo + lBaseAddress++);
 		
 		// 활동 데이터 설정
-		for (int j = 0; j < pTempPrj->numActivities; j++)
+		for (int j = 0; j < pTempPrj->prj_var.numActivities; j++)
 		{
 			lBaseAddress += 1;// 빈 칸을 건너뛰기 (Activity01)
-			pTempPrj->m_activities[j].duration = *(pProjectInfo + lBaseAddress++);
-			pTempPrj->m_activities[j].startDate = *(pProjectInfo + lBaseAddress++);
-			pTempPrj->m_activities[j].endDate = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->prj_var.m_activities[j].duration = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->prj_var.m_activities[j].startDate = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->prj_var.m_activities[j].endDate = *(pProjectInfo + lBaseAddress++);
 			
 			lBaseAddress += 1;  // 빈 칸을 건너뛰기
-			pTempPrj->m_activities[j].highSkill = *(pProjectInfo + lBaseAddress++);
-			pTempPrj->m_activities[j].midSkill = *(pProjectInfo + lBaseAddress++);
-			pTempPrj->m_activities[j].lowSkill = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->prj_var.m_activities[j].highSkill = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->prj_var.m_activities[j].midSkill = *(pProjectInfo + lBaseAddress++);
+			pTempPrj->prj_var.m_activities[j].lowSkill = *(pProjectInfo + lBaseAddress++);
 
 			if (j == 0)
 			{
 				lBaseAddress += 1;  // 빈 칸을 건너뛰기
-				pTempPrj->m_firstPayMonth = *(pProjectInfo + lBaseAddress++);
-				pTempPrj->m_secondPayMonth = *(pProjectInfo + lBaseAddress++);
-				pTempPrj->m_finalPayMonth = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->prj_var.m_firstPayMonth = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->prj_var.m_secondPayMonth = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->prj_var.m_finalPayMonth = *(pProjectInfo + lBaseAddress++);
 
 				lBaseAddress += 1;  // 빈 칸을 건너뛰기
-				pTempPrj->m_projectType = *(pProjectInfo + lBaseAddress++);
-				pTempPrj->m_activityPattern = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->prj_var.m_projectType = *(pProjectInfo + lBaseAddress++);
+				pTempPrj->prj_var.m_activityPattern = *(pProjectInfo + lBaseAddress++);
 
 				lBaseAddress += 1;  // 빈 칸을 건너뛰기
 			}
@@ -319,7 +319,7 @@ BOOL CCompany::LoadProjectsFromExcel()
 			}
 		}
 
-		pTempPrj->m_isStart = 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+		pTempPrj->prj_var.m_isStart = 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
 		
 		m_AllProjects[i] = pTempPrj;
 		// 디버깅 때만 사용 ==> PrintProjectInfo(WS_NUM_DEBUG_INFO, pTempPrj);
@@ -335,12 +335,12 @@ BOOL CCompany::LoadProjectsFromExcel()
 // 이번 기간에 결정할 일들. 프로젝트의 신규진행, 멈춤, 인원증감 결정
 BOOL CCompany::Decision(int thisWeek ) {
 
-	m_lastDecisionWeek = thisWeek;
+	com_var.m_lastDecisionWeek = thisWeek;
 	// 1. 지난주에 진행중인 프로젝트중 완료되지 않은 프로젝트들만 이번주로 이관
 	if (FALSE == CheckLastWeek(thisWeek))
 	{
 		//파산		
-		return FALSE;
+		//return FALSE;
 	}
 
 	// 2. 진행 가능한 후보프로젝트들을  candidateTable에 모은다
@@ -377,9 +377,9 @@ BOOL CCompany::CheckLastWeek(int thisWeek )
 		// 2. 지출을 계산한다.
 		//' 3. 진행중인 프로젝트를 이관해서 기록한다.
 		int sum = m_doingTable[ORDER_SUM][thisWeek];
-		if (thisWeek < (project->m_isStart + project->m_duration - 1)) // ' 아직 안끝났으면
+		if (thisWeek < (project->prj_var.m_isStart + project->prj_var.m_duration - 1)) // ' 아직 안끝났으면
 		{			
-			m_doingTable[sum + 1][thisWeek] = project->m_ID;// 테이블 크기는 자동으로 변경된다.
+			m_doingTable[sum + 1][thisWeek] = project->prj_var.m_ID;// 테이블 크기는 자동으로 변경된다.
 			m_doingTable[ORDER_SUM][thisWeek] = sum + 1;
 		}
 	}
@@ -392,12 +392,12 @@ BOOL CCompany::CheckLastWeek(int thisWeek )
 	{
 		Cash += (m_incomeTable[0][i] - m_expensesTable[0][i]);
 	}
-	if (Cash<0)// 파산
-	{
-		return FALSE;
-	}
+	//if (Cash<0)// 파산
+	//{
+	//	return FALSE;
+	//}
 
-	if (3 < thisWeek)
+	if (1003 < thisWeek)
 	{
 		/// 인원 증감을 결정하자.
 		int temp = m_expensesTable[0][thisWeek] * m_pGlobalEnv->recruit;
@@ -473,7 +473,7 @@ void CCompany::SelectCandidates(int thisWeek)
 
 		if (IsEnoughHR(thisWeek, project)) // 인원 체크
 		{
-			m_candidateTable[j++] = project->m_ID;
+			m_candidateTable[j++] = project->prj_var.m_ID;
 		}
 	}
 }
@@ -484,10 +484,10 @@ BOOL CCompany::IsEnoughHR(int thisWeek, CProject* project)
 	Dynamic2DArray doingHR = m_doingHR;
 		
 	// 2중 루프 activity->기간-> 등급업데이트 순서로 activity들을 순서대로 가져온다.
-	int numAct = project->numActivities;
+	int numAct = project->prj_var.numActivities;
 	for (int i = 0 ; i < numAct ;i++)
 	{
-		PACTIVITY pActivity = &(project->m_activities[i]);
+		PACTIVITY pActivity = &(project->prj_var.m_activities[i]);
 		for (int j = 0; j < pActivity->duration; j++)
 		{
 			doingHR[HR_HIG][j + pActivity->startDate] += pActivity->highSkill;
@@ -548,23 +548,23 @@ void CCompany::SelectNewProject(int thisWeek)
 	while (m_candidateTable[j] != 0) {
 		int id = m_candidateTable[j];
 		CProject* project = m_AllProjects[id - 1];
-		valueArray[j] = project->m_profit;
+		valueArray[j] = project->prj_var.m_profit;
 		j = j + 1;
 	}
 	
-	switch (m_pGlobalEnv->selectOrder)
-	{
-	case 1: // 발생 순서대로
-		break;
-	case 2:
-		sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 내림차순 정렬	
-		break;
-	case 3:
-		sortArrayDescending(m_candidateTable, valueArray, j); // 금액 오름차순 정렬	
-		break;
-	default : 
-		break;
-	}
+	//switch (m_pGlobalEnv->selectOrder)
+	//{
+	//case 1: // 발생 순서대로
+	//	break;
+	//case 2:
+	//	sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 내림차순 정렬	
+	//	break;
+	//case 3:
+	//	sortArrayDescending(m_candidateTable, valueArray, j); // 금액 오름차순 정렬	
+	//	break;
+	//default : 
+	//	break;
+	//}
 	
 	
 
@@ -578,7 +578,7 @@ void CCompany::SelectNewProject(int thisWeek)
 
 		CProject* project = m_AllProjects[id-1];
 
-		if (project->m_startAvail < m_pGlobalEnv->SimulationWeeks)
+		if (project->prj_var.m_startAvail < m_pGlobalEnv->SimulationWeeks)
 		{
 			if (IsEnoughHR(thisWeek,project))
 			{	
@@ -586,12 +586,12 @@ void CCompany::SelectNewProject(int thisWeek)
 
 				///int lows = m_debugInfo.getRows();
 				
-				int tempTotal = project->m_firstPay + project->m_secondPay + project->m_finalPay;
+				int tempTotal = project->prj_var.m_firstPay + project->prj_var.m_secondPay + project->prj_var.m_finalPay;
 
 				int cols = m_debugInfo.getCols();
 				m_debugInfo.Resize(2, cols+1);
 
-				m_debugInfo[0][cols] = project->m_ID;
+				m_debugInfo[0][cols] = project->prj_var.m_ID;
 				m_debugInfo[1][cols] = tempTotal;
 
 			}
@@ -603,14 +603,14 @@ void CCompany::SelectNewProject(int thisWeek)
 // 단지 변수들만 셑팅하자.
 void CCompany::AddProjectEntry(CProject* project,  int addWeek)
 {	
-	project->m_isStart = project->m_startAvail;
+	project->prj_var.m_isStart = project->prj_var.m_startAvail;
 
 	// HR 정보 업데이트
 	// 2중 루프 activity->기간-> 등급업데이트 순서로 activity들을 순서대로 가져온다.
-	int numAct = project->numActivities;
+	int numAct = project->prj_var.numActivities;
 	for (int i = 0; i < numAct; i++)
 	{
-		PACTIVITY pActivity = &(project->m_activities[i]);
+		PACTIVITY pActivity = &(project->prj_var.m_activities[i]);
 		for (int j = 0; j < pActivity->duration; j++)
 		{
 			int col = j + pActivity->startDate;
@@ -626,24 +626,24 @@ void CCompany::AddProjectEntry(CProject* project,  int addWeek)
 
 	// 현황판 업데이트
 	int sum = m_doingTable[0][addWeek];
-	m_doingTable[sum + 1][addWeek] = project->m_ID;
+	m_doingTable[sum + 1][addWeek] = project->prj_var.m_ID;
 	m_doingTable[0][addWeek] = sum + 1;
 
 	// 수입 테이블 업데이트. 지출은 인원 관리쪽에서 한다.	
 	int incomeDate;
 
-	if (project->m_isStart <addWeek)
+	if (project->prj_var.m_isStart <addWeek)
 	{
 		MessageBox(NULL, _T("m_isStart miss"), _T("Error"), MB_OK | MB_ICONERROR);
 	}
-	incomeDate = project->m_isStart + project->m_firstPayMonth;	// 선금 지급일
-	m_incomeTable[0][incomeDate] += project->m_firstPay;
+	incomeDate = project->prj_var.m_isStart + project->prj_var.m_firstPayMonth;	// 선금 지급일
+	m_incomeTable[0][incomeDate] += project->prj_var.m_firstPay;
 	
-	incomeDate = project->m_isStart + project->m_secondPayMonth;	// 2차 지급일
-	m_incomeTable[0][incomeDate] += project->m_secondPay;
+	incomeDate = project->prj_var.m_isStart + project->prj_var.m_secondPayMonth;	// 2차 지급일
+	m_incomeTable[0][incomeDate] += project->prj_var.m_secondPay;
 
-	incomeDate = project->m_isStart + project->m_finalPayMonth;	// 3차 지급일
-	m_incomeTable[0][incomeDate] += project->m_finalPay;
+	incomeDate = project->prj_var.m_isStart + project->prj_var.m_finalPayMonth;	// 3차 지급일
+	m_incomeTable[0][incomeDate] += project->prj_var.m_finalPay;
 }
 
 
@@ -801,7 +801,7 @@ int CCompany::CalculateFinalResult()
 {
 	int result = m_pGlobalEnv->Cash_Init;
 
-	for (int i = 0; i < m_lastDecisionWeek; i++)
+	for (int i = 0; i < com_var.m_lastDecisionWeek; i++)
 	{
 		result += (m_incomeTable[0][i]- m_expensesTable[0][i]);
 	}
@@ -834,7 +834,8 @@ int CCompany::CalculateFinalResult()
 프로젝트갯수
 프로젝트
 */
-void CCompany::SaveProjectToAhn()
+void CCompany::SaveProjectToAhn() { return; }
+/*void CCompany::SaveProjectToAhn()
 {
 #define SIGNITURE		{'A','H','N','1'} //pack 사용하지 않게 4바이트 정렬
 #define TYPE_UNKNOWN		0
@@ -915,10 +916,10 @@ void CCompany::SaveProjectToAhn()
 	fclose(fp);
 	fp = nullptr;
 
-}
+}*/
+void CCompany::LoadProjectFromAhn() { return; }
 
-
-void CCompany::LoadProjectFromAhn()
+/*void CCompany::LoadProjectFromAhn()
 {
 #define SIGNITURE		{'A','H','N','1'} //pack 사용하지 않게 4바이트 정렬
 #define TYPE_UNKNOWN		0
@@ -1074,3 +1075,4 @@ void CCompany::LoadProjectFromAhn()
 	free(buffer);
 	fclose(fp);	fp = nullptr;
 }
+*/

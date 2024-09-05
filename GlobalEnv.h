@@ -16,9 +16,17 @@
 
 #define MAX_CANDIDATES 50
 #define ADD_HR_SIZE 80
-//int** allocAndInit2DArray(int rows, int cols);
-//int** del2DArray(int** array, int rows);
+
 int PoissonRandom(double lambda);
+
+// project 에서 사용
+#define MAX_N_CF  3
+#define MAX_PRJ_TYPE 5
+#define MAX_ACT  4
+
+#define RND_HR_H  20
+#define RND_HR_M  70
+
 
 // company 에서 사용
 
@@ -105,7 +113,6 @@ typedef struct {
 	int		Cash_Init;
 	int		ProblemCnt;
 	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
-
 								//////////////////////////////////////
 								// 엑셀파일 오픈을 막자
 	PALL_ACT_TYPE pActType;
@@ -123,21 +130,52 @@ typedef struct {
 } GLOBAL_ENV, *PGLOBAL_ENV;
 
 
-extern LPOLESTR gSheetNames[WS_NUM_SHEET_COUNT];// = { L"parameters", L"dashboard", L"project", L"activity_struct", L"debuginfo" };
+struct COM_VAR{
+	GLOBAL_ENV ge;
+	int				m_ID;
+	int m_lastDecisionWeek = 0;
+	int		m_totalProjectNum;
 
-class GlobalEnv
-{
-
-private :
-
-	bool bIsInit;						// init 함수가 한번만 호출되게	
-
-public:
-	GlobalEnv();
-	~GlobalEnv();
-
-	bool Init();	
 };
+
+struct PRJ_VAR {
+	// 프로젝트 속성
+	ACTIVITY m_activities[MAX_ACT]; // 활동에 관한 정보를 기록하는 배열
+
+	// Init 함수에서 초기화
+	int m_category;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	int m_ID;			// 프로젝트의 번호
+	int m_orderDate;	// 발주일
+	int m_startAvail;	// 시작 가능일
+	int m_isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+	int m_experience;	// 경험 (0: 무경험 1: 유경험)
+	int m_winProb;		// 성공 확률
+	int m_nCashFlows;	// 비용 지급 횟수
+
+	// CreateActivities 함수에서 초기화
+	int m_endDate;		// 프로젝트 종료일
+	int m_duration;		// 프로젝트의 총 기간
+
+						// 
+	int m_profit;	// 총 기대 수익 (HR 종속)
+
+	// 현금 흐름
+	int m_cashFlows[MAX_N_CF];	// 용역비를 받는 비율을 기록하는 배열
+	int m_firstPay;		// 선금 액수
+	int m_secondPay;		// 2차 지급 액수
+	int m_finalPay;		// 3차 지급 액수
+	int m_firstPayMonth;	// 선금 지급일
+	int m_secondPayMonth;	// 2차 지급일
+	int m_finalPayMonth;	// 3차 지급일
+
+							// 활동
+	int numActivities;          // 총 활동 수//    std::array<Activity, MAX_ACT> m_activities; // 활동에 관한 정보를 기록하는 배열
+
+								// 참고용변수
+	int m_projectType;		// activity_struct 시트의 어느 타입의 프로젝트인가
+	int m_activityPattern;	// activity_struct 시트의 어느 패턴인가
+};
+
 
 class Dynamic2DArray {
 private:

@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include "globalenv.h"
+
+
+
 // Order Tabe index for easy reference
 enum OrderIndex{
 	ORDER_SUM = 0,
@@ -17,6 +21,7 @@ enum HRIndex {
 
 
 class CProject;
+
 
 class CCompany
 {
@@ -37,8 +42,7 @@ public:
 	
 	void SaveProjectToAhn();
 	void LoadProjectFromAhn();
-
-	int				m_ID;
+		
 	Dynamic2DArray m_orderTable;
 
 	Dynamic2DArray m_doingHR;
@@ -53,12 +57,12 @@ public:
 	Dynamic2DArray m_expensesTable;
 
 	Dynamic2DArray m_debugInfo;
-
-	int m_lastDecisionWeek = 0;
-
+	
 	//MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화
-	int		m_totalProjectNum;
+	
 	CProject** m_AllProjects;
+
+	COM_VAR com_var;
 
 private:
 	PGLOBAL_ENV m_pGlobalEnv;

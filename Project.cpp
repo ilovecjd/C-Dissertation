@@ -32,17 +32,17 @@ BOOL CProject::Init(int type, int ID, int ODate, PALL_ACT_TYPE pActType, PALL_AC
 	std::memcpy(m_pActType,		pActType,	 sizeof(ALL_ACT_TYPE));
 	std::memcpy(m_pActPattern,	pActPattern, sizeof(ALL_ACTIVITY_PATTERN));
 	
-	m_category		= type;		// 프로젝트 분류 (0: 외부 / 1: 내부)
-	m_ID			= ID;		// 프로젝트의 번호	
-	m_orderDate		= ODate;	// 발주일
-	m_startAvail	= ODate + (rand() % 4);  // // 시작 가능일 ( 0에서 3 사이의 정수 난수 생성)
-	m_isStart		= 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
-	m_experience	= ZeroOrOneByProb(95);	// 경험 (0: 무경험 1: 유경험)
-	m_winProb		= 100;		// 성공 확률 song ==> 추후 사용시 생성 방법을 결정한다. 현재는 100%
-	m_nCashFlows	= MAX_N_CF;	// 비용 지급 횟수(규모에 따라 변경 가능)
+	prj_var.m_category		= type;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	prj_var.m_ID			= ID;		// 프로젝트의 번호	
+	prj_var.m_orderDate		= ODate;	// 발주일
+	prj_var.m_startAvail	= ODate + (rand() % 4);  // // 시작 가능일 ( 0에서 3 사이의 정수 난수 생성)
+	prj_var.m_isStart		= 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+	prj_var.m_experience	= ZeroOrOneByProb(95);	// 경험 (0: 무경험 1: 유경험)
+	prj_var.m_winProb		= 100;		// 성공 확률 song ==> 추후 사용시 생성 방법을 결정한다. 현재는 100%
+	prj_var.m_nCashFlows	= MAX_N_CF;	// 비용 지급 횟수(규모에 따라 변경 가능)
 
 	CreateActivities();					//m_activities[MAX_ACT] 계산
-	m_profit = CalculateHRAndProfit();
+	prj_var.m_profit = CalculateHRAndProfit();
 	CalculatePaymentSchedule();			//m_cashFlows[MAX_N_CF] 계산
 	return TRUE;
 }
@@ -82,30 +82,30 @@ BOOL CProject::CreateActivities() {
 		UB += m_pActType->asIntArray[i][0];	// 엑셀 2열의 "발생 확률"
 
 		if (Lb <= probability && probability < UB) {
-			m_projectType = i;
+			prj_var.m_projectType = i;
 			break;
 		}
 
 		Lb = UB;
 	}
 	
-	Lb = m_pActType->asIntArray[m_projectType][2];	// 엑셀 4열의 "최소기간"
-	UB = m_pActType->asIntArray[m_projectType][3];	// 엑셀 5열의 "최대기간"
+	Lb = m_pActType->asIntArray[prj_var.m_projectType][2];	// 엑셀 4열의 "최소기간"
+	UB = m_pActType->asIntArray[prj_var.m_projectType][3];	// 엑셀 5열의 "최대기간"
 
 	totalDuration = RandomBetween(Lb, UB);
-	m_duration = totalDuration;
-	m_endDate = m_startAvail + totalDuration - 1;// song??
+	prj_var.m_duration = totalDuration;
+	prj_var.m_endDate = prj_var.m_startAvail + totalDuration - 1;// song??
 
 	Lb = 0;
 	UB = 0;
-	maxLoop = m_pActType->asIntArray[m_projectType][4];//패턴수
+	maxLoop = m_pActType->asIntArray[prj_var.m_projectType][4];//패턴수
 
 	// 패턴 타입 결정
 	for (i = 0; i < maxLoop; ++i) {
-		UB += m_pActType->asIntArray[m_projectType][6 + ((i) * 2)];//1번패턴 확률부터
+		UB += m_pActType->asIntArray[prj_var.m_projectType][6 + ((i) * 2)];//1번패턴 확률부터
 
 		if (Lb <= probability && probability < UB) {
-			m_activityPattern = m_pActType->asIntArray[m_projectType][5 + ((i) * 2)];//1번패턴 패턴번호부터
+			prj_var.m_activityPattern = m_pActType->asIntArray[prj_var.m_projectType][5 + ((i) * 2)];//1번패턴 패턴번호부터
 			break;
 		}
 		Lb = UB;
@@ -115,13 +115,13 @@ BOOL CProject::CreateActivities() {
 	//프로젝트 패턴 관련 정보
 	Lb = 0;
 	UB = 0;
-	maxLoop = m_pActPattern->asIntArray[m_activityPattern-1][0];//활동수 !!! -1 에 주의
-	numActivities = maxLoop;
+	maxLoop = m_pActPattern->asIntArray[prj_var.m_activityPattern-1][0];//활동수 !!! -1 에 주의
+	prj_var.numActivities = maxLoop;
 
 	// 활동 생성
 	for (i = 0; i < maxLoop; ++i) {
-		Lb += m_pActPattern->asIntArray[m_activityPattern-1][1 + ((i) * 5)];// !!! -1 에 주의
-		UB += m_pActPattern->asIntArray[m_activityPattern-1][2 + ((i) * 5)];// !!! -1 에 주의
+		Lb += m_pActPattern->asIntArray[prj_var.m_activityPattern-1][1 + ((i) * 5)];// !!! -1 에 주의
+		UB += m_pActPattern->asIntArray[prj_var.m_activityPattern-1][2 + ((i) * 5)];// !!! -1 에 주의
 		probability = RandomBetween(Lb, UB);
 		tempDuration = totalDuration * probability / 100;
 
@@ -130,24 +130,24 @@ BOOL CProject::CreateActivities() {
 		}
 
 		if (i == 0) {
-			m_activities[i].duration = tempDuration;
-			m_activities[i].startDate = m_startAvail;
-			m_activities[i].endDate = m_startAvail - 1 + tempDuration;
+			prj_var.m_activities[i].duration = tempDuration;
+			prj_var.m_activities[i].startDate = prj_var.m_startAvail;
+			prj_var.m_activities[i].endDate = prj_var.m_startAvail - 1 + tempDuration;
 		}
 		else if (i == 1) {
-			m_activities[i].duration = totalDuration - m_activities[0].duration;
-			m_activities[i].startDate = m_activities[0].endDate + 1;
-			m_activities[i].endDate = m_startAvail - 1 + totalDuration;
+			prj_var.m_activities[i].duration = totalDuration - prj_var.m_activities[0].duration;
+			prj_var.m_activities[i].startDate = prj_var.m_activities[0].endDate + 1;
+			prj_var.m_activities[i].endDate = prj_var.m_startAvail - 1 + totalDuration;
 		}
 		else if (i == 2) {
-			m_activities[i].duration = tempDuration;
-			m_activities[i].startDate = m_startAvail - 1 + totalDuration - tempDuration + 1;
-			m_activities[i].endDate = m_startAvail - 1 + totalDuration;
+			prj_var.m_activities[i].duration = tempDuration;
+			prj_var.m_activities[i].startDate = prj_var.m_startAvail - 1 + totalDuration - tempDuration + 1;
+			prj_var.m_activities[i].endDate = prj_var.m_startAvail - 1 + totalDuration;
 		}
 		else {
-			m_activities[i].duration = tempDuration;
-			m_activities[i].startDate = m_activities[2].startDate - tempDuration;
-			m_activities[i].endDate = m_activities[2].startDate - 1;
+			prj_var.m_activities[i].duration = tempDuration;
+			prj_var.m_activities[i].startDate = prj_var.m_activities[2].startDate - tempDuration;
+			prj_var.m_activities[i].endDate = prj_var.m_activities[2].startDate - 1;
 		}
 	}
 	return TRUE;
@@ -157,29 +157,29 @@ BOOL CProject::CreateActivities() {
 int CProject::CalculateHRAndProfit() {
 	int high = 0, mid = 0, low = 0;
 
-	for (int i = 0; i < numActivities; ++i) {
+	for (int i = 0; i < prj_var.numActivities; ++i) {
 		int j = rand() % 100; // 0부터 99 사이의 랜덤 정수 생성
 		if (0 < j && j <= RND_HR_H) {
-			m_activities[i].highSkill	= 1;
-			m_activities[i].midSkill	= 0;
-			m_activities[i].lowSkill	= 0;
+			prj_var.m_activities[i].highSkill	= 1;
+			prj_var.m_activities[i].midSkill	= 0;
+			prj_var.m_activities[i].lowSkill	= 0;
 		}
 		else if (RND_HR_H < j && j <= RND_HR_M) {
-			m_activities[i].highSkill	= 0;
-			m_activities[i].midSkill	= 1;
-			m_activities[i].lowSkill	= 0;
+			prj_var.m_activities[i].highSkill	= 0;
+			prj_var.m_activities[i].midSkill	= 1;
+			prj_var.m_activities[i].lowSkill	= 0;
 		}
 		else {
-			m_activities[i].highSkill	= 0;
-			m_activities[i].midSkill	= 0;
-			m_activities[i].lowSkill	= 1;
+			prj_var.m_activities[i].highSkill	= 0;
+			prj_var.m_activities[i].midSkill	= 0;
+			prj_var.m_activities[i].lowSkill	= 1;
 		}
 	}
 
-	for (int i = 0; i < numActivities; ++i) {
-		high += m_activities[i].highSkill * m_activities[i].duration;
-		mid +=  m_activities[i].midSkill * m_activities[i].duration;
-		low +=  m_activities[i].lowSkill * m_activities[i].duration;
+	for (int i = 0; i < prj_var.numActivities; ++i) {
+		high += prj_var.m_activities[i].highSkill* prj_var.m_activities[i].duration;
+		mid +=  prj_var.m_activities[i].midSkill * prj_var.m_activities[i].duration;
+		low +=  prj_var.m_activities[i].lowSkill * prj_var.m_activities[i].duration;
 	}
 
 	return CalculateTotalLaborCost(high, mid, low);
@@ -237,37 +237,37 @@ void CProject::CalculatePaymentSchedule() {
 	int paymentRatio;
 	int totalPayments;
 
-	m_firstPayMonth = 1;
+	prj_var.m_firstPayMonth = 1;
 	
 	// 6주 이하의 짧은 프로젝트는 선금, 잔금만 있다.
-	if (m_duration <= 6) {
+	if (prj_var.m_duration <= 6) {
 		paymentType = rand() % 3 + 1;  // 1에서 3 사이의 난수 생성
 
 		switch (paymentType) {
 		case 1:
-			m_firstPay = (int)ceil((double)m_profit * 0.3);
-			m_cashFlows[0] = 30;
-			m_cashFlows[1] = 70;
+			prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.3);
+			prj_var.m_cashFlows[0] = 30;
+			prj_var.m_cashFlows[1] = 70;
 			break;
 		case 2:
-			m_firstPay = (int)ceil((double)m_profit * 0.4);
-			m_cashFlows[0] = 40;
-			m_cashFlows[1] = 60;
+			prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.4);
+			prj_var.m_cashFlows[0] = 40;
+			prj_var.m_cashFlows[1] = 60;
 			break;
 		case 3:
-			m_firstPay = (int)ceil((double)m_profit * 0.5);
-			m_cashFlows[0] = 50;
-			m_cashFlows[1] = 50;
+			prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.5);
+			prj_var.m_cashFlows[0] = 50;
+			prj_var.m_cashFlows[1] = 50;
 			break;
 		}
 
-		m_secondPay = m_profit - m_firstPay;
+		prj_var.m_secondPay = prj_var.m_profit - prj_var.m_firstPay;
 		totalPayments = 2;
-		m_secondPayMonth = m_duration;
+		prj_var.m_secondPayMonth = prj_var.m_duration;
 	}
 
 	// 7~12주 사이의 프로젝트는 3회에 걸처셔 받는다.
-	else if (m_duration <= 12) {
+	else if (prj_var.m_duration <= 12) {
 		paymentType = rand() % 10 + 1;  // 1에서 10 사이의 난수 생성
 
 		if (paymentType <= 3) {
@@ -275,65 +275,65 @@ void CProject::CalculatePaymentSchedule() {
 
 			switch (paymentRatio) {
 			case 1:
-				m_firstPay = (int)ceil((double)m_profit * 0.3);
-				m_cashFlows[0] = 30;
-				m_cashFlows[1] = 70;
+				prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.3);
+				prj_var.m_cashFlows[0] = 30;
+				prj_var.m_cashFlows[1] = 70;
 				break;
 			case 2:
-				m_firstPay = (int)ceil((double)m_profit * 0.4);
-				m_cashFlows[0] = 40;
-				m_cashFlows[1] = 60;
+				prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.4);
+				prj_var.m_cashFlows[0] = 40;
+				prj_var.m_cashFlows[1] = 60;
 				break;
 			case 3:
-				m_firstPay = (int)ceil((double)m_profit * 0.5);
-				m_cashFlows[0] = 50;
-				m_cashFlows[1] = 50;
+				prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.5);
+				prj_var.m_cashFlows[0] = 50;
+				prj_var.m_cashFlows[1] = 50;
 				break;
 			}
 
-			m_secondPay = m_profit - m_firstPay;
+			prj_var.m_secondPay = prj_var.m_profit - prj_var.m_firstPay;
 			totalPayments = 2;
-			m_secondPayMonth = m_duration;
+			prj_var.m_secondPayMonth = prj_var.m_duration;
 		}
 		else {
 			paymentRatio = rand() % 10 + 1;  // 1에서 10 사이의 난수 생성
 
 			if (paymentRatio <= 6) {
-				m_firstPay = (int)ceil((double)m_profit * 0.3);
-				m_secondPay = (int)ceil((double)m_profit * 0.3);
-				m_cashFlows[0] = 30;
-				m_cashFlows[1] = 30;
-				m_cashFlows[2] = 40;
+				prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.3);
+				prj_var.m_secondPay = (int)ceil((double)prj_var.m_profit * 0.3);
+				prj_var.m_cashFlows[0] = 30;
+				prj_var.m_cashFlows[1] = 30;
+				prj_var.m_cashFlows[2] = 40;
 			}
 			else {
-				m_firstPay = (int)ceil((double)m_profit * 0.3);
-				m_secondPay = (int)ceil((double)m_profit * 0.4);
-				m_cashFlows[0] = 30;
-				m_cashFlows[1] = 40;
-				m_cashFlows[2] = 30;
+				prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.3);
+				prj_var.m_secondPay = (int)ceil((double)prj_var.m_profit * 0.4);
+				prj_var.m_cashFlows[0] = 30;
+				prj_var.m_cashFlows[1] = 40;
+				prj_var.m_cashFlows[2] = 30;
 			}
 
-			m_finalPay = m_profit - m_firstPay - m_secondPay;
+			prj_var.m_finalPay = prj_var.m_profit - prj_var.m_firstPay - prj_var.m_secondPay;
 			totalPayments = 3;
-			m_secondPayMonth = (int)ceil((double)m_duration / 2);
-			m_finalPayMonth = m_duration;
+			prj_var.m_secondPayMonth = (int)ceil((double)prj_var.m_duration / 2);
+			prj_var.m_finalPayMonth = prj_var.m_duration;
 		}
 	}
 
 	// 1년 이상의 프로젝트는 3회에 걸처서 받는다.
 	else {
-		m_firstPay = (int)ceil((double)m_profit * 0.3);
-		m_secondPay = (int)ceil((double)m_profit * 0.4);
-		m_finalPay = m_profit - m_firstPay - m_secondPay;
+		prj_var.m_firstPay = (int)ceil((double)prj_var.m_profit * 0.3);
+		prj_var.m_secondPay = (int)ceil((double)prj_var.m_profit * 0.4);
+		prj_var.m_finalPay = prj_var.m_profit - prj_var.m_firstPay - prj_var.m_secondPay;
 
-		m_cashFlows[0] = 30;
-		m_cashFlows[1] = 40;
-		m_cashFlows[2] = 30;
+		prj_var.m_cashFlows[0] = 30;
+		prj_var.m_cashFlows[1] = 40;
+		prj_var.m_cashFlows[2] = 30;
 
 		totalPayments = 3;
-		m_secondPayMonth = (int)ceil((double)m_duration / 2);
-		m_finalPayMonth = m_duration;
+		prj_var.m_secondPayMonth = (int)ceil((double)prj_var.m_duration / 2);
+		prj_var.m_finalPayMonth = prj_var.m_duration;
 	}
 
-	m_nCashFlows = totalPayments;
+	prj_var.m_nCashFlows = totalPayments;
 }
