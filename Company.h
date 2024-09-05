@@ -32,8 +32,8 @@ public:
 	BOOL LoadProjectsFromExcel();
 	BOOL CreateProjects();
 
-	void Decision(int thisWeek);
-	int CalculateFinalResult();
+	BOOL Decision(int thisWeek);
+	void CalculateFinalResult(int result[2]);
 	
 
 	Dynamic2DArray m_orderTable;
@@ -51,6 +51,8 @@ public:
 
 	Dynamic2DArray m_debugInfo;
 
+	int m_lastDecisionWeek = 0;
+
 	//MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화
 	int		m_totalProjectNum;
 	CProject** m_AllProjects;
@@ -63,7 +65,7 @@ private:
 
 	void AllTableInit(int nWeeks);
 	void PrintDBTitle();
-	void CheckLastWeek(int thisWeek);
+	BOOL CheckLastWeek(int thisWeek);
 	void SelectCandidates(int thisWeek);
 	BOOL IsEnoughHR(int thisWeek, CProject* project);
 	void SelectNewProject(int thisWeek);

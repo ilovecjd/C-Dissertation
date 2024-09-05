@@ -375,18 +375,18 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	m_pGlobalEnv->SimulationWeeks = 4 * 36;		// 4주 x 36 개월
 	m_pGlobalEnv->Hr_TableSize = 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
 	m_pGlobalEnv->WeeklyProb = 1.25;
-	m_pGlobalEnv->Hr_Init_H = 1;
+	m_pGlobalEnv->Hr_Init_H = 2;
 	m_pGlobalEnv->Hr_Init_M = 2;
-	m_pGlobalEnv->Hr_Init_L = 3;
+	m_pGlobalEnv->Hr_Init_L = 1;
 	m_pGlobalEnv->Hr_LeadTime = 3;
-	m_pGlobalEnv->Cash_Init = 1000;
+	m_pGlobalEnv->Cash_Init = 3000;
 	m_pGlobalEnv->ProblemCnt = 100;
 	m_pGlobalEnv->status = 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
 
 	m_pGlobalEnv->pActType = (PALL_ACT_TYPE)actTemp;
 	m_pGlobalEnv->pActPattern = (PALL_ACTIVITY_PATTERN)patternTemp;
 
-	m_pGlobalEnv->ExpenseRate = 1.6;
+	m_pGlobalEnv->ExpenseRate = 1.3;
 	//m_pGlobalEnv->profitRate = ;
 				 
 	m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
@@ -396,11 +396,22 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 
 	CCompany* company = new CCompany; 
 	company->Init(m_pGlobalEnv, 1, TRUE);
-	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
+
+	int i = 0;
+	while ( i < m_pGlobalEnv->SimulationWeeks)
 	{
-		company->Decision(i);   // i번째 기간에 결정해야 할 일들		
+		if (FALSE == company->Decision(i) )  // i번째 기간에 결정해야 할 일들		
+			i = m_pGlobalEnv->SimulationWeeks+1;
+
+		i++;
 	}
-	int result = company->CalculateFinalResult();
+
+	int result[2];
+	company->CalculateFinalResult(result);
+	
+	int weeks = result[0];
+	int profit = result[1];
+
 		
 	if(company)
 	{

@@ -331,10 +331,15 @@ BOOL CCompany::LoadProjectsFromExcel()
 }
 
 // 이번 기간에 결정할 일들. 프로젝트의 신규진행, 멈춤, 인원증감 결정
-void CCompany::Decision(int thisWeek ) {
+BOOL CCompany::Decision(int thisWeek ) {
 
+	m_lastDecisionWeek = thisWeek;
 	// 1. 지난주에 진행중인 프로젝트중 완료되지 않은 프로젝트들만 이번주로 이관
-	CheckLastWeek(thisWeek);
+	if (FALSE == CheckLastWeek(thisWeek))
+	{
+		//파산		
+		return FALSE;
+	}
 
 	// 2. 진행 가능한 후보프로젝트들을  candidateTable에 모은다
 	SelectCandidates(thisWeek);
@@ -344,16 +349,17 @@ void CCompany::Decision(int thisWeek ) {
 	SelectNewProject(thisWeek);
 
 	PrintDBData();
+	return TRUE;
 }
 
 // 완료프로젝트 검사 및 진행프로젝트 업데이트
 // 1. 지난 기간의 정보를 이번기간에 복사하고
 // 2. 지난 기간에 진행중인 프로젝트중 완료된 것이 있는가?
 // 3. 완료된 프로젝트들만 이번기간에서 삭제
-void CCompany::CheckLastWeek(int thisWeek )
+BOOL CCompany::CheckLastWeek(int thisWeek )
 {	
 	if (0 == thisWeek) // 첫주는 체크할 지난주가 없음
-		return;
+		return TRUE;
 
 	int nLastProjects = m_doingTable[ORDER_SUM][thisWeek - 1];//지난주에 진행 중이던 프로젝트의 갯수
 	
@@ -361,7 +367,7 @@ void CCompany::CheckLastWeek(int thisWeek )
 	{
 		int prjId = m_doingTable[i + 1][thisWeek - 1];
 		if (prjId == 0)
-			return;
+			return TRUE;
 
 		CProject* project = m_AllProjects[prjId-1];
 
@@ -386,7 +392,7 @@ void CCompany::CheckLastWeek(int thisWeek )
 	}
 	if (Cash<0)// 파산
 	{
-		
+		return FALSE;
 	}
 
 	if (3 < thisWeek)
@@ -407,6 +413,7 @@ void CCompany::CheckLastWeek(int thisWeek )
 		}
 	}
 	
+	return TRUE;
 }
 
 void CCompany::AddHR(int grade ,int addWeek)
@@ -788,15 +795,16 @@ void CCompany::PrintDBData()
 
 }
 
-int CCompany::CalculateFinalResult() 
+void CCompany::CalculateFinalResult(int retValue[2]) 
 {
 	int result = m_pGlobalEnv->Cash_Init;
 
-	for (int i = 0; i < m_pGlobalEnv->SimulationWeeks; i++)
+	for (int i = 0; i < m_lastDecisionWeek; i++)
 	{
 		result += (m_incomeTable[0][i]- m_expensesTable[0][i]);
 	}
 	
+/*	무슨코드였는지 모르겠다. 다음에 정리하자.
 	int tempTotalIncome = m_pGlobalEnv->Cash_Init;
 	int tempOutcome = m_expensesTable[0][10];
 	int tempTetoalOutcome = (tempOutcome*144);
@@ -807,7 +815,11 @@ int CCompany::CalculateFinalResult()
 		tempTotalIncome += m_debugInfo[1][i];
 	}
 	int tempResult = tempTotalIncome- tempTetoalOutcome;
-	
+	*/
 	//return result;
-	return tempResult; // 기대수익?? 포함 (수주 수익 포함)
+	//return tempResult; // 기대수익?? 포함 (수주 수익 포함)
+	retValue[0] = m_lastDecisionWeek;
+	retValue[2]= result;
+	return;
 }
+
