@@ -42,13 +42,13 @@
     <ClInclude Include="Company.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Project.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XLAutomation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XLEzAutomation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Creator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,13 +71,13 @@
     <ClCompile Include="Company.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Project.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XLEzAutomation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XLAutomation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Creator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -204,7 +204,7 @@
     <ClInclude Include="Company.h" />
     <ClInclude Include="DlgProxy.h" />
     <ClInclude Include="GlobalEnv.h" />
-    <ClInclude Include="Project.h" />
+    <ClInclude Include="Creator.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -217,7 +217,7 @@
     <ClCompile Include="Company.cpp" />
     <ClCompile Include="DlgProxy.cpp" />
     <ClCompile Include="GlobalEnv.cpp" />
-    <ClCompile Include="Project.cpp" />
+    <ClCompile Include="Creator.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

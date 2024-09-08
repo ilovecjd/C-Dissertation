@@ -4,18 +4,23 @@
 #include <vector>
 #include <algorithm>
 
-// 엑셀 파일 관리
-// 전역 환경변수 관리
-
-#define __STR_DATA_FILE		"data.xlsm"
-#define __STR_RUN_LOG_FILE	"run_log.txt"
-#define __STR_START_EXCEL
-#define __STR_END_EXCEL
-#define __NUN_OF_COMPANY	1 // 
-
 
 #define MAX_CANDIDATES 50
-#define ADD_HR_SIZE 80
+
+// Order Tabe index for easy reference
+enum OrderIndex {
+	ORDER_SUM = 0,
+	ORDER_ORD,
+	ORDER_COUNT // Total number of OrderTable
+};
+
+// HR Tabe index for easy reference
+enum HRIndex {
+	HR_HIG = 0,
+	HR_MID,
+	HR_LOW,
+	HR_COUNT // Total number of HR Table
+};
 
 int PoissonRandom(double lambda);
 
@@ -28,29 +33,21 @@ int PoissonRandom(double lambda);
 #define RND_HR_M  70
 
 
-// company 에서 사용
-
-//////////////////////////////////////////////////////////////////////////
 // activity의 타입에 대한 구조체
 // activity_struct 시트의 cells(3,2) ~ cells(7,14)의 값으로 채워진다.
 struct ACT_TYPE {
-
 	int occurrenceRate;     // 타입별 발생 확률 (%)
 	int cumulativeRate;     // 누적 확률 (%)
 	int minPeriod;          // 최소 기간
 	int maxPeriod;          // 최대 기간
 	int patternCount;       // 패턴 수
-
 	// 반복되는 패턴 번호와 확률
 	int patterns[4][2];     // 최대 5개의 패턴 번호와 확률을 저장하는 2차원 배열
 }; 
-
-// activity의 속성에 대한 구조체와 정수 2차원 배열을 포함하는 유니온 정의
 union ALL_ACT_TYPE {
 	ACT_TYPE actTypes[5];  // 5개의 타일 발생 데이터를 위한 구조체 배열
-	int asIntArray[5][sizeof(ACT_TYPE) / sizeof(int)];  // 5개의 타일 데이터를 정수 배열로 접근 (2차원 배열)
-} ;
-//////////////////////////////////////////////////////////////////////////
+	int asIntArray[MAX_PRJ_TYPE][sizeof(ACT_TYPE) / sizeof(int)];  // 5개의 타일 데이터를 정수 배열로 접근 (2차원 배열)
+};
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -70,12 +67,10 @@ struct ALL_ACT_PATTERN {
 	ACT_PATTERN patterns[5];  // 5개의 활동 패턴
 } ;
 
-// 활동 패턴을 정수 2차원 배열로도 접근할 수 있는 유니온 정의
-typedef union {
+union ALL_ACTIVITY_PATTERN {
 	ALL_ACT_PATTERN pattern[6];  // 6개의 활동 패턴을위한 구조체 배열
 	int asIntArray[6][sizeof(ALL_ACT_PATTERN) / sizeof(int)];  // 6개의 활동 데이터를 정수 배열로 접근 (2차원 배열)
-} ALL_ACTIVITY_PATTERN, *PALL_ACTIVITY_PATTERN;
-//////////////////////////////////////////////////////////////////////////
+};
 
 
 // Company 에서 사용
@@ -99,81 +94,60 @@ enum SheetName {
 	WS_NUM_SHEET_COUNT // Total number of sheets
 };
 
-
-
-typedef struct {
+struct GLOBAL_ENV {
 	int		SimulationWeeks;
-	int		Hr_TableSize;		//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	int		maxWeek; //최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.	
 	double	WeeklyProb;
 	int		Hr_Init_H;
 	int		Hr_Init_M;
 	int		Hr_Init_L;
 	int		Hr_LeadTime;
 	int		Cash_Init;
-	int		ProblemCnt;
-	int		status;				// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
-								//////////////////////////////////////
-								// 엑셀파일 오픈을 막자
-	ALL_ACT_TYPE* ActType;
-	ALL_ACTIVITY_PATTERN* ActPattern;
-
-	// 정책을 설정한다.
+	int		ProblemCnt;	
 	double	ExpenseRate;	// 비용계산에 사용되는 제경비 비율
 	//double	profitRate;		// 프로젝트 총비용 계산에 사용되는 제경비 비율
 
-	int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
-
-	int		recruit;		// 충원에 필요한 운영비 (몇주분량인가?)
-	int		layoff;			// 감원에 필요한 운영비 (몇주분량인가?)
-
-} GLOBAL_ENV, *PGLOBAL_ENV;
-
-
-struct COM_VAR{
-	GLOBAL_ENV ge;
-	int				m_ID;
-	int m_lastDecisionWeek = 0;
-	int		m_totalProjectNum;
+	//int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+	//int		recruit;		// 충원에 필요한 운영비 (몇주분량인가?)
+	//int		layoff;			// 감원에 필요한 운영비 (몇주분량인가?)
 
 };
 
-struct PRJ_VAR {
-	// 프로젝트 속성
-	ACTIVITY m_activities[MAX_ACT]; // 활동에 관한 정보를 기록하는 배열
+////////////////////////////////////////////////////////////////////
+// 프로젝트 속성
+struct PROJECT {
+	int category;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	int ID;			// 프로젝트의 번호
+	int orderDate;	// 발주일
+	int startAvail;	// 시작 가능일
+	int isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+	int experience;	// 경험 (0: 무경험 1: 유경험)
+	int winProb;		// 성공 확률
+	int nCashFlows;	// 비용 지급 횟수
+		
+	int endDate;		// 프로젝트 종료일
+	int duration;		// 프로젝트의 총 기간
 
-	// Init 함수에서 초기화
-	int m_category;		// 프로젝트 분류 (0: 외부 / 1: 내부)
-	int m_ID;			// 프로젝트의 번호
-	int m_orderDate;	// 발주일
-	int m_startAvail;	// 시작 가능일
-	int m_isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
-	int m_experience;	// 경험 (0: 무경험 1: 유경험)
-	int m_winProb;		// 성공 확률
-	int m_nCashFlows;	// 비용 지급 횟수
-
-	// CreateActivities 함수에서 초기화
-	int m_endDate;		// 프로젝트 종료일
-	int m_duration;		// 프로젝트의 총 기간
-
-						// 
-	int m_profit;	// 총 기대 수익 (HR 종속)
+	int profit;	// 총 기대 수익 (HR 종속)
 
 	// 현금 흐름
-	int m_cashFlows[MAX_N_CF];	// 용역비를 받는 비율을 기록하는 배열
-	int m_firstPay;		// 선금 액수
-	int m_secondPay;		// 2차 지급 액수
-	int m_finalPay;		// 3차 지급 액수
-	int m_firstPayMonth;	// 선금 지급일
-	int m_secondPayMonth;	// 2차 지급일
-	int m_finalPayMonth;	// 3차 지급일
+	int cashFlows[MAX_N_CF];	// 용역비를 받는 비율을 기록하는 배열
+	int firstPay;		// 선금 액수
+	int secondPay;		// 2차 지급 액수
+	int finalPay;		// 3차 지급 액수
+	int firstPayMonth;	// 선금 지급일
+	int secondPayMonth;	// 2차 지급일
+	int finalPayMonth;	// 3차 지급일
 
-							// 활동
+	// 활동
 	int numActivities;          // 총 활동 수//    std::array<Activity, MAX_ACT> m_activities; // 활동에 관한 정보를 기록하는 배열
+	ACTIVITY activities[MAX_ACT]; // 활동에 관한 정보를 기록하는 배열
 
-								// 참고용변수
-	int m_projectType;		// activity_struct 시트의 어느 타입의 프로젝트인가
-	int m_activityPattern;	// activity_struct 시트의 어느 패턴인가
+	// 참고용변수
+	int projectType;		// activity_struct 시트의 어느 타입의 프로젝트인가
+	int activityPattern;	// activity_struct 시트의 어느 패턴인가
 };
+
 
 
 class Dynamic2DArray {
@@ -257,5 +231,41 @@ void Newinitialize2DArray(int** array, int rows, int cols, int value);
 void Newdeallocate2DArray(int** array, int rows);
 void Newcopy2DArray(int** source, int** destination, int rows, int cols);
 
-//	int** array = allocate2DArray(rows, cols);
 
+/*
+1. 시그니처 SONG1 / 2.전체크기
+3. 환경변수
+4. 엑티비티타입
+5. 엑티비티패턴
+6. 현황판
+프로젝트갯수
+프로젝트
+*/
+
+#define SIGNITURE		{'A','H','N','1'} //pack 사용하지 않게 4바이트 정렬
+#define TYPE_UNKNOWN		0
+#define TYPE_ANH			1
+#define TYPE_ENVIRONMENT	2
+#define TYPE_ACTIVITY		3
+#define TYPE_PATTERN		4
+#define TYPE_ORDER			5
+#define TYPE_DASHBD			6
+#define TYPE_PROJECT		7
+
+struct SAVE_SIG
+{
+	char signitre[4] = SIGNITURE;
+	int totalLen;
+};
+
+struct SAVE_TL
+{
+	int type;
+	int length;
+};
+
+
+bool OpenFile(const CString& filename, const TCHAR* mode, FILE** fp);
+void CloseFile(FILE** fp);
+ULONG WriteDataWithHeader(FILE* fp, int type, const void* data, size_t dataSize);
+bool ReadDataWithHeader(FILE* fp, void* data, size_t expectedSize, int expectedType);

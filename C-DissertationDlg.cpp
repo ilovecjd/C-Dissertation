@@ -7,6 +7,7 @@
 #include "XLEzAutomation.h"
 #include "C-Dissertation.h"
 #include "C-DissertationDlg.h"
+#include "Creator.h"
 #include "Company.h"
 #include "DlgProxy.h"
 #include "afxdialogex.h"
@@ -58,6 +59,7 @@ BEGIN_MESSAGE_MAP(CCDissertationDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_CRETAT_PROJECT, &CCDissertationDlg::OnBnClickedCretatProject)
 	ON_BN_CLICKED(IDC_SIMULATION_START, &CCDissertationDlg::OnBnClickedSimulationStart)
+	ON_BN_CLICKED(IDC_LOAD, &CCDissertationDlg::OnBnClickedLoad)
 END_MESSAGE_MAP()
 
 
@@ -76,7 +78,7 @@ BOOL CCDissertationDlg::OnInitDialog()
 	srand((unsigned int)time(NULL));				// 난수 생성기 초기화
 
 	m_pGlobalEnv->SimulationWeeks	= 4 * 36;		// 4주 x 36 개월
-	m_pGlobalEnv->Hr_TableSize		= 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	m_pGlobalEnv->maxWeek		= 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
 	m_pGlobalEnv->WeeklyProb		= 1.25;
 	m_pGlobalEnv->Hr_Init_H			= 1;
 	m_pGlobalEnv->Hr_Init_M			= 2;
@@ -84,7 +86,7 @@ BOOL CCDissertationDlg::OnInitDialog()
 	m_pGlobalEnv->Hr_LeadTime		= 3;
 	m_pGlobalEnv->Cash_Init			= 1000;
 	m_pGlobalEnv->ProblemCnt		= 100;
-	m_pGlobalEnv->status			= 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
+	//m_pGlobalEnv->status			= 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
 	m_pGlobalEnv->ExpenseRate		= 1.6;
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -351,8 +353,10 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 }
 */
 
+
 void CCDissertationDlg::OnBnClickedCretatProject()
 {
+	CCreator Creator;
 	//PALL_ACT_TYPE pActType = new ALL_ACT_TYPE;
 	int actTemp[] = { 50, 50, 2, 4, 2, 1, 60, 2, 40, 0, 0, 0, 0,
 						20, 70, 5, 12, 2, 3, 50, 4, 50, 0, 0, 0, 0,
@@ -370,10 +374,9 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 		4, 20, 30,	80, 20, 0, 0, 0, 10, 60, 30, 0, 0, 0, 50, 50, 0, 0, 0, 40, 60, 0, 0, 0, 0, 0 };
 	//memcpy(pActPattern, patternTemp, 6*26);
 
-	
 
 	m_pGlobalEnv->SimulationWeeks = 4 * 36;		// 4주 x 36 개월
-	m_pGlobalEnv->Hr_TableSize = 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	m_pGlobalEnv->maxWeek = 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
 	m_pGlobalEnv->WeeklyProb = 1.25;
 	m_pGlobalEnv->Hr_Init_H = 2;
 	m_pGlobalEnv->Hr_Init_M = 2;
@@ -381,18 +384,35 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	m_pGlobalEnv->Hr_LeadTime = 3;
 	m_pGlobalEnv->Cash_Init = 3000;
 	m_pGlobalEnv->ProblemCnt = 100;
-	m_pGlobalEnv->status = 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
-
-	m_pGlobalEnv->ActType = (ALL_ACT_TYPE*)actTemp;
-	m_pGlobalEnv->ActPattern = (ALL_ACTIVITY_PATTERN*)patternTemp;
+	
+	//m_pGlobalEnv->ActType = (ALL_ACT_TYPE*)actTemp;
+	//m_pGlobalEnv->ActPattern = (ALL_ACTIVITY_PATTERN*)patternTemp;
 
 	m_pGlobalEnv->ExpenseRate = 1.6;
 	//m_pGlobalEnv->profitRate = ;
 				 
-	m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+	//m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
 				 
-	m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
-	m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+	//m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+	//m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+
+
+	Creator.Init(m_pGlobalEnv, (ALL_ACT_TYPE*)&actTemp, (ALL_ACTIVITY_PATTERN*)&patternTemp);
+	CString strFileName = L"d:\\test.anh";
+	Creator.Save(strFileName);
+	/////////////////////////////////////////////////////////////////////////
+	// 프로젝트 발주(발생) 현황 생성
+	//int cnt = 0, sum = 0;
+	//int lastWeek = m_pGlobalEnv->SimulationWeeks;
+
+	//for (int week = 0; week < lastWeek; week++)
+	//{
+	//	cnt = PoissonRandom(m_pGlobalEnv->WeeklyProb);	// 이번주 발생하는 프로젝트 갯수		
+	//	m_orderTable[ORDER_SUM][week] = sum;			// 누계
+	//	m_orderTable[ORDER_ORD][week] = cnt;			// 발생 프로젝트갯수
+	//	sum = sum + cnt;	// 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다.
+	//}
+	//m_pGlobalEnv->m_totalProjectNum = sum;
 
 	int result[3];
 	int weeks = result[0];
@@ -405,12 +425,12 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	company->LoadProjectFromAhn();
 	delete company;*/
 
-	for (int i = 1; i <= 1; i++)
+	/*for (int i = 1; i <= 1; i++)
 	{
 		Decision(i,TRUE,result);
 		weeks = result[0];
 		profit = result[2];
-	}	
+	}	*/
 }
 
 void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])
@@ -428,9 +448,9 @@ void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])
 	}
 	
 	int profit = company->CalculateFinalResult();
-	result[0] = company->com_var.m_ID;
-	result[1] = company->com_var.m_lastDecisionWeek;
-	result[2] = profit;
+	//result[0] = company->com_var.m_ID;
+	//result[1] = company->com_var.m_lastDecisionWeek;
+	//result[2] = profit;
 
 	if (company)
 	{
@@ -441,4 +461,15 @@ void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])
 void CCDissertationDlg::OnBnClickedSimulationStart()
 {
 	// TODO: Add your control notification handler code here
+}
+
+
+void CCDissertationDlg::OnBnClickedLoad()
+{
+	CCompany* company = new CCompany;
+	CString strFileName = L"d:\\test.anh";
+	company->Load(strFileName);
+
+	delete company;
+	
 }

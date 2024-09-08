@@ -49,8 +49,11 @@ public:
 // song
 public:
 	void Decision(int id, BOOL shouldLoad, int result[3]);
-	PGLOBAL_ENV		m_pGlobalEnv;
+	GLOBAL_ENV*		m_pGlobalEnv;
+	
 
 private:
 // song
+public:
+	afx_msg void OnBnClickedLoad();
 };

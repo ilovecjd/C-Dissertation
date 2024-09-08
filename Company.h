@@ -4,20 +4,6 @@
 
 
 
-// Order Tabe index for easy reference
-enum OrderIndex{
-	ORDER_SUM = 0,
-	ORDER_ORD,
-	ORDER_COUNT // Total number of OrderTable
-};
-
-// HR Tabe index for easy reference
-enum HRIndex {
-	HR_HIG = 0,
-	HR_MID ,
-	HR_LOW ,
-	HR_COUNT // Total number of HR Table
-};
 
 
 class CProject;
@@ -28,22 +14,24 @@ class CCompany
 public:
 	CCompany();
 	~CCompany();
-	BOOL Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad);
+	BOOL Init(GLOBAL_ENV* pGlobalEnv, int Id, BOOL shouldLoad);
 	void PrintProjectInfo(SheetName sheet, CProject* pProject);
 
 	/*void AllocateManageTable(MANAGE_TABLE* table, int size);
 	void DeallocateManageTable(MANAGE_TABLE* table);*/
 
+	void Load(CString fileName);
 	BOOL LoadProjectsFromExcel();
+	BOOL LoadProjects();	
 	BOOL CreateProjects();
 
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
 	
-	void SaveProjectToAhn(const CString& filename);
-	void LoadProjectFromAhn();
+	//void SaveProjectToAhn(const CString& filename);
+	//void LoadProjectFromAhn();
 		
-	int** m_orderTable;
+	int* m_orderTable[2];
 
 	int** m_doingHR;
 	int** m_freeHR;
@@ -62,13 +50,13 @@ public:
 	
 	CProject** m_AllProjects;
 
-	COM_VAR com_var;
+	//COM_VAR com_var;
 
 private:
-	PGLOBAL_ENV m_pGlobalEnv;
+	GLOBAL_ENV m_GlobalEnv;
 	CXLEzAutomation* m_pXl; // 엑셀을 다루기 위한 클래스	
-	ALL_ACT_TYPE*	m_pActType;
-	ALL_ACTIVITY_PATTERN* m_pActPattern;
+	ALL_ACT_TYPE	m_ActType;
+	ALL_ACTIVITY_PATTERN m_ActPattern;
 
 	void AllTableInit(int nWeeks);
 	void PrintDBTitle();
@@ -82,6 +70,8 @@ private:
 	void AddProjectEntry(CProject* project, int addWeek);
 	void AddHR(int grade, int addWeek);
 	void RemoveHR(int grade, int addWeek);
+
+	void CCompany::ReadOrder(FILE* fp);
 	
 }; 
 
