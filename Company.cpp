@@ -823,245 +823,230 @@ int CCompany::CalculateFinalResult()
 프로젝트갯수
 프로젝트
 */
-void CCompany::SaveProjectToAhn() { return; }
-/*void CCompany::SaveProjectToAhn()
-{
+
+
 #define SIGNITURE		{'A','H','N','1'} //pack 사용하지 않게 4바이트 정렬
 #define TYPE_UNKNOWN		0
 #define TYPE_ANH			1
-#define TYEP_ENVIRANMENT	2
+#define TYPE_ENVIRANMENT	2
 #define TYPE_ACTIVITY		3
 #define TYPE_PATTERN		4
-#define TYPE_DASHBD			5
-#define TYPE_PROJECT		6
+#define TYPE_ORDER			5
+#define TYPE_DASHBD			6
+#define TYPE_PROJECT		7
 
-	struct SAVE_SIG
-	{
-		char signitre[4] = SIGNITURE;
-		int totalLen;
-	};
+struct SAVE_SIG
+{
+	char signitre[4] = SIGNITURE;
+	int totalLen;
+};
 
-	struct SAVE_TL
-	{
-		int type;
-		int length;
-	};
-	//CString signitre	=  _T(SIGNITURE);
-	CString filename = _T("d:\\song.anh");
+struct SAVE_TL
+{
+	int type;
+	int length;
+};
 
-	FILE* fp = nullptr;
-	SAVE_TL tl;
 
-	errno_t err = _wfopen_s(&fp, filename, _T("wb"));  // _wfopen_s는 안전한 함수입니다
-
-	if (err != 0 || fp == nullptr) {  // 오류가 발생했거나 파일 포인터가 null인 경우
-		perror("Failed to open file for writing");
-		return;
+bool OpenFile(const CString& filename, const TCHAR* mode, FILE** fp) {
+	errno_t err = _wfopen_s(fp, filename, mode);
+	if (err != 0 || *fp == nullptr) {
+		perror("Failed to open file");
+		return false;
 	}
-	// 1. 시그니처
+	return true;
+}
+
+void CloseFile(FILE** fp) {
+	if (*fp != nullptr) {
+		fclose(*fp);
+		*fp = nullptr;
+	}
+}
+
+
+void WriteDataWithHeader(FILE* fp, int type, const void* data, size_t dataSize) {
+	SAVE_TL tl = { type, static_cast<int>(dataSize) };
+	fwrite(&tl, sizeof(tl), 1, fp);  // 먼저 데이터 타입 및 길이 정보를 쓴다
+	fwrite(data, dataSize, 1, fp);   // 실제 데이터 쓰기
+}
+
+
+void CCompany::SaveProjectToAhn(const CString& filename) {
+	FILE* fp = nullptr;
+	if (!OpenFile(filename, _T("wb"), &fp)) return;
+
 	SAVE_SIG sig;
-	sig.totalLen = sizeof(SAVE_SIG);
-	fwrite(&sig, sizeof(SAVE_SIG), 1, fp);
-
-	// 2. 환경변수
-	tl.type = TYEP_ENVIRANMENT;
-	tl.length = sizeof(GLOBAL_ENV);
-	fwrite(&tl, sizeof(SAVE_TL), 1, fp);
-
-	fwrite(m_pGlobalEnv, sizeof(GLOBAL_ENV), 1, fp);
-
-	// 3. 
-	tl.type = TYPE_ACTIVITY;
-	tl.length = sizeof(ALL_ACT_TYPE);
-	fwrite(&tl, sizeof(SAVE_TL), 1, fp);
-
-	fwrite(m_pActType, sizeof(ALL_ACT_TYPE), 1, fp);
-
-	// 4.
-	tl.type = TYPE_PATTERN;
-	tl.length = sizeof(ALL_ACTIVITY_PATTERN);
-	fwrite(&tl, sizeof(SAVE_TL), 1, fp);
-
-	fwrite(m_pActPattern, sizeof(ALL_ACTIVITY_PATTERN), 1, fp);
-
-
-	// 5. order table
-	int rows = m_orderTable.getRows();
-	int cols = m_orderTable.getCols();
-	int totalSize = rows * cols;  // Total number of elements
-	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
-	m_orderTable.copyToContinuousMemory(tempBuf, totalSize);
+	fwrite(&sig, sizeof(sig), 1, fp);  // 파일 시작 부분에 시그니처 쓰기
+		
+	WriteDataWithHeader(fp, TYPE_ENVIRANMENT, m_pGlobalEnv, sizeof(GLOBAL_ENV));
+	WriteDataWithHeader(fp, TYPE_ACTIVITY, m_pActType, sizeof(ALL_ACT_TYPE));
+	WriteDataWithHeader(fp, TYPE_PATTERN, m_pActPattern, sizeof(ALL_ACTIVITY_PATTERN));
+	WriteDataWithHeader(fp, TYPE_ORDER, m_orderTable, 2 * m_pGlobalEnv->SimulationWeeks);
 	
-	tl.type = TYPE_DASHBD;
-	tl.length = totalSize;
-	fwrite(&tl, sizeof(SAVE_TL), 1, fp);
-
-	fwrite(tempBuf, totalSize, 1, fp);
-
-	//#define TYPE_PROJECT		6
-
-	///***** 전체 크기는 마지막에 계산해서 넣어주자.
 	sig.totalLen = 0;
 	fclose(fp);
 	fp = nullptr;
-
-}*/
-void CCompany::LoadProjectFromAhn() { return; }
-
-/*void CCompany::LoadProjectFromAhn()
-{
-#define SIGNITURE		{'A','H','N','1'} //pack 사용하지 않게 4바이트 정렬
-#define TYPE_UNKNOWN		0
-#define TYPE_ANH			1
-#define TYEP_ENVIRANMENT	2
-#define TYPE_ACTIVITY		3
-#define TYPE_PATTERN		4
-#define TYPE_DASHBD			5
-#define TYPE_PROJECT		6
-
-	struct SAVE_SIG
-	{
-		char signitre[4] = SIGNITURE;
-		int totalLen;
-	};
-
-	struct SAVE_TL
-	{
-		int type;
-		int length;
-	};
-	
-	CString filename = _T("d:\\song.anh");
-
-
-
-
-	FILE* fp = nullptr;
-	SAVE_TL tl;
-
-	errno_t err = _wfopen_s(&fp, filename, _T("rb"));  // _wfopen_s는 안전한 함수입니다
-
-	if (err != 0 || fp == nullptr) {  // 오류가 발생했거나 파일 포인터가 null인 경우
-		perror("Failed to open file for writing");
-		return;
-	}
-
-	//// 파일의 크기를 알아내기 위해 파일 포인터를 파일 끝으로 이동
-	fseek(fp, 0, SEEK_END);
-
-	if (fseek(fp, 0, SEEK_END) != 0) {
-		perror("Failed to seek to end of file");
-		fclose(fp);
-		return ;
-	}
-
-	long fileSize = ftell(fp); // 파일 크기를 얻음
-	rewind(fp); // 파일 포인터를 다시 파일 시작으로 이동
-
-	// 파일 크기만큼의 메모리를 동적 할당
-	unsigned char* buffer = (unsigned char*)malloc(fileSize);
-	if (buffer == nullptr) {
-		perror("Failed to allocate memory");
-		fclose(fp);
-		return ;
-	}
-
-	// 파일 내용을 버퍼에 읽어옴
-	size_t bytesRead = fread(buffer, sizeof(unsigned char), fileSize, fp);
-	if (bytesRead != fileSize) {
-		perror("Failed to read the entire file");
-		free(buffer);
-		fclose(fp);
-		return ;
-	}
-
-
-	SAVE_SIG sig;
-	ULONG bufPos = 0; // 읽어야할 버퍼의 위치, 계속 증가 시킴
-	ULONG ulSize = 0;
-	
-	ulSize = sizeof(SAVE_SIG);
-
-	if (memcmp(sig.signitre, buffer, 4) == 0) {
-		perror("The first 4 bytes of signitre and buffer are the same.");
-	}
-
-	// 1. 시그니처
-	memcpy(&sig, buffer, ulSize);
-	bufPos += ulSize;
-	
-	// 2. 환경변수
-	ulSize = sizeof(SAVE_TL);
-	memcpy(&tl, buffer+bufPos, ulSize);
-	bufPos += ulSize;
-
-	if (TYEP_ENVIRANMENT == tl.type )
-	{ 
-		if (sizeof(GLOBAL_ENV) == tl.length )
-		{
-			memcpy(m_pGlobalEnv, buffer + bufPos, ulSize);
-			bufPos += ulSize;
-		}
-	}
-
-	// 3. 
-	ulSize = sizeof(SAVE_TL);
-	memcpy(&tl, buffer + bufPos, ulSize);
-	bufPos += ulSize;
-
-	if (TYPE_ACTIVITY == tl.type)
-	{
-		if (sizeof(ALL_ACT_TYPE) == tl.length)
-		{
-			memcpy(m_pActType, buffer + bufPos, ulSize);
-			bufPos += ulSize;
-		}
-	}
-
-	// 4.
-
-	ulSize = sizeof(SAVE_TL);
-	memcpy(&tl, buffer + bufPos, ulSize);
-	bufPos += ulSize;
-
-	if (TYPE_PATTERN == tl.type)
-	{
-		if (sizeof(ALL_ACTIVITY_PATTERN) == tl.length)
-		{
-			memcpy(m_pActType, buffer + bufPos, ulSize);
-			bufPos += ulSize;
-		}
-	}
-
-
-	// 5. order table
-	ulSize = sizeof(SAVE_TL);
-	memcpy(&tl, buffer + bufPos, ulSize);
-	bufPos += ulSize;
-	
-	if (TYPE_PATTERN == tl.type)
-	{
-		if (sizeof(ALL_ACTIVITY_PATTERN) == tl.length)
-		{
-			m_orderTable.copyFromContinuousMemory((int *)buffer, 2, ulSize / 4 / 2);
-			bufPos += ulSize;
-		}
-	}
-
-	tl.type = TYPE_DASHBD;
-	//tl.length = totalSize;
-	//fwrite(&tl, sizeof(SAVE_TL), 1, fp);
-
-	//fwrite(tempBuf, totalSize, 1, fp);
-
-	//#define TYPE_PROJECT		6
-
-	///***** 전체 크기는 마지막에 계산해서 넣어주자.
-	//sig.totalLen = 0;
-	
-
-	// 메모리 해제 및 파일 닫기
-	free(buffer);
-	fclose(fp);	fp = nullptr;
+	// 파일 닫기
+	CloseFile(&fp);
 }
-*/
+
+
+//
+//
+//void CCompany::LoadProjectFromAhn(const CString& filename)
+//{	
+//	FILE* fp = nullptr;
+//	if (!OpenFile(filename, _T("rb"), &fp)) return;
+//
+//	SAVE_SIG sig;
+//	ReadData(fp, &sig, sizeof(sig));
+//
+//	long fileSize = ftell(fp); // 파일 크기를 얻음
+//	rewind(fp); // 파일 포인터를 다시 파일 시작으로 이동
+//
+//	GLOBAL_ENV env;
+//	if (LoadData(fp, TYPE_ENVIRONMENT, &m_pGlobalEnv, sizeof(env)));
+//
+//
+//	SAVE_TL tl;
+//
+//	errno_t err = _wfopen_s(&fp, filename, _T("rb"));  // _wfopen_s는 안전한 함수입니다
+//
+//	if (err != 0 || fp == nullptr) {  // 오류가 발생했거나 파일 포인터가 null인 경우
+//		perror("Failed to open file for writing");
+//		return;
+//	}
+//
+//	//// 파일의 크기를 알아내기 위해 파일 포인터를 파일 끝으로 이동
+//	fseek(fp, 0, SEEK_END);
+//
+//	if (fseek(fp, 0, SEEK_END) != 0) {
+//		perror("Failed to seek to end of file");
+//		fclose(fp);
+//		return ;
+//	}
+//
+//	
+//	// 파일 크기만큼의 메모리를 동적 할당
+//	unsigned char* buffer = (unsigned char*)malloc(fileSize);
+//	if (buffer == nullptr) {
+//		perror("Failed to allocate memory");
+//		fclose(fp);
+//		return ;
+//	}
+//
+//	// 파일 내용을 버퍼에 읽어옴
+//	size_t bytesRead = fread(buffer, sizeof(unsigned char), fileSize, fp);
+//	if (bytesRead != fileSize) {
+//		perror("Failed to read the entire file");
+//		free(buffer);
+//		fclose(fp);
+//		return ;
+//	}
+//
+//
+//	SAVE_SIG sig;
+//	ULONG bufPos = 0; // 읽어야할 버퍼의 위치, 계속 증가 시킴
+//	ULONG ulSize = 0;
+//	
+//	ulSize = sizeof(SAVE_SIG);
+//
+//	if (memcmp(sig.signitre, buffer, 4) == 0) {
+//		perror("The first 4 bytes of signitre and buffer are the same.");
+//	}
+//
+//	// 1. 시그니처
+//	memcpy(&sig, buffer, ulSize);
+//	bufPos += ulSize;
+//	
+//	// 2. 환경변수
+//	ulSize = sizeof(SAVE_TL);
+//	memcpy(&tl, buffer+bufPos, ulSize);
+//	bufPos += ulSize;
+//
+//	ulSize = tl.length;
+//	if (TYEP_ENVIRANMENT == tl.type )
+//	{ 
+//		if (sizeof(GLOBAL_ENV) == ulSize)
+//		{
+//			memcpy(m_pGlobalEnv, buffer + bufPos, ulSize);
+//			bufPos += ulSize;
+//		}
+//	}
+//
+//	// 3. 
+//	ulSize = sizeof(SAVE_TL);
+//	memcpy(&tl, buffer + bufPos, ulSize);
+//	bufPos += ulSize;
+//
+//	ulSize = tl.length;
+//	if (TYPE_ACTIVITY == tl.type)
+//	{
+//		if (sizeof(ALL_ACT_TYPE) == ulSize)
+//		{
+//			memcpy(m_pActType, buffer + bufPos, ulSize);
+//			bufPos += ulSize;
+//		}
+//	}
+//
+//	// 4.
+//
+//	ulSize = sizeof(SAVE_TL);
+//	memcpy(&tl, buffer + bufPos, ulSize);
+//	bufPos += ulSize;
+//
+//	ulSize = tl.length;
+//	if (TYPE_PATTERN == tl.type)
+//	{
+//		if (sizeof(ALL_ACTIVITY_PATTERN) == ulSize)
+//		{
+//			memcpy(m_pActPattern, buffer + bufPos, ulSize);
+//			bufPos += ulSize;
+//		}
+//	}
+//
+//	// 5. order table
+//	ulSize = sizeof(SAVE_TL);
+//	memcpy(&tl, buffer + bufPos, ulSize);
+//	bufPos += ulSize;
+//
+//	ulSize = tl.length;
+//	if (TYPE_ORDER == tl.type)
+//	{
+//		if (m_pGlobalEnv->SimulationWeeks*2 == ulSize)
+//		{
+//			if(NULL == m_orderTable )
+//				m_orderTable = malloc(ulSize);
+//			memcpy(m_orderTable, buffer + bufPos, ulSize);
+//			bufPos += ulSize;
+//		}
+//	}
+//
+//
+//	// 6. projects
+//	if (TYPE_PATTERN == tl.type)
+//	//{
+//	//	if (sizeof(ALL_ACTIVITY_PATTERN) == tl.length)
+//	//	{
+//	//		m_orderTable.copyFromContinuousMemory((int *)buffer, 2, ulSize / 4 / 2);
+//	//		bufPos += ulSize;
+//	//	}
+//	//}
+//
+//	tl.type = TYPE_DASHBD;
+//	//tl.length = totalSize;
+//	//fwrite(&tl, sizeof(SAVE_TL), 1, fp);
+//
+//	//fwrite(tempBuf, totalSize, 1, fp);
+//
+//	//#define TYPE_PROJECT		6
+//
+//	///***** 전체 크기는 마지막에 계산해서 넣어주자.
+//	//sig.totalLen = 0;
+//	
+//
+//	// 메모리 해제 및 파일 닫기
+//	free(buffer);
+//	fclose(fp);//	fp = nullptr;
+//}

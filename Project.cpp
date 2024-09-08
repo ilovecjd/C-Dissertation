@@ -30,7 +30,7 @@ BOOL CProject::Init(int type, int ID, int ODate, ALL_ACT_TYPE* pActType, ALL_ACT
 	prj_var.m_nCashFlows	= MAX_N_CF;	// 비용 지급 횟수(규모에 따라 변경 가능)
 
 	CreateActivities();					//m_activities[MAX_ACT] 계산
-	prj_var.m_profit = CalculateHRAndProfit();
+	prj_var.m_profit = CalculateHRAndProfit(); // 총 수익을 계산한다.
 	CalculatePaymentSchedule();			//m_cashFlows[MAX_N_CF] 계산
 	return TRUE;
 }

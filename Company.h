@@ -40,7 +40,7 @@ public:
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
 	
-	void SaveProjectToAhn();
+	void SaveProjectToAhn(const CString& filename);
 	void LoadProjectFromAhn();
 		
 	int** m_orderTable;
@@ -49,13 +49,13 @@ public:
 	int** m_freeHR;
 	int** m_totalHR;
 	
-	Dynamic2DArray m_doingTable;
-	Dynamic2DArray m_doneTable;
-	Dynamic2DArray m_defferTable;
-
 	int** m_incomeTable;
 	int** m_expensesTable;
 
+	Dynamic2DArray m_doingTable;
+	Dynamic2DArray m_doneTable;
+	Dynamic2DArray m_defferTable;
+	
 	Dynamic2DArray m_debugInfo;
 	
 	//MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화

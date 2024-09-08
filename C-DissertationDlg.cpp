@@ -372,27 +372,27 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 
 	
 
-	//m_pGlobalEnv->SimulationWeeks = 4 * 36;		// 4주 x 36 개월
-	//m_pGlobalEnv->Hr_TableSize = 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
-	//m_pGlobalEnv->WeeklyProb = 1.25;
-	//m_pGlobalEnv->Hr_Init_H = 2;
-	//m_pGlobalEnv->Hr_Init_M = 2;
-	//m_pGlobalEnv->Hr_Init_L = 1;
-	//m_pGlobalEnv->Hr_LeadTime = 3;
-	//m_pGlobalEnv->Cash_Init = 3000;
-	//m_pGlobalEnv->ProblemCnt = 100;
-	//m_pGlobalEnv->status = 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
+	m_pGlobalEnv->SimulationWeeks = 4 * 36;		// 4주 x 36 개월
+	m_pGlobalEnv->Hr_TableSize = 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	m_pGlobalEnv->WeeklyProb = 1.25;
+	m_pGlobalEnv->Hr_Init_H = 2;
+	m_pGlobalEnv->Hr_Init_M = 2;
+	m_pGlobalEnv->Hr_Init_L = 1;
+	m_pGlobalEnv->Hr_LeadTime = 3;
+	m_pGlobalEnv->Cash_Init = 3000;
+	m_pGlobalEnv->ProblemCnt = 100;
+	m_pGlobalEnv->status = 0;			// 프로그램의 동작 상태. 0:프로젝트 미생성, 1:프로젝트 생성,
 
 	m_pGlobalEnv->ActType = (ALL_ACT_TYPE*)actTemp;
 	m_pGlobalEnv->ActPattern = (ALL_ACTIVITY_PATTERN*)patternTemp;
 
-	//m_pGlobalEnv->ExpenseRate = 1.6;
-	////m_pGlobalEnv->profitRate = ;
-	//			 
-	//m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
-	//			 
-	//m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
-	//m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+	m_pGlobalEnv->ExpenseRate = 1.6;
+	//m_pGlobalEnv->profitRate = ;
+				 
+	m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+				 
+	m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+	m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
 
 	int result[3];
 	int weeks = result[0];
