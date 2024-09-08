@@ -40,6 +40,7 @@ void CCompany::Load(CString fileName)
 	ReadDataWithHeader(fp, &m_ActPattern, sizeof(ALL_ACTIVITY_PATTERN), TYPE_PATTERN);
 
 	ReadOrder(fp);
+	ReadProject(fp);
 
 	CloseFile(&fp);
 }
@@ -72,6 +73,26 @@ void CCompany::ReadOrder(FILE* fp)
 
 	m_orderTable[0] = order0;
 	m_orderTable[1] = order1;
+
+}
+
+
+// Order table 복구
+void CCompany::ReadProject(FILE* fp)
+{
+	
+	SAVE_TL tl;
+	if (fread(&tl, 1, sizeof(tl), fp) != sizeof(tl)) {
+		perror("Failed to read header");		
+	}
+
+	if (tl.type == TYPE_PROJECT) 
+	{
+		m_totalProjectNum = tl.length;
+		m_AllProjects = new PROJECT[m_totalProjectNum];
+	}
+
+	fread(m_AllProjects, sizeof(PROJECT), m_totalProjectNum,  fp);
 
 }
 

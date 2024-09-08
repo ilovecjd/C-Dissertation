@@ -48,7 +48,8 @@ public:
 	
 	//MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화
 	
-	CProject** m_AllProjects;
+	PROJECT* m_AllProjects;
+	int m_totalProjectNum;
 
 	//COM_VAR com_var;
 
@@ -72,6 +73,7 @@ private:
 	void RemoveHR(int grade, int addWeek);
 
 	void CCompany::ReadOrder(FILE* fp);
+	void ReadProject(FILE* fp);
 	
 }; 
 

@@ -38,5 +38,7 @@ private:
 
 	int ZeroOrOneByProb(int probability);
 	int RandomBetween(int low, int high);
+
+	void WriteProjet(FILE* fp);
 };
 

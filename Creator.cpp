@@ -408,7 +408,7 @@ void CCreator::Save(CString filename)
 	ulTotalWritten += WriteDataWithHeader(fp, TYPE_ORDER, temp, orderTableSize);
 	delete[] temp;
 
-
+	WriteProjet(fp);
 	
 	sig.totalLen = ulTotalWritten;
 	fseek(fp, 0, SEEK_SET);  // 파일 포인터를 파일의 시작 위치로 이동	
@@ -419,4 +419,28 @@ void CCreator::Save(CString filename)
 
 }
 
+
+void CCreator::WriteProjet(FILE* fp)
+{
+	SAVE_TL tl ;
+	tl.length =  m_totalProjectNum;
+	tl.type = TYPE_PROJECT;
+
+	ULONG ulTemp = 0;
+	ULONG ulWritten = 0;
+
+	ulTemp = fwrite(&tl, sizeof(tl), 1, fp);  // 먼저 데이터 타입 및 길이 정보를 쓴다
+	ulWritten += ulTemp * sizeof(tl);
+
+	int test = sizeof(PROJECT);
+
+	for(int i =0 ; i< m_totalProjectNum;i ++)
+	{
+		PROJECT* pProject; 
+		pProject = m_pProjects+i;
+		ulTemp = fwrite(pProject, sizeof(PROJECT), 1, fp);
+		ulWritten += ulTemp;
+	}
+
+}
 
