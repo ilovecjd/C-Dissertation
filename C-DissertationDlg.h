@@ -56,4 +56,5 @@ private:
 // song
 public:
 	afx_msg void OnBnClickedLoad();
+	afx_msg void OnBnClickedPrintExcel();
 };

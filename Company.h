@@ -3,9 +3,6 @@
 #include "globalenv.h"
 
 
-
-
-
 class CProject;
 
 
@@ -15,7 +12,7 @@ public:
 	CCompany();
 	~CCompany();
 	BOOL Init(GLOBAL_ENV* pGlobalEnv, int Id, BOOL shouldLoad);
-	void PrintProjectInfo(SheetName sheet, CProject* pProject);
+	//void PrintProjectInfo(SheetName sheet, CProject* pProject);
 
 	/*void AllocateManageTable(MANAGE_TABLE* table, int size);
 	void DeallocateManageTable(MANAGE_TABLE* table);*/
@@ -27,7 +24,8 @@ public:
 
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
-	
+	void PrintProjectInfo(CXLEzAutomation* pXl, PROJECT* pProject);
+	void PrintProjects();
 	//void SaveProjectToAhn(const CString& filename);
 	//void LoadProjectFromAhn();
 		
@@ -51,16 +49,17 @@ public:
 	PROJECT* m_AllProjects;
 	int m_totalProjectNum;
 
+	CXLEzAutomation* m_pXl; // 엑셀을 다루기 위한 클래스	
 	//COM_VAR com_var;
+	void PrintDBTitle();
 
 private:
-	GLOBAL_ENV m_GlobalEnv;
-	CXLEzAutomation* m_pXl; // 엑셀을 다루기 위한 클래스	
+	GLOBAL_ENV m_GlobalEnv;	
 	ALL_ACT_TYPE	m_ActType;
 	ALL_ACTIVITY_PATTERN m_ActPattern;
 
 	void AllTableInit(int nWeeks);
-	void PrintDBTitle();
+	
 	BOOL CheckLastWeek(int thisWeek);
 	void SelectCandidates(int thisWeek);
 	BOOL IsEnoughHR(int thisWeek, CProject* project);

@@ -60,6 +60,7 @@ BEGIN_MESSAGE_MAP(CCDissertationDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CRETAT_PROJECT, &CCDissertationDlg::OnBnClickedCretatProject)
 	ON_BN_CLICKED(IDC_SIMULATION_START, &CCDissertationDlg::OnBnClickedSimulationStart)
 	ON_BN_CLICKED(IDC_LOAD, &CCDissertationDlg::OnBnClickedLoad)
+	ON_BN_CLICKED(IDC_PRINT_EXCEL, &CCDissertationDlg::OnBnClickedPrintExcel)
 END_MESSAGE_MAP()
 
 
@@ -469,7 +470,18 @@ void CCDissertationDlg::OnBnClickedLoad()
 	CCompany* company = new CCompany;
 	CString strFileName = L"d:\\test.anh";
 	company->Load(strFileName);
+	company->PrintProjects();
+	company->PrintDBTitle(); 
+	//company->PrintDBData();
 
 	delete company;
 	
+}
+
+
+void CCDissertationDlg::OnBnClickedPrintExcel()
+{
+	
+
+
 }

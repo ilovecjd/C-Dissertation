@@ -843,3 +843,222 @@ int CCompany::CalculateFinalResult()
 //	fclose(fp);//	fp = nullptr;
 //}
 
+void CCompany::PrintProjects()
+{
+	m_pXl = new CXLEzAutomation;
+	if (!m_pXl->OpenExcelFile(_T("d:\\1.xlsx")))
+	{
+		MessageBox(NULL, _T("Failed to open Excel file."), _T("Error"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	/////////////////////////////////////////////////////////////////////////
+	// project 시트에 헤더 출력	
+	CString strTitle[2][16] = {
+		{
+			_T("Category"), _T("PRJ_ID"), _T("기간"), _T("시작가능"), _T("끝"),
+			_T("발주일"), _T("총수익"), _T("경험"), _T("성공%"), _T("CF갯수"),
+			_T("CF1%"), _T("CF2%"), _T("CF3%"), _T("선금"), _T("중도"), _T("잔금")
+		},
+		{
+			_T("act갯수"), _T(""), _T("Dur"), _T("start"), _T("end"),
+			_T(""), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),
+			_T("mon_cf1"), _T("mon_cf2"), _T("mon_cf3"), _T(""), _T("prjType"), _T("actType")
+		}
+	};
+	m_pXl->WriteArrayToRange(WS_NUM_PROJECT, 1, 1, (CString*)strTitle, 2, 16);
+	m_pXl->SetRangeBorder(WS_NUM_PROJECT, 1, 1, 2, 16, 1, xlThin, RGB(0, 0, 0));
+
+
+	for (int i = 0; i < m_totalProjectNum; i++)
+	{
+		PROJECT* pProject = m_AllProjects + i;
+		PrintProjectInfo(m_pXl, pProject);
+	}
+	
+
+}
+
+void CCompany::PrintProjectInfo(CXLEzAutomation* pXl, PROJECT* pProject)
+{
+	const int iWidth = 16;
+	const int iHeight = 7;
+	int posX, posY;
+
+	// VARIANT 배열 생성 하고 VT_EMPTY로 초기화
+	VARIANT projectInfo[iHeight][iWidth];
+
+	for (int i = 0; i < iHeight; ++i) {
+		for (int j = 0; j < iWidth; ++j) {
+			VariantInit(&projectInfo[i][j]);
+			projectInfo[i][j].vt = VT_EMPTY;
+		}
+	}
+
+	// 첫 번째 행 설정	
+	posX = 0; posY = 0;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->category;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->ID;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->duration;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->startAvail;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->endDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->orderDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->profit);
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->experience;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->winProb;
+
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->nCashFlows;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->cashFlows[0];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->cashFlows[1];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->cashFlows[2];
+
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->secondPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPay;
+
+
+	// 두 번째 행 설정
+	posX = 0; posY = 1;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numActivities;
+
+	posX = 10;  // 빈 칸을 건너뛰기
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->secondPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPayMonth;
+
+	posX = 14;  // 빈 칸을 건너뛰기
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectType;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activityPattern;
+
+	// 활동 데이터 설정
+	for (int i = 0; i < pProject->numActivities; ++i) {
+		// 인덱스를 문자열로 변환하고 "Activity" 접두사 추가
+		CString strAct;
+		strAct.Format(_T("Activity%02d"), i + 1);
+
+		posX = 1; // 엑셀의 2행 2열부터 적는다.
+		projectInfo[posY][posX].vt = VT_BSTR; projectInfo[posY][posX++].bstrVal = strAct.AllocSysString();
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].duration;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].startDate;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].endDate;
+
+		posX = 6;  // 두 열 건너뛰기
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].highSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].midSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].lowSkill;
+
+		posY++;
+	}
+
+	int printY = 4 + (pProject->ID - 1)*iHeight;
+	pXl->WriteArrayToRange(WS_NUM_PROJECT, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
+	pXl->SetRangeBorderAround(WS_NUM_PROJECT, printY, 1, printY + iHeight - 1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
+}
+
+
+void CCompany::PrintDBTitle()
+{
+	int rows = 2;
+	int cols = m_GlobalEnv.maxWeek;
+
+	CString strDBoardTitle[1][18] = {
+		{ _T("주"), _T("누계"), _T("발주"),_T(""), _T("투입"), _T("HR_H"), _T("HR_M"), _T("HR_L"),
+		_T(""),_T("여유"), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),_T("총원"), _T("HR_H"), _T("HR_M"), _T("HR_L") }
+	};
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 2, 1, (CString*)strDBoardTitle, 18, 1); //세로로 출력
+	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 2, 1, 4, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 7, 1, 9, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 12, 1, 14, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	m_pXl->SetRangeBorder(WS_NUM_DASHBOARD, 17, 1, 19, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+
+
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, m_orderTable[0], 1, cols);
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 4, 2, m_orderTable[1], 1, cols);
+
+	int* pWeeks = new int[cols];
+	for (int i = 0; i < cols; i++)
+	{
+		pWeeks[i] = i + 1;
+	}
+	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 2, 2, pWeeks, 1, cols);
+
+	delete[] pWeeks;
+}
+
+//
+//void CCompany::PrintDBData()
+//{
+//	int rows = m_debugInfo.getRows();
+//	int cols = m_debugInfo.getCols();
+//
+//	int totalSize = rows * cols;  // Total number of elements
+//	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+//
+//										// cash flow
+//	m_debugInfo.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7, 2, tempBuf, rows, cols);
+//
+//	delete[] tempBuf;
+//
+//	// 다같은 사이즈 이니 한번만 계산해서 사용하자
+//	rows = m_doingHR.getRows();
+//	cols = m_doingHR.getCols();
+//
+//	totalSize = rows * cols;  // Total number of elements
+//	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+//
+//	if (3 * (m_pGlobalEnv->SimulationWeeks + ADD_HR_SIZE) != totalSize)
+//	{
+//		MessageBox(NULL, _T("버퍼 사이즈를 확인하세요"), _T("Error"), MB_OK | MB_ICONERROR);
+//		return;
+//	}
+//
+//
+//	// HR 정보 출력
+//	m_doingHR.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 7 + 3, 2, tempBuf, rows, cols);
+//
+//	m_freeHR.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 12 + 3, 2, tempBuf, rows, cols);
+//
+//	m_totalHR.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 17 + 3, 2, tempBuf, rows, cols);
+//
+//	delete[] tempBuf;
+//
+//
+//	int printRow = 22 + 3;
+//	// 진행 현황 출력
+//	rows = m_doingTable.getRows();
+//	cols = m_doingTable.getCols();
+//	totalSize = rows * cols;  // Total number of elements
+//	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+//
+//	m_doingTable.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
+//	printRow += rows + 1;
+//	delete[] tempBuf;
+//
+//	////////////////////////////////////////////////	
+//	rows = m_doneTable.getRows();
+//	cols = m_doneTable.getCols();
+//	totalSize = rows * cols;  // Total number of elements
+//	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+//
+//	m_doneTable.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
+//	printRow += rows + 1;
+//	delete[] tempBuf;
+//
+//	////////////////////////////////////////////////
+//	rows = m_defferTable.getRows();
+//	cols = m_defferTable.getCols();
+//	totalSize = rows * cols;  // Total number of elements
+//	tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+//
+//	m_defferTable.copyToContinuousMemory(tempBuf, totalSize);
+//	m_pXl->WriteArrayToRange(WS_NUM_DASHBOARD, printRow, 2, tempBuf, rows, cols);
+//
+//	delete[] tempBuf;
+//
+//}
