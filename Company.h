@@ -11,16 +11,13 @@ class CCompany
 public:
 	CCompany();
 	~CCompany();
-	BOOL Init(GLOBAL_ENV* pGlobalEnv, int Id, BOOL shouldLoad);
+	BOOL Init(CString fileName);
+	void ReInit();
+	void ClearMemory();
 	//void PrintProjectInfo(SheetName sheet, CProject* pProject);
 
 	/*void AllocateManageTable(MANAGE_TABLE* table, int size);
 	void DeallocateManageTable(MANAGE_TABLE* table);*/
-
-	void Load(CString fileName);
-	BOOL LoadProjectsFromExcel();
-	BOOL LoadProjects();	
-	BOOL CreateProjects();
 
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
@@ -29,45 +26,45 @@ public:
 	//void SaveProjectToAhn(const CString& filename);
 	//void LoadProjectFromAhn();
 		
-	int* m_orderTable[2];
-
-	int** m_doingHR;
-	int** m_freeHR;
-	int** m_totalHR;
+	GLOBAL_ENV m_GlobalEnv;
 	
-	int** m_incomeTable;
-	int** m_expensesTable;
+
+	void PrintDBTitle();
+
+private:
+	// 초기화 필요한 변수들
+	int m_totalProjectNum;
+
+	ALL_ACT_TYPE	m_ActType;
+	ALL_ACTIVITY_PATTERN m_ActPattern;
+
+	PROJECT* m_AllProjects = NULL;	
+	CXLEzAutomation* m_pXl = NULL; // 엑셀을 다루기 위한 클래스	
+
+	int* m_orderTable[2] = {NULL,NULL};
+
+	Dynamic2DArray m_doingHR;
+	Dynamic2DArray m_freeHR;
+	Dynamic2DArray m_totalHR;
 
 	Dynamic2DArray m_doingTable;
 	Dynamic2DArray m_doneTable;
 	Dynamic2DArray m_defferTable;
-	
 	Dynamic2DArray m_debugInfo;
 	
-	//MANAGE_TABLE m_manageTable = {}; // NULL 로 초기화
-	
-	PROJECT* m_AllProjects;
-	int m_totalProjectNum;
+	Dynamic2DArray m_incomeTable;
+	Dynamic2DArray m_expensesTable;
 
-	CXLEzAutomation* m_pXl; // 엑셀을 다루기 위한 클래스	
-	//COM_VAR com_var;
-	void PrintDBTitle();
-
-private:
-	GLOBAL_ENV m_GlobalEnv;	
-	ALL_ACT_TYPE	m_ActType;
-	ALL_ACTIVITY_PATTERN m_ActPattern;
-
-	void AllTableInit(int nWeeks);
+	int m_lastDecisionWeek;
 	
 	BOOL CheckLastWeek(int thisWeek);
 	void SelectCandidates(int thisWeek);
-	BOOL IsEnoughHR(int thisWeek, CProject* project);
+	BOOL IsEnoughHR(int thisWeek, PROJECT* project);
 	void SelectNewProject(int thisWeek);
 	void PrintDBData();
 
 	int m_candidateTable[MAX_CANDIDATES] = { 0, };
-	void AddProjectEntry(CProject* project, int addWeek);
+	void AddProjectEntry(PROJECT* project, int addWeek);
 	void AddHR(int grade, int addWeek);
 	void RemoveHR(int grade, int addWeek);
 

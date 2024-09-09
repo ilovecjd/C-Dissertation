@@ -12,7 +12,7 @@ public:
 public :
 	
 	int m_totalProjectNum;
-	int** m_orderTable;
+	Dynamic2DArray m_orderTable;
 	//PRJ_VAR prj_var;
 	
 	BOOL Init(GLOBAL_ENV* pGlobalEnv, ALL_ACT_TYPE* pActType, ALL_ACTIVITY_PATTERN* pActPattern);

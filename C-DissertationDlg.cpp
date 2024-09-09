@@ -384,84 +384,79 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	m_pGlobalEnv->Hr_Init_L = 1;
 	m_pGlobalEnv->Hr_LeadTime = 3;
 	m_pGlobalEnv->Cash_Init = 3000;
-	m_pGlobalEnv->ProblemCnt = 100;
+	m_pGlobalEnv->ProblemCnt = 100;	
+	m_pGlobalEnv->selectOrder = 1;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+	m_pGlobalEnv->recruit = 20;		// 충원에 필요한 운영비 (몇주분량인가?)
+	m_pGlobalEnv->layoff = 0;			// 감원에 필요한 운영비 (몇주분량인가?)
 	
-	//m_pGlobalEnv->ActType = (ALL_ACT_TYPE*)actTemp;
-	//m_pGlobalEnv->ActPattern = (ALL_ACTIVITY_PATTERN*)patternTemp;
-
+	
 	m_pGlobalEnv->ExpenseRate = 1.6;
 	//m_pGlobalEnv->profitRate = ;
 				 
-	//m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+	m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
 				 
-	//m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
-	//m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+	m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+	m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
 
 
 	Creator.Init(m_pGlobalEnv, (ALL_ACT_TYPE*)&actTemp, (ALL_ACTIVITY_PATTERN*)&patternTemp);
 	CString strFileName = L"d:\\test.anh";
 	Creator.Save(strFileName);
-	/////////////////////////////////////////////////////////////////////////
-	// 프로젝트 발주(발생) 현황 생성
-	//int cnt = 0, sum = 0;
-	//int lastWeek = m_pGlobalEnv->SimulationWeeks;
-
-	//for (int week = 0; week < lastWeek; week++)
-	//{
-	//	cnt = PoissonRandom(m_pGlobalEnv->WeeklyProb);	// 이번주 발생하는 프로젝트 갯수		
-	//	m_orderTable[ORDER_SUM][week] = sum;			// 누계
-	//	m_orderTable[ORDER_ORD][week] = cnt;			// 발생 프로젝트갯수
-	//	sum = sum + cnt;	// 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다.
-	//}
-	//m_pGlobalEnv->m_totalProjectNum = sum;
-
-	int result[3];
-	int weeks = result[0];
-	int profit = result[1];
-
-	// 바이너리 저장 테스트
-	/*CCompany* company = new CCompany;
-	company->Init(m_pGlobalEnv, 1, TRUE);
-	company->SaveProjectToAhn();
-	company->LoadProjectFromAhn();
-	delete company;*/
-
-	/*for (int i = 1; i <= 1; i++)
-	{
-		Decision(i,TRUE,result);
-		weeks = result[0];
-		profit = result[2];
-	}	*/
+	
 }
 
 void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])
 {
-	CCompany* company = new CCompany;
-	company->Init(m_pGlobalEnv, id, shouldLoad);
+	//CCompany* company = new CCompany;
+	//company->Init(m_pGlobalEnv, id, shouldLoad);
 
-	int i = 0;
-	while (i < m_pGlobalEnv->SimulationWeeks)
-	{
-		if (FALSE == company->Decision(i))  // i번째 기간에 결정해야 할 일들		
-			i = m_pGlobalEnv->SimulationWeeks + 1;
+	//int i = 0;
+	//while (i < m_pGlobalEnv->SimulationWeeks)
+	//{
+	//	if (FALSE == company->Decision(i))  // i번째 기간에 결정해야 할 일들		
+	//		i = m_pGlobalEnv->SimulationWeeks + 1;
 
-		i++;
-	}
-	
-	int profit = company->CalculateFinalResult();
-	//result[0] = company->com_var.m_ID;
-	//result[1] = company->com_var.m_lastDecisionWeek;
-	//result[2] = profit;
+	//	i++;
+	//}
+	//
+	//int profit = company->CalculateFinalResult();
 
-	if (company)
-	{
-		delete company;
-	}
+	//if (company)
+	//{
+	//	delete company;
+	//}
 }
 
 void CCDissertationDlg::OnBnClickedSimulationStart()
 {
-	// TODO: Add your control notification handler code here
+	for (int i = 0; i < 50; i++)
+	{
+		CCompany* company = new CCompany;
+		CString strFileName = L"d:\\test.anh";
+		company->Init(strFileName);
+
+		/*company->m_GlobalEnv.Hr_Init_H = 
+		company->m_GlobalEnv.Hr_Init_M =
+		company->m_GlobalEnv.Hr_Init_L = i+1;*/
+		company->m_GlobalEnv.ExpenseRate = 1.6-i*0.1;
+		company->ReInit();
+		
+		int j = 0;
+		while (j < m_pGlobalEnv->SimulationWeeks)
+		{
+			if (FALSE == company->Decision(j))  // i번째 기간에 결정해야 할 일들		
+				j = m_pGlobalEnv->SimulationWeeks + 1;
+
+			j++;
+		}
+
+		int profit = company->CalculateFinalResult();
+
+		if (company) {
+			delete company;
+			company = NULL;
+		}
+	}
 }
 
 
@@ -469,7 +464,7 @@ void CCDissertationDlg::OnBnClickedLoad()
 {
 	CCompany* company = new CCompany;
 	CString strFileName = L"d:\\test.anh";
-	company->Load(strFileName);
+	company->Init(strFileName);
 	company->PrintProjects();
 	company->PrintDBTitle(); 
 	//company->PrintDBData();

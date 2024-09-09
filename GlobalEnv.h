@@ -107,9 +107,9 @@ struct GLOBAL_ENV {
 	double	ExpenseRate;	// 비용계산에 사용되는 제경비 비율
 	//double	profitRate;		// 프로젝트 총비용 계산에 사용되는 제경비 비율
 
-	//int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
-	//int		recruit;		// 충원에 필요한 운영비 (몇주분량인가?)
-	//int		layoff;			// 감원에 필요한 운영비 (몇주분량인가?)
+	int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+	int		recruit;		// 충원에 필요한 운영비 (몇주분량인가?)
+	int		layoff;			// 감원에 필요한 운영비 (몇주분량인가?)
 
 };
 
@@ -224,12 +224,6 @@ public:
 		return 0;
 	}
 };
-
-
-int** Newallocate2DArray(int rows, int cols);
-void Newinitialize2DArray(int** array, int rows, int cols, int value);
-void Newdeallocate2DArray(int** array, int rows);
-void Newcopy2DArray(int** source, int** destination, int rows, int cols);
 
 
 /*

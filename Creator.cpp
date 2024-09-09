@@ -42,13 +42,13 @@ BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv, ALL_ACT_TYPE* pActType, ALL_ACTIVITY
 }
 
 /////////////////////////////////////////////////////////////////////////
-// 프로젝트 발주(발생) 현황 생성, 프로젝트는 최대 크기 많큼 설정한다.
+// 프로젝트 발주(발생) 현황 생성, 프로젝트는 최대 크기 만큼 설정한다.
 // 시뮬레이션보다 길게 작성한다.
 int CCreator::CreateOrderTable()
 {
 	int cnt = 0, sum = 0;
 
-	m_orderTable = Newallocate2DArray(2, m_GlobalEnv.maxWeek);
+	m_orderTable.Resize(2, m_GlobalEnv.maxWeek);
 
 	for (int week = 0; week < m_GlobalEnv.maxWeek; week++)
 	{
@@ -78,8 +78,10 @@ int CCreator::CreateProjects()
 		{
 			for (projectId = startNum; projectId <= endNum; projectId++)
 			{
-				PROJECT* pProject;
+				PROJECT* pProject;				
 				pProject =  &m_pProjects[projectId-1];
+				memset(pProject, 0, sizeof(struct PROJECT));
+
 				pProject->category = 0;		// 프로젝트 분류 (0: 외부 / 1: 내부)
 				pProject->ID = projectId;		// 프로젝트의 번호	
 				pProject->orderDate = week;	// 발주일
@@ -401,10 +403,11 @@ void CCreator::Save(CString filename)
 	ulTotalWritten += WriteDataWithHeader(fp, TYPE_PATTERN, &m_ActPattern, sizeof(ALL_ACTIVITY_PATTERN));
 
 	// 모아서 적어야 한다.
-	int* temp = new int[m_GlobalEnv.maxWeek * 2];
-	memcpy(temp, m_orderTable[0], m_GlobalEnv.maxWeek);
-	memcpy(temp + m_GlobalEnv.maxWeek, m_orderTable[1], m_GlobalEnv.maxWeek);
-	ULONG orderTableSize = sizeof(int) * m_GlobalEnv.maxWeek * 2;  // 바이트 단위로 크기 계산
+	int size = m_orderTable.getCols() * m_orderTable.getRows();
+	int* temp = new int[size];
+	m_orderTable.copyToContinuousMemory(temp, size);
+
+	ULONG orderTableSize = sizeof(int) * size;  // 바이트 단위로 크기 계산
 	ulTotalWritten += WriteDataWithHeader(fp, TYPE_ORDER, temp, orderTableSize);
 	delete[] temp;
 
