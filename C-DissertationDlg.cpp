@@ -390,7 +390,7 @@ void CCDissertationDlg::OnBnClickedCretatProject()
 	m_pGlobalEnv->layoff = 0;			// 감원에 필요한 운영비 (몇주분량인가?)
 	
 	
-	m_pGlobalEnv->ExpenseRate = 1.6;
+	m_pGlobalEnv->ExpenseRate = 1;
 	//m_pGlobalEnv->profitRate = ;
 				 
 	m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
@@ -435,10 +435,15 @@ void CCDissertationDlg::OnBnClickedSimulationStart()
 		CString strFileName = L"d:\\test.anh";
 		company->Init(strFileName);
 
-		/*company->m_GlobalEnv.Hr_Init_H = 
-		company->m_GlobalEnv.Hr_Init_M =
-		company->m_GlobalEnv.Hr_Init_L = i+1;*/
-		company->m_GlobalEnv.ExpenseRate = 1.6-i*0.1;
+		company->m_GlobalEnv.Hr_Init_H = 3;//2
+		company->m_GlobalEnv.Hr_Init_M = 3;//1
+		company->m_GlobalEnv.Hr_Init_L = 3;//3
+		
+		company->m_GlobalEnv.selectOrder = 1; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+		company->m_GlobalEnv.recruit = 24;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+		company->m_GlobalEnv.layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+		company->m_GlobalEnv.ExpenseRate = 1.2;// -i*0.1;
+
 		company->ReInit();
 		
 		int j = 0;
@@ -451,6 +456,8 @@ void CCDissertationDlg::OnBnClickedSimulationStart()
 		}
 
 		int profit = company->CalculateFinalResult();
+		CString fileName = _T("aa");
+		//company->PrintResult(fileName);
 
 		if (company) {
 			delete company;
@@ -465,8 +472,7 @@ void CCDissertationDlg::OnBnClickedLoad()
 	CCompany* company = new CCompany;
 	CString strFileName = L"d:\\test.anh";
 	company->Init(strFileName);
-	company->PrintProjects();
-	company->PrintDBTitle(); 
+	company->PrintResult(strFileName);
 	//company->PrintDBData();
 
 	delete company;
