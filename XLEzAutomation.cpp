@@ -62,6 +62,10 @@ BOOL CXLEzAutomation::OpenExcelFile(CString szFileName)
 {
 	return m_pXLServer->OpenExcelFile(szFileName);
 }
+BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, CString szSheetName)
+{
+	return m_pXLServer->OpenExcelFile(szFileName, szSheetName);
+}
 
 // Overloaded GetCellValue functions
 // Returns integer value from Worksheet.Cells(nColumn, nRow)
@@ -114,14 +118,21 @@ BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, doubl
 BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
 	if (!m_pXLServer) return FALSE;
-	return m_pXLServer->ReadRangeToIntArray(sheet, startRow, startCol, dataArray, rows, cols);
+
+	int transRows = startRow + rows - 1;
+	int transCols = startCol + cols - 1;
+	return m_pXLServer->ReadRangeToIntArray(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
 
 // Overloaded function to read CString values from Excel
 BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
 {
 	if (!m_pXLServer) return FALSE;
-	return m_pXLServer->ReadRangeToCStringArray(sheet, startRow, startCol, dataArray, rows, cols);
+
+	int transRows = startRow + rows - 1;
+	int transCols = startCol + cols - 1;
+
+	return m_pXLServer->ReadRangeToCStringArray(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
 
 // int 배열을 Excel에 쓰기
@@ -129,21 +140,33 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->WriteArrayToRangeInt(sheet, startRow, startCol, dataArray, rows, cols);
+
+	int transRows = startRow + rows - 1;
+	int transCols = startCol + cols - 1;
+
+	return m_pXLServer->WriteArrayToRangeInt(sheet, startRow, startCol, dataArray, startRow, startCol);
 }
 
 // CString 배열을 Excel에 쓰기
+// 배열의 크기를 받아서 엑셀의 range 맞게 변경해서 보낸다. 
 BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->WriteArrayToRangeCString(sheet, startRow, startCol, dataArray, rows, cols);
+
+	int transRows = startRow + rows - 1;
+	int transCols = startCol + cols - 1;
+	return m_pXLServer->WriteArrayToRangeCString(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
 
 BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
 	if (m_pXLServer == NULL)
 		return FALSE;
-	return m_pXLServer->WriteArrayToRangeVariant(sheet, startRow, startCol, dataArray, rows, cols);
+
+	int transRows = startRow + rows - 1;
+	int transCols = startCol + cols - 1;
+
+	return m_pXLServer->WriteArrayToRangeVariant(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
 
 
@@ -162,5 +185,8 @@ BOOL CXLEzAutomation::SetRangeBorderAround(SheetName sheet, int startRow, int st
 BOOL CXLEzAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
 	// Call the function from CXLAutomation
-	return m_pXLServer->ReadExRangeConvertInt(sheet, startRow, startCol, dataArray, rows, cols);
+	int transRows = startRow + rows - 1;
+	int transCols = startCol + cols - 1;
+
+	return m_pXLServer->ReadExRangeConvertInt(sheet, startRow, startCol, dataArray, transRows, transCols);
 }

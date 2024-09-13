@@ -18,10 +18,7 @@ public:
 	void SaveResult(CString fileName); // 시뮬레이션 결과를 파일에 저장한다.
 	void LoadResult(CString fileName); // 시뮬레이션 결과를 파일에서 읽어온다.
 	//void PrintProjectInfo(SheetName sheet, CProject* pProject);
-
-	/*void AllocateManageTable(MANAGE_TABLE* table, int size);
-	void DeallocateManageTable(MANAGE_TABLE* table);*/
-
+	
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
 	void PrintProjectInfo(CXLEzAutomation* pXl, PROJECT* pProject);

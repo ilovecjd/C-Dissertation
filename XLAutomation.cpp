@@ -749,14 +749,6 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName) {
 
 	m_pdispWorkbook = vargWorkbook.pdispVal;
 
-	// Sheet names to find
-	//	LPOLESTR sheetNames[WS_NUM_SHEET_COUNT];
-	//for (int i =0; i<WS_NUM_SHEET_COUNT; i++)
-	//{
-		// song 여기도 예쁘게 고치자
-		//gSheetNames[i] = { L"parameters", L"dashboard", L"project", L"activity_struct",L"debuginfo" };
-	//}
-
 	// Loop through sheet names and find corresponding worksheet objects
 	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++) {
 		if (!FindAndStoreWorksheet(m_pdispWorkbook, gSheetNames[i], &m_pdispWorksheets[i])) {
@@ -765,6 +757,85 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName) {
 			return FALSE;
 		}
 	}
+
+	return TRUE;
+}
+
+
+//Open Microsoft Excel file and switch to the firs available worksheet. 
+BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
+	// Leave if the file cannot be opened
+	if (NULL == m_pdispExcelApp)
+		return FALSE;
+	if (szFileName.IsEmpty())
+		return FALSE;
+
+	VARIANTARG varg1, vargWorkbook;
+	ClearAllArgs();
+	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
+		return FALSE;
+
+	ClearAllArgs();
+	AddArgumentCString(L"Filename", 0, szFileName);
+	if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+		return FALSE;
+
+	m_pdispWorkbook = vargWorkbook.pdispVal;
+
+	AddNewSheet(strSheetName);
+
+	BSTR b;
+	b = strSheetName.AllocSysString();
+
+	if (!FindAndStoreWorksheet(m_pdispWorkbook, b, &m_pdispWorksheets[WS_NUM_DEBUG_INFO])) {
+		// Error handling if a sheet is not found
+		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
+		return FALSE;
+	}
+	
+
+	return TRUE;
+}
+
+
+BOOL CXLAutomation::AddNewSheet(CString sheetName)
+{
+	if (m_pdispExcelApp == NULL || m_pdispWorkbook == NULL)
+		return FALSE;
+
+	VARIANTARG vargSheets, vargNewSheet;
+	VariantInit(&vargSheets);
+	VariantInit(&vargNewSheet);
+
+	// Get the Worksheets collection
+	if (!ExlInvoke(m_pdispWorkbook, L"Worksheets", &vargSheets, DISPATCH_PROPERTYGET, 0))
+	{
+		MessageBox(NULL, _T("Failed to get Worksheets collection."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Add a new sheet
+	ClearAllArgs();
+	if (!ExlInvoke(vargSheets.pdispVal, L"Add", &vargNewSheet, DISPATCH_METHOD, 0))
+	{
+		MessageBox(NULL, _T("Failed to add new sheet."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargSheets);
+		return FALSE;
+	}
+
+	// Set the sheet name
+	ClearAllArgs();
+	AddArgumentCString(NULL, 0, sheetName);
+	if (!ExlInvoke(vargNewSheet.pdispVal, L"Name", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		MessageBox(NULL, _T("Failed to set sheet name."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargSheets);
+		VariantClear(&vargNewSheet);
+		return FALSE;
+	}
+
+	VariantClear(&vargSheets);
+	VariantClear(&vargNewSheet);
 
 	return TRUE;
 }
@@ -1149,7 +1220,7 @@ BOOL CXLAutomation::ReadRangeToIntArray(SheetName sheet, int startRow, int start
 	VariantInit(&vargData);
 
 	// Get the range from Excel
-	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, rows, startCol + cols - 1, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1236,7 +1307,7 @@ BOOL CXLAutomation::ReadRangeToCStringArray(SheetName sheet, int startRow, int s
 	VariantInit(&vargData);
 
 	// Get the range from Excel
-	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, rows , cols, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1315,7 +1386,7 @@ BOOL CXLAutomation::WriteArrayToRangeInt(SheetName sheet, int startRow, int star
 	VariantInit(&vargRng);
 
 	// Set the Excel range using the GetRange function
-	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1377,7 +1448,7 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 	VariantInit(&vargRng);
 
 	// Set the Excel range using the GetRange function
-	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1457,7 +1528,7 @@ BOOL CXLAutomation::WriteArrayToRangeVariant(SheetName sheet, int startRow, int 
 	VariantInit(&vargRng);
 
 	// Set the Excel range using the GetRange function
-	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, rows, cols , &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1823,7 +1894,7 @@ BOOL CXLAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int sta
 	VariantInit(&vargData);
 
 	// Get the range from Excel
-	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}

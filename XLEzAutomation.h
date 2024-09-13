@@ -16,6 +16,7 @@ class CXLEzAutomation
 {
 public:
 	BOOL OpenExcelFile(CString szFileName);
+	BOOL OpenExcelFile(CString szFileName, CString szSheetName);
 	BOOL SaveFileAs(CString szFileName);
 	BOOL ReleaseExcel();
 

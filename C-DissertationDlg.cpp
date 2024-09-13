@@ -484,8 +484,36 @@ void CCDissertationDlg::OnBnClickedLoad()
 void CCDissertationDlg::OnBnClickedPrintExcel()
 {
 	
+	CXLEzAutomation* pXl;
+	pXl = new CXLEzAutomation;
 
+	pXl->OpenExcelFile(_T("d:\\1.xlsx"),_T("song"));
+	
+	int rows = 2;
+	//int cols = m_GlobalEnv.maxWeek;
 
+	CString strDBoardTitle[1][21] = {
+		{ _T("주"), _T("누계"), _T("발주"),_T(""),_T("수입"),_T("지출"),_T(""),_T("투입"), _T("HR_H"), _T("HR_M"), _T("HR_L"),
+		_T(""),_T("여유"), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),_T("총원"), _T("HR_H"), _T("HR_M"), _T("HR_L") }
+	};
+	pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 2, 1, (CString*)strDBoardTitle, 18, 1); //세로로 출력
+	pXl->SetRangeBorder(WS_NUM_DEBUG_INFO, 2, 1, 4, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	pXl->SetRangeBorder(WS_NUM_DEBUG_INFO, 7, 1, 9, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	pXl->SetRangeBorder(WS_NUM_DEBUG_INFO, 12, 1, 14, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+	pXl->SetRangeBorder(WS_NUM_DEBUG_INFO, 17, 1, 19, rows + 1, xlContinuous, xlThin, RGB(0, 0, 0));
+
+	delete pXl;
+	/*pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 3, 2, m_orderTable[0], 1, cols);
+	pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 4, 2, m_orderTable[1], 1, cols);
+
+	int* pWeeks = new int[cols];
+	for (int i = 0; i < cols; i++)
+	{
+		pWeeks[i] = i + 1;
+	}
+	pXl->WriteArrayToRange(WS_NUM_DASHBOARD, 2, 2, pWeeks, 1, cols);
+
+	delete[] pWeeks;*/
 }
 
 

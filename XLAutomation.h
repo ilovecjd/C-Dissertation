@@ -38,6 +38,7 @@ class CXLAutomation
 
 public:
 	BOOL OpenExcelFile(CString szFileName);	
+	BOOL OpenExcelFile(CString szFileName, CString strSheetName);
 	BOOL SaveAs(CString szFileName, int nFileFormat, CString szPassword, CString szWritePassword, BOOL bReadOnly, BOOL bBackUp);
 	BOOL DeleteRow(SheetName sheet, long nRow);
 	BOOL ReleaseExcel();
@@ -47,7 +48,7 @@ public:
 	BOOL SetCellsValueToString(SheetName sheet, double Row, double Column, CString szStr);
 	BOOL AddArgumentOLEString(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR lpsz);
 	BOOL AddArgumentCString(LPOLESTR lpszArgName, WORD wFlags, CString szStr);
-	BOOL CreateWorkSheet();
+	//BOOL CreateWorkSheet(LPOLESTR strSheetName);
 	BOOL AddArgumentDouble(LPOLESTR lpszArgName, WORD wFlags, double d);
 	BOOL AddArgumentBool(LPOLESTR lpszArgName, WORD wFlags, BOOL b);
 	BOOL AddArgumentInt2(LPOLESTR lpszArgName, WORD wFlags, int i);
@@ -85,6 +86,7 @@ public:
 
 	BOOL ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
 
+	BOOL AddNewSheet(CString sheetName);
 	// 자동화 헬퍼 함수
 	//song
 
