@@ -61,6 +61,7 @@ BEGIN_MESSAGE_MAP(CCDissertationDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_SIMULATION_START, &CCDissertationDlg::OnBnClickedSimulationStart)
 	ON_BN_CLICKED(IDC_LOAD, &CCDissertationDlg::OnBnClickedLoad)
 	ON_BN_CLICKED(IDC_PRINT_EXCEL, &CCDissertationDlg::OnBnClickedPrintExcel)
+	ON_BN_CLICKED(IDC_TEST, &CCDissertationDlg::OnBnClickedTest)
 END_MESSAGE_MAP()
 
 
@@ -410,13 +411,13 @@ void CCDissertationDlg::Decision(int id,BOOL shouldLoad, int result[3])
 	//CCompany* company = new CCompany;
 	//company->Init(m_pGlobalEnv, id, shouldLoad);
 
-	//int i = 0;
-	//while (i < m_pGlobalEnv->SimulationWeeks)
+	//int j = 0;
+	//while (j < m_pGlobalEnv->SimulationWeeks)
 	//{
-	//	if (FALSE == company->Decision(i))  // i번째 기간에 결정해야 할 일들		
-	//		i = m_pGlobalEnv->SimulationWeeks + 1;
+	//	if (FALSE == company->Decision(j))  // j번째 기간에 결정해야 할 일들		
+	//		j = m_pGlobalEnv->SimulationWeeks + 1;
 
-	//	i++;
+	//	j++;
 	//}
 	//
 	//int profit = company->CalculateFinalResult();
@@ -440,16 +441,16 @@ void CCDissertationDlg::OnBnClickedSimulationStart()
 		company->m_GlobalEnv.Hr_Init_L = 3;//3
 		
 		company->m_GlobalEnv.selectOrder = 1; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
-		company->m_GlobalEnv.recruit = 24;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
-		company->m_GlobalEnv.layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
-		company->m_GlobalEnv.ExpenseRate = 1.2;// -i*0.1;
+		company->m_GlobalEnv.recruit = 24;  //0: 충원 없음. 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+		company->m_GlobalEnv.layoff = 0;  // 0: 충원 없음 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+		company->m_GlobalEnv.ExpenseRate = 1.2;// -j*0.1;
 
 		company->ReInit();
 		
 		int j = 0;
 		while (j < m_pGlobalEnv->SimulationWeeks)
 		{
-			if (FALSE == company->Decision(j))  // i번째 기간에 결정해야 할 일들		
+			if (FALSE == company->Decision(j))  // j번째 기간에 결정해야 할 일들		
 				j = m_pGlobalEnv->SimulationWeeks + 1;
 
 			j++;
@@ -485,4 +486,146 @@ void CCDissertationDlg::OnBnClickedPrintExcel()
 	
 
 
+}
+
+
+void CCDissertationDlg::OnBnClickedTest()
+{
+
+
+	ALL_ACT_TYPE* actTemp = new ALL_ACT_TYPE;
+	ALL_ACTIVITY_PATTERN* patternTemp = new ALL_ACTIVITY_PATTERN;
+	DefaultParameters(actTemp, patternTemp);
+
+	// 같은 프로젝트들로 여러가지 상황을 만들어 본다.
+	// 주당 발생확률 1.25 지출이 1.2 일때 인원 변동
+	int lastResunt[20 * 4 * 4 * 4][10] = { 0, };
+	for (int i = 0; i < 20; i++)
+	{
+		m_pGlobalEnv->WeeklyProb = 1.25;// i * 0.1;// 1.25;
+		CCreator Creator;
+		Creator.Init(m_pGlobalEnv, actTemp, patternTemp);
+
+		CString prarmFile;// = L"d:\\test00.anh";
+		prarmFile.Format(_T("d:\\test_%0d.ahn"), i);
+		Creator.Save(prarmFile);
+
+
+		/*for (int j = 0; j < 50; j++)
+		{*/
+			
+
+
+
+			for (int h = 0; h < 4; h++){
+				for (int m = 0; m < 4; m++){
+					for (int l = 0; l < 4; l++){
+						int successCnt = 0;//성공횟수
+						int successProfit = 0; //성공시 금액
+						int failCnt = 0; // 실패 횟수
+						int failMon = 0; // 실패 개월
+
+						
+						for (int j = 0; j < 50; j++) {
+							if ((h + m + l) == 0) break;
+							CCompany* company = new CCompany;
+							company->Init(prarmFile);
+							company->ReInit();
+							company->m_GlobalEnv.Hr_Init_H = h;//2
+							company->m_GlobalEnv.Hr_Init_M = m;//1
+							company->m_GlobalEnv.Hr_Init_L = l;//3
+							company->m_GlobalEnv.Cash_Init = (50 * h + 39 * m + 25 * l) * 4 * 6* 1.2; //인원수 대비 6개월
+							company->m_GlobalEnv.selectOrder = 1; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+							company->m_GlobalEnv.recruit = 0;  //0: 충원 없음. 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+							company->m_GlobalEnv.layoff = 0;  // 0: 감원 없음 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+							company->m_GlobalEnv.ExpenseRate = 1.2;// -j*0.1;
+
+							int k = 0;
+							while (k < m_pGlobalEnv->SimulationWeeks)
+							{
+								if (FALSE == company->Decision(k))  // j번째 기간에 결정해야 할 일들		
+									k = m_pGlobalEnv->SimulationWeeks + 1;
+
+								k++;
+							}
+
+							if (k > m_pGlobalEnv->SimulationWeeks)//실패
+							{
+								failCnt += 1;
+								failMon += company->m_lastDecisionWeek;
+							}
+							else
+							{
+								successCnt +=1;//성공횟수 증가
+								successProfit += company->CalculateFinalResult(); //성공시 금액
+							}
+
+							if (company) {
+								delete company;
+								company = NULL;
+							}
+						}/////
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][0] = i;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][1] = h;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][2] = m;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][3] = l;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][4] = successCnt;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][5] = successProfit;
+						if(successCnt)
+							lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][6] = successProfit / successCnt;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][7] = failCnt;
+						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][8] = failMon;
+						if(failCnt)
+							lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][9] = failMon/failCnt;
+					}
+				}
+			}
+		}
+	//}
+	
+
+	delete actTemp;
+	delete patternTemp;
+}
+
+void CCDissertationDlg::DefaultParameters(ALL_ACT_TYPE* act, ALL_ACTIVITY_PATTERN* pattern)
+{
+	//PALL_ACT_TYPE pActType = new ALL_ACT_TYPE;
+	int actTemp[] = { 50, 50, 2, 4, 2, 1, 60, 2, 40, 0, 0, 0, 0,
+		20, 70, 5, 12, 2, 3, 50, 4, 50, 0, 0, 0, 0,
+		20, 90, 13, 26, 2, 5, 50, 6, 50, 0, 0, 0, 0,
+		8, 98, 27, 52, 2, 5, 40, 6, 60, 0, 0, 0, 0,
+		2, 100, 53, 80, 2, 5, 30, 6, 70, 0, 0, 0, 0 };
+	//memcpy(pActType, actTemp, 5*9);
+
+	//PALL_ACTIVITY_PATTERN pActPattern = new ALL_ACTIVITY_PATTERN;
+	int patternTemp[] = { 1, 100, 100, 0, 30, 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 100, 100,80, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		2, 10, 20,	60, 40, 0, 0, 0, 10, 80, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		2, 20, 30,	80, 20, 0, 0, 0, 10, 70, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		3, 20, 30,	70, 30, 0, 0, 0, 10, 60, 30, 0, 0, 0, 60, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		4, 20, 30,	80, 20, 0, 0, 0, 10, 60, 30, 0, 0, 0, 50, 50, 0, 0, 0, 40, 60, 0, 0, 0, 0, 0 };
+	//memcpy(pActPattern, patternTemp, 6*26);
+
+	*act = *((ALL_ACT_TYPE*)actTemp);
+	*pattern = *((ALL_ACTIVITY_PATTERN*)patternTemp);
+
+	m_pGlobalEnv->SimulationWeeks = 4 * 36;		// 4주 x 36 개월
+	m_pGlobalEnv->maxWeek = 4 * 36 + 80;	//  maxTableSize 최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.
+	m_pGlobalEnv->WeeklyProb = 1.25;
+	m_pGlobalEnv->Hr_Init_H = 2;
+	m_pGlobalEnv->Hr_Init_M = 2;
+	m_pGlobalEnv->Hr_Init_L = 1;
+	m_pGlobalEnv->Hr_LeadTime = 3;
+	m_pGlobalEnv->Cash_Init = 3000;
+	m_pGlobalEnv->ProblemCnt = 100;
+	m_pGlobalEnv->selectOrder = 1;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+	m_pGlobalEnv->recruit = 20;		// 충원에 필요한 운영비 (몇주분량인가?)
+	m_pGlobalEnv->layoff = 0;			// 감원에 필요한 운영비 (몇주분량인가?)
+
+	m_pGlobalEnv->ExpenseRate = 1.2;
+	m_pGlobalEnv->selectOrder = 0; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+
+	m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+	m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
 }

@@ -30,6 +30,7 @@ public:
 	//void LoadProjectFromAhn();
 		
 	GLOBAL_ENV m_GlobalEnv;
+	int m_lastDecisionWeek;
 	
 
 	void PrintDBTitle(CXLEzAutomation* pXl);
@@ -57,7 +58,7 @@ private:
 	Dynamic2DArray m_incomeTable;
 	Dynamic2DArray m_expensesTable;
 
-	int m_lastDecisionWeek;
+	
 	
 	BOOL CheckLastWeek(int thisWeek);
 	void SelectCandidates(int thisWeek);

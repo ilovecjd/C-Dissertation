@@ -49,6 +49,7 @@ public:
 // song
 public:
 	void Decision(int id, BOOL shouldLoad, int result[3]);
+	void DefaultParameters(ALL_ACT_TYPE* act, ALL_ACTIVITY_PATTERN* pattern);
 	GLOBAL_ENV*		m_pGlobalEnv;
 	
 
@@ -57,4 +58,5 @@ private:
 public:
 	afx_msg void OnBnClickedLoad();
 	afx_msg void OnBnClickedPrintExcel();
+	afx_msg void OnBnClickedTest();
 };
