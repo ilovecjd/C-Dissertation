@@ -527,7 +527,7 @@ void CCDissertationDlg::OnBnClickedTest()
 
 	// 같은 프로젝트들로 여러가지 상황을 만들어 본다.
 	// 주당 발생확률 1.25 지출이 1.2 일때 인원 변동
-	int lastResunt[20 * 4 * 4 * 4][10] = { 0, };
+	int lastResult[20 * 4 * 4 * 4][10] = { 0, };
 	for (int i = 0; i < 20; i++)
 	{
 		m_pGlobalEnv->WeeklyProb = 1.25;// i * 0.1;// 1.25;
@@ -593,24 +593,32 @@ void CCDissertationDlg::OnBnClickedTest()
 								company = NULL;
 							}
 						}/////
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][0] = i;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][1] = h;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][2] = m;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][3] = l;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][4] = successCnt;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][5] = successProfit;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][0] = i;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][1] = h;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][2] = m;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][3] = l;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][4] = successCnt;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][5] = successProfit;
 						if(successCnt)
-							lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][6] = successProfit / successCnt;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][7] = failCnt;
-						lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][8] = failMon;
+							lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][6] = successProfit / successCnt;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][7] = failCnt;
+						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][8] = failMon;
 						if(failCnt)
-							lastResunt[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][9] = failMon/failCnt;
+							lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][9] = failMon/failCnt;
 					}
 				}
 			}
 		}
 	//}
+	CXLEzAutomation* pXl;
+	pXl = new CXLEzAutomation;
+	pXl->OpenExcelFile(_T("d:\\1.xlsx"), _T("song"));
+
+	int rows = 2;
 	
+	pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (int*)lastResult, 20 * 4 * 4 * 4, 10); //세로로 출력
+
+	delete pXl;
 
 	delete actTemp;
 	delete patternTemp;

@@ -144,7 +144,7 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 	int transRows = startRow + rows - 1;
 	int transCols = startCol + cols - 1;
 
-	return m_pXLServer->WriteArrayToRangeInt(sheet, startRow, startCol, dataArray, startRow, startCol);
+	return m_pXLServer->WriteArrayToRangeInt(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
 
 // CString 배열을 Excel에 쓰기
