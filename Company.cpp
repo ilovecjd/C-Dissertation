@@ -717,6 +717,32 @@ int CCompany::CalculateFinalResult()
 	return result;
 }
 
+// 기간내 총 매출
+int CCompany::CalculateTotalInCome()
+{
+	int result = 0;
+
+	for (int i = 0; i < m_lastDecisionWeek; i++)
+	{
+		result += m_incomeTable[0][i];
+	}
+
+	/*	필요시 다음과 같이 처리하자.
+	int tempTotalIncome = m_pGlobalEnv->Cash_Init;
+	int tempOutcome = m_expensesTable[0][10];
+	int tempTetoalOutcome = (tempOutcome*144);
+
+	int cols = m_debugInfo.getCols();
+	for (int i = 0; i < cols; i++)
+	{
+	tempTotalIncome += m_debugInfo[1][i];
+	}
+	int tempResult = tempTotalIncome- tempTetoalOutcome;
+	*/
+	//return result;
+	//return tempResult; // 기대수익?? 포함 (수주 수익 포함)	
+	return result;
+}
 
 // 시뮬레이션 결과를 엑셀 파일에 출력한다.
 void CCompany::PrintResult(CString fileName)

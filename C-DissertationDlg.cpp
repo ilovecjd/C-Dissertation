@@ -681,7 +681,7 @@ void CCDissertationDlg::OnBnClickedData()
 	ALL_ACTIVITY_PATTERN* patternTemp = new ALL_ACTIVITY_PATTERN;
 	DefaultParameters(actTemp, patternTemp);
 
-#define _PRINT_WIDTH	12
+#define _PRINT_WIDTH	13
 #define _PRINT_CNT	500
 
 	int iLoop = 10;
@@ -704,6 +704,8 @@ void CCDissertationDlg::OnBnClickedData()
 		int hr_m = 2;
 		int hr_l = 1;
 
+		int totalIncome = 0;
+
 		int term = 1;
 		term += loop;
 
@@ -716,6 +718,7 @@ void CCDissertationDlg::OnBnClickedData()
 			failCnt = 0; // 실패 횟수
 			failMon = 0; // 실패 개월
 			hr_Inc = 0; // 최종 인원
+			totalIncome = 0;
 
 			m_pGlobalEnv->SimulationWeeks = SimulationWeeks;
 			m_pGlobalEnv->maxWeek = SimulationWeeks + 80; //최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.	
@@ -770,8 +773,10 @@ void CCDissertationDlg::OnBnClickedData()
 			}
 
 			hr_Inc = company->m_totalHR[HR_HIG][m_pGlobalEnv->SimulationWeeks];
-			hr_Inc = company->m_totalHR[HR_MID][m_pGlobalEnv->SimulationWeeks];
-			hr_Inc = company->m_totalHR[HR_LOW][m_pGlobalEnv->SimulationWeeks];
+			hr_Inc += company->m_totalHR[HR_MID][m_pGlobalEnv->SimulationWeeks];
+			hr_Inc += company->m_totalHR[HR_LOW][m_pGlobalEnv->SimulationWeeks];
+
+			totalIncome = company->CalculateTotalInCome();
 
 			if (company) {
 				delete company;
@@ -802,7 +807,7 @@ void CCDissertationDlg::OnBnClickedData()
 
 			*(lastResult + (pintRow * _PRINT_WIDTH + 10)) = hr_Inc;
 			*(lastResult + (pintRow * _PRINT_WIDTH + 11)) = term;
-
+			*(lastResult + (pintRow * _PRINT_WIDTH + 12)) = totalIncome;
 			}
 
 			
@@ -820,8 +825,8 @@ void CCDissertationDlg::OnBnClickedData()
 			
 
 			CString strTitle[1][_PRINT_WIDTH] = {
-				_T("iLoop"), _T("h"), _T("m"), _T("l"), _T("sCnt"),
-				_T("sProfit"), _T("initCash"), _T("fCnt"), _T("fMon"), _T("fMonAvr"),_T("hr_Inc"),_T("recruitTerm")
+				_T("iLoop"), _T("h"), _T("m"), _T("l"), _T("sCnt"),	_T("sProfit"), _T("initCash"),
+				_T("fCnt"), _T("fMon"), _T("fMonAvr"),_T("hr_Inc"),_T("recruitTerm"),_T("Income")
 			};
 
 			pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (CString*)strTitle, 1, _PRINT_WIDTH);

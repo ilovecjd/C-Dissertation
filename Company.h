@@ -21,6 +21,7 @@ public:
 	
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
+	int CalculateTotalInCome();
 	void PrintProjectInfo(CXLEzAutomation* pXl, PROJECT* pProject);
 	void PrintProjects(CXLEzAutomation* pxl);
 	//void SaveProjectToAhn(const CString& filename);
