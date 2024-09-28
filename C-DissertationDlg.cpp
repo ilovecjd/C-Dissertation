@@ -711,6 +711,12 @@ void CCDissertationDlg::OnBnClickedData()
 
 		for (int i = 0; i < _PRINT_CNT; i++)
 		{
+			successCnt = 0;//성공횟수
+			successProfit = 0; //성공시 금액
+			failCnt = 0; // 실패 횟수
+			failMon = 0; // 실패 개월
+			hr_Inc = 0; // 최종 인원
+
 			m_pGlobalEnv->SimulationWeeks = SimulationWeeks;
 			m_pGlobalEnv->maxWeek = SimulationWeeks + 80; //최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.	
 			m_pGlobalEnv->WeeklyProb = 1.25;
