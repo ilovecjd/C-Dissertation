@@ -770,32 +770,86 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
 	if (szFileName.IsEmpty())
 		return FALSE;
 
+	// Check if the file exists
+	CFileFind fileFinder;
+	BOOL fileExists = fileFinder.FindFile(szFileName);
+
 	VARIANTARG varg1, vargWorkbook;
 	ClearAllArgs();
 	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
 		return FALSE;
 
-	ClearAllArgs();
-	AddArgumentCString(L"Filename", 0, szFileName);
-	if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
-		return FALSE;
+	if (fileExists) {
+		// If the file exists, open it
+		ClearAllArgs();
+		AddArgumentCString(L"Filename", 0, szFileName);
+		if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+	}
+	else {
+		// If the file doesn't exist, create a new workbook and save it
+		ClearAllArgs();
+		if (!ExlInvoke(varg1.pdispVal, L"Add", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+
+		// Save the newly created workbook with the provided file name
+		ClearAllArgs();
+		AddArgumentCString(L"Filename", 0, szFileName);
+		if (!ExlInvoke(vargWorkbook.pdispVal, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+	}
 
 	m_pdispWorkbook = vargWorkbook.pdispVal;
 
+	// Add new sheet if specified
 	AddNewSheet(strSheetName);
 
 	BSTR b;
 	b = strSheetName.AllocSysString();
 
+	// Find and store the newly added sheet
 	if (!FindAndStoreWorksheet(m_pdispWorkbook, b, &m_pdispWorksheets[WS_NUM_DEBUG_INFO])) {
 		// Error handling if a sheet is not found
 		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
-	
 
 	return TRUE;
 }
+
+//BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
+//	// Leave if the file cannot be opened
+//	if (NULL == m_pdispExcelApp)
+//		return FALSE;
+//	if (szFileName.IsEmpty())
+//		return FALSE;
+//
+//	VARIANTARG varg1, vargWorkbook;
+//	ClearAllArgs();
+//	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
+//		return FALSE;
+//
+//	ClearAllArgs();
+//	AddArgumentCString(L"Filename", 0, szFileName);
+//	if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+//		return FALSE;
+//
+//	m_pdispWorkbook = vargWorkbook.pdispVal;
+//
+//	AddNewSheet(strSheetName);
+//
+//	BSTR b;
+//	b = strSheetName.AllocSysString();
+//
+//	if (!FindAndStoreWorksheet(m_pdispWorkbook, b, &m_pdispWorksheets[WS_NUM_DEBUG_INFO])) {
+//		// Error handling if a sheet is not found
+//		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
+//		return FALSE;
+//	}
+//	
+//
+//	return TRUE;
+//}
 
 
 BOOL CXLAutomation::AddNewSheet(CString sheetName)
@@ -1986,3 +2040,90 @@ BOOL CXLAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int sta
 	VariantClear(&vargData);
 	return TRUE;
 }
+
+BOOL CXLAutomation::SaveAndCloseExcelFile(CString szFileName) {
+	if (m_pdispWorkbook == NULL) {
+		MessageBox(NULL, _T("No open workbook to save."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Save the workbook without asking for SaveAs
+	ClearAllArgs();
+	if (!ExlInvoke(m_pdispWorkbook, L"Save", NULL, DISPATCH_METHOD, 0)) {
+		MessageBox(NULL, _T("Failed to save the workbook."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Close the workbook
+	ClearAllArgs();
+	AddArgumentBool(L"SaveChanges", 0, FALSE);  // Save changes before closing
+	if (!ExlInvoke(m_pdispWorkbook, L"Close", NULL, DISPATCH_METHOD, DISP_FREEARGS)) {
+		MessageBox(NULL, _T("Failed to close the workbook."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	m_pdispWorkbook->Release();
+	m_pdispWorkbook = NULL;
+
+	// Quit Excel Application
+	if (m_pdispExcelApp != NULL) {
+		ClearAllArgs();
+		if (!ExlInvoke(m_pdispExcelApp, L"Quit", NULL, DISPATCH_METHOD, 0)) {
+			MessageBox(NULL, _T("Failed to quit Excel."), _T("Error"), MB_OK | MB_ICONERROR);
+			return FALSE;
+		}
+		m_pdispExcelApp->Release();
+		m_pdispExcelApp = NULL;
+	}
+
+	return TRUE;
+}
+
+
+//
+//BOOL CXLAutomation::SaveAndCloseExcelFile(CString szFileName) {
+//	if (m_pdispWorkbook == NULL) {
+//		MessageBox(NULL, _T("No open workbook to save."), _T("Error"), MB_OK | MB_ICONERROR);
+//		return FALSE;
+//	}
+//
+//	// Save the workbook
+//	VARIANTARG vargFilename;
+//	VariantInit(&vargFilename);
+//	vargFilename.vt = VT_BSTR;
+//	vargFilename.bstrVal = szFileName.AllocSysString();
+//
+//	ClearAllArgs();
+//	AddArgumentOLEString(L"Filename", 0, vargFilename.bstrVal);
+//	if (!ExlInvoke(m_pdispWorkbook, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS)) {
+//		VariantClear(&vargFilename);
+//		MessageBox(NULL, _T("Failed to save the workbook."), _T("Error"), MB_OK | MB_ICONERROR);
+//		return FALSE;
+//	}
+//
+//	VariantClear(&vargFilename);
+//
+//	// Close the workbook
+//	ClearAllArgs();
+//	AddArgumentBool(L"SaveChanges", 0, TRUE);  // Save changes before closing
+//	if (!ExlInvoke(m_pdispWorkbook, L"Close", NULL, DISPATCH_METHOD, DISP_FREEARGS)) {
+//		MessageBox(NULL, _T("Failed to close the workbook."), _T("Error"), MB_OK | MB_ICONERROR);
+//		return FALSE;
+//	}
+//
+//	m_pdispWorkbook->Release();
+//	m_pdispWorkbook = NULL;
+//
+//	// Quit Excel Application
+//	if (m_pdispExcelApp != NULL) {
+//		ClearAllArgs();
+//		if (!ExlInvoke(m_pdispExcelApp, L"Quit", NULL, DISPATCH_METHOD, 0)) {
+//			MessageBox(NULL, _T("Failed to quit Excel."), _T("Error"), MB_OK | MB_ICONERROR);
+//			return FALSE;
+//		}
+//		m_pdispExcelApp->Release();
+//		m_pdispExcelApp = NULL;
+//	}
+//
+//	return TRUE;
+//}

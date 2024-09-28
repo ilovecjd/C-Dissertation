@@ -263,3 +263,10 @@ bool OpenFile(const CString& filename, const TCHAR* mode, FILE** fp);
 void CloseFile(FILE** fp);
 ULONG WriteDataWithHeader(FILE* fp, int type, const void* data, size_t dataSize);
 bool ReadDataWithHeader(FILE* fp, void* data, size_t expectedSize, int expectedType);
+
+
+// 확률에 따라서 0 또는 1 생성
+int ZeroOrOneByProb(int probability);
+
+// 랜덤 숫자 생성 함수
+int RandomBetween(int low, int high);

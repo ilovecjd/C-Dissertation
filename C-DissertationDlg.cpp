@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(CCDissertationDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_LOAD, &CCDissertationDlg::OnBnClickedLoad)
 	ON_BN_CLICKED(IDC_PRINT_EXCEL, &CCDissertationDlg::OnBnClickedPrintExcel)
 	ON_BN_CLICKED(IDC_TEST, &CCDissertationDlg::OnBnClickedTest)
+	ON_BN_CLICKED(IDC_DATA, &CCDissertationDlg::OnBnClickedData)
 END_MESSAGE_MAP()
 
 
@@ -527,15 +528,20 @@ void CCDissertationDlg::OnBnClickedTest()
 
 	// 같은 프로젝트들로 여러가지 상황을 만들어 본다.
 	// 주당 발생확률 1.25 지출이 1.2 일때 인원 변동
-	int lastResult[20 * 4 * 4 * 4][10] = { 0, };
-	for (int i = 0; i < 20; i++)
+	int iLoop = 2;
+	//int lastResult[20 * 4 * 4 * 4][10] = { 0, };
+	int* lastResult = NULL;
+	lastResult = new int[iLoop*4*4*4*10];
+
+
+	for (int i = 0; i < iLoop; i++)
 	{
 		m_pGlobalEnv->WeeklyProb = 1.25;// i * 0.1;// 1.25;
 		CCreator Creator;
 		Creator.Init(m_pGlobalEnv, actTemp, patternTemp);
 
-		CString prarmFile;// = L"d:\\test00.anh";
-		prarmFile.Format(_T("d:\\test_%0d.ahn"), i);
+		CString prarmFile = L"d:\\test00.anh";
+		prarmFile.Format(_T("d:\\test2_%0d.ahn"), i);
 		Creator.Save(prarmFile);
 
 
@@ -562,7 +568,7 @@ void CCDissertationDlg::OnBnClickedTest()
 							company->m_GlobalEnv.Hr_Init_H = h;//2
 							company->m_GlobalEnv.Hr_Init_M = m;//1
 							company->m_GlobalEnv.Hr_Init_L = l;//3
-							company->m_GlobalEnv.Cash_Init = (50 * h + 39 * m + 25 * l) * 4 * 6* 1.2; //인원수 대비 6개월
+							company->m_GlobalEnv.Cash_Init = (50 * h + 39 * m + 25 * l) * 4 * 12* 1.2; //인원수 대비 6개월
 							company->m_GlobalEnv.selectOrder = 1; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
 							company->m_GlobalEnv.recruit = 0;  //0: 충원 없음. 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
 							company->m_GlobalEnv.layoff = 0;  // 0: 감원 없음 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
@@ -593,18 +599,18 @@ void CCDissertationDlg::OnBnClickedTest()
 								company = NULL;
 							}
 						}/////
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][0] = i;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][1] = h;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][2] = m;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][3] = l;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][4] = successCnt;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][5] = successProfit;
+						*(lastResult+((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l)*10 + 0)) = i;
+						*(lastResult+((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +1)) = h;
+						*(lastResult+((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +2)) = m;
+						*(lastResult+((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +3)) = l;
+						*(lastResult+((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +4)) = successCnt;
+						*(lastResult+((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +5)) = successProfit;
 						if(successCnt)
-							lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][6] = successProfit / successCnt;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][7] = failCnt;
-						lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][8] = failMon;
+							*(lastResult + ((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l )* 10 + 6))= successProfit / successCnt;
+						*(lastResult + ((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +7)) = failCnt;
+						*(lastResult + ((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 +8))= failMon;
 						if(failCnt)
-							lastResult[i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l][9] = failMon/failCnt;
+							*(lastResult + ((i * 4 * 4 * 4 + h * 4 * 4 + m * 4 + l) * 10 + 9))= failMon/failCnt;
 					}
 				}
 			}
@@ -612,16 +618,17 @@ void CCDissertationDlg::OnBnClickedTest()
 	//}
 	CXLEzAutomation* pXl;
 	pXl = new CXLEzAutomation;
-	pXl->OpenExcelFile(_T("d:\\1.xlsx"), _T("song"));
+	pXl->OpenExcelFile(_T("d:\\2.xlsx"), _T("song"));
 
 	int rows = 2;
 	
-	pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (int*)lastResult, 20 * 4 * 4 * 4, 10); //세로로 출력
+	pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (int*)lastResult, iLoop * 4 * 4 * 4, 10); //세로로 출력
 
 	delete pXl;
 
 	delete actTemp;
 	delete patternTemp;
+	delete lastResult;
 }
 
 void CCDissertationDlg::DefaultParameters(ALL_ACT_TYPE* act, ALL_ACTIVITY_PATTERN* pattern)
@@ -665,3 +672,162 @@ void CCDissertationDlg::DefaultParameters(ALL_ACT_TYPE* act, ALL_ACTIVITY_PATTER
 	m_pGlobalEnv->recruit = 160;  // 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
 	m_pGlobalEnv->layoff = 0;  // 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
 }
+
+
+// 3,3,3 의 인원으로 구성된 회사에서의 경우
+void CCDissertationDlg::OnBnClickedData()
+{
+	ALL_ACT_TYPE* actTemp = new ALL_ACT_TYPE;
+	ALL_ACTIVITY_PATTERN* patternTemp = new ALL_ACTIVITY_PATTERN;
+	DefaultParameters(actTemp, patternTemp);
+
+#define _PRINT_WIDTH	12
+#define _PRINT_CNT	500
+
+	int iLoop = 10;
+	int* lastResult = NULL;
+
+	//lastResult = new int[iLoop * _PRINT_WIDTH];
+	lastResult = new int[_PRINT_CNT * _PRINT_WIDTH];
+
+	//m_pGlobalEnv 를 통해서 모든 환경을 설정한다.
+	for (int loop = 0; loop < iLoop; loop++)
+	{
+		int successCnt = 0;//성공횟수
+		int successProfit = 0; //성공시 금액
+		int failCnt = 0; // 실패 횟수
+		int failMon = 0; // 실패 개월
+		int hr_Inc = 0; // 최종 인원
+
+
+		int hr_h = 3;
+		int hr_m = 2;
+		int hr_l = 1;
+
+		int term = 1;
+		term += loop;
+
+		int SimulationWeeks = 4 * 36; // 4주 x 36 개월;
+
+		for (int i = 0; i < _PRINT_CNT; i++)
+		{
+			m_pGlobalEnv->SimulationWeeks = SimulationWeeks;
+			m_pGlobalEnv->maxWeek = SimulationWeeks + 80; //최대 80주(18개월)간 진행되는 프로젝트를 시뮬레이션 마지막에 기록할 수도 있다.	
+			m_pGlobalEnv->WeeklyProb = 1.25;
+			m_pGlobalEnv->Hr_Init_H = hr_h;
+			m_pGlobalEnv->Hr_Init_M = hr_m;
+			m_pGlobalEnv->Hr_Init_L = hr_l;
+			m_pGlobalEnv->Hr_LeadTime = 12;
+			m_pGlobalEnv->Cash_Init = (50 * hr_h + 39 * hr_m + 25 * hr_l) * 4 * 6 * 1.2; //인원수 대비 6개월
+			m_pGlobalEnv->ProblemCnt = 10;
+			m_pGlobalEnv->ExpenseRate = 1.2;	// 비용계산에 사용되는 제경비 비율		
+			m_pGlobalEnv->selectOrder = 1;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+			m_pGlobalEnv->recruit = 4 * 12;		// 충원에 필요한 운영비 (몇주분량인가?)
+			m_pGlobalEnv->layoff = 4 * 3.5;			// 감원에 필요한 운영비 (몇주분량인가?)
+
+			CCreator Creator;
+			Creator.Init(m_pGlobalEnv, actTemp, patternTemp);
+
+			CString prarmFile;
+			prarmFile.Format(_T("d:\\result\\resualt%d%d%d_%0d.ahn"), hr_h, hr_m, hr_l, term);
+
+			Creator.Save(prarmFile);
+
+			CCompany* company = new CCompany;
+			company->Init(prarmFile);
+			company->ReInit();
+			company->recruitTerm = term;
+			//company->m_GlobalEnv.selectOrder = 1; //선택 순서  1: 먼저 발생한 순서대로 2 : 금액이 큰 순서대로 3 : 금액이 작은 순서대로
+			//company->m_GlobalEnv.recruit = 0;  //0: 충원 없음. 작을수록 공격적인 인원 충원 144 : 시뮬레이션 끝까지 충원 없음
+			//company->m_GlobalEnv.layoff = 0;  // 0: 감원 없음 클수록 공격적인 인원 감축, 0 : 부도까지 인원 유지
+			//company->m_GlobalEnv.ExpenseRate = 1.2;// -j*0.1;
+
+			int k = 0;
+			while (k < m_pGlobalEnv->SimulationWeeks)
+			{
+				if (FALSE == company->Decision(k))  // j번째 기간에 결정해야 할 일들		
+					k = 9999; //m_pGlobalEnv->SimulationWeeks + 1;
+
+				k++;
+			}
+
+			if (k > 9999)// m_pGlobalEnv->SimulationWeeks)//실패
+			{
+				failCnt = 1;
+				failMon = company->m_lastDecisionWeek;
+			}
+			else
+			{
+				successCnt = 1;//성공횟수 증가
+				successProfit = company->CalculateFinalResult(); //성공시 금액
+				successProfit = successProfit - m_pGlobalEnv->Cash_Init;
+			}
+
+			hr_Inc = company->m_totalHR[HR_HIG][m_pGlobalEnv->SimulationWeeks];
+			hr_Inc = company->m_totalHR[HR_MID][m_pGlobalEnv->SimulationWeeks];
+			hr_Inc = company->m_totalHR[HR_LOW][m_pGlobalEnv->SimulationWeeks];
+
+			if (company) {
+				delete company;
+				company = NULL;
+			}
+			//}
+			int pintRow = i;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 0)) = i;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 1)) = hr_h;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 2)) = hr_m;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 3)) = hr_l;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 4)) = successCnt;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 5)) = successProfit;
+
+			/*if (successCnt)
+				*(lastResult + (pintRow * _PRINT_WIDTH + 6)) = successProfit / successCnt;
+			else
+				*(lastResult + (pintRow * _PRINT_WIDTH + 6)) = 0;*/
+			*(lastResult + (pintRow * _PRINT_WIDTH + 6)) = m_pGlobalEnv->Cash_Init;
+
+			*(lastResult + (pintRow * _PRINT_WIDTH + 7)) = failCnt;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 8)) = failMon;
+
+			if (failCnt)
+				*(lastResult + (pintRow * _PRINT_WIDTH + 9)) = failMon / failCnt;
+			else
+				*(lastResult + (pintRow * _PRINT_WIDTH + 9)) = 0;
+
+			*(lastResult + (pintRow * _PRINT_WIDTH + 10)) = hr_Inc;
+			*(lastResult + (pintRow * _PRINT_WIDTH + 11)) = term;
+
+			}
+
+			
+
+			CString xlFile;
+			xlFile.Format(_T("d:\\result\\resualt_%d%d%d.xlsx"), hr_h, hr_m, hr_l);
+
+			CString sheetName;
+			sheetName.Format(_T("%d%d%d_%0d"), hr_h, hr_m, hr_l, term);
+
+			CXLEzAutomation* pXl;
+			pXl = new CXLEzAutomation;
+			pXl->OpenExcelFile(xlFile, sheetName);
+
+			
+
+			CString strTitle[1][_PRINT_WIDTH] = {
+				_T("iLoop"), _T("h"), _T("m"), _T("l"), _T("sCnt"),
+				_T("sProfit"), _T("initCash"), _T("fCnt"), _T("fMon"), _T("fMonAvr"),_T("hr_Inc"),_T("recruitTerm")
+			};
+
+			pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (CString*)strTitle, 1, _PRINT_WIDTH);
+			pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 2, 1, (int*)lastResult, _PRINT_CNT, _PRINT_WIDTH);
+			
+			pXl->SaveAndCloseExcelFile(xlFile);
+
+			delete pXl;			
+	}
+	
+	delete actTemp;
+	delete patternTemp;
+	delete lastResult;
+}
+

@@ -6,7 +6,8 @@
 #include "Creator.h"
 
 CCompany::CCompany()
-{	
+{
+	recruitTerm = 8; // (분기 마다 인원 증감 결정 ==> 1000/12주)
 }
 
 CCompany::~CCompany()
@@ -63,7 +64,56 @@ BOOL CCompany::Init(CString fileName)
 
 	m_incomeTable.Resize(1, m_GlobalEnv.maxWeek);
 	m_expensesTable.Resize(1, m_GlobalEnv.maxWeek);
-	
+
+	// 내부프로젝트 생성
+	// 내부프로제트는 3개만 발생함
+
+	//int duration = 40;
+	//int startDate = 0;
+
+	//m_InterProjects[0].category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	//m_InterProjects[0].ID = 1001;			// 프로젝트의 번호	
+	//m_InterProjects[0].orderDate = startDate;	// 발주일
+	//m_InterProjects[0].startAvail = startDate;	// 시작 가능일
+	//m_InterProjects[0].winProb = 30;		// 성공 확률 30%
+	//m_InterProjects[0].endDate = startDate + duration-1;		// 프로젝트 종료일
+	//m_InterProjects[0].duration = duration;		// 프로젝트의 총 기간
+	//m_InterProjects[0].profit = m_GlobalEnv.Cash_Init/6 /2;	// 총 기대 수익 (HR 종속)
+
+	//// 활동
+	//m_InterProjects[0].numActivities = 1;          // 총 활동 수
+	//m_InterProjects[0].activities[0].activityType = 1;// 활동에 관한 정보를 기록하는 배열	
+	//m_InterProjects[0].activities[0].duration = duration;      // 활동 기간
+	//m_InterProjects[0].activities[0].startDate = startDate;     // 시작 날짜
+	//m_InterProjects[0].activities[0].endDate = startDate+duration - 1;       // 종료 날짜
+	//m_InterProjects[0].activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
+	//m_InterProjects[0].activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
+	//m_InterProjects[0].activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
+
+
+	// 1번
+	//duration = 24;
+	//startDate = 48;
+	//m_InterProjects[1].category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	//m_InterProjects[1].ID = 1002;			// 프로젝트의 번호
+	//m_InterProjects[1].orderDate = startDate;	// 발주일
+	//m_InterProjects[1].startAvail = startDate;	// 시작 가능일
+	//m_InterProjects[1].winProb = 0.4;		// 성공 확률	
+	//m_InterProjects[1].endDate = startDate + duration - 1;	// 프로젝트 종료일
+	//m_InterProjects[1].duration = duration;
+	//// 프로젝트의 총 기간
+	//m_InterProjects[1].profit = m_GlobalEnv.Cash_Init / 6 / 2;	// 총 기대 수익 (HR 종속)
+
+	//// 활동
+	//m_InterProjects[1].numActivities = 1;          // 총 활동 수
+	//m_InterProjects[1].activities[0].activityType = 1; // 활동에 관한 정보를 기록하는 배열	
+	//m_InterProjects[1].activities[0].duration = duration;      // 활동 기간
+	//m_InterProjects[1].activities[0].startDate = startDate;     // 시작 날짜
+	//m_InterProjects[1].activities[0].endDate = startDate + duration-1;       // 종료 날짜
+	//m_InterProjects[1].activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
+	//m_InterProjects[1].activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
+	//m_InterProjects[1].activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
+	//	
 	return TRUE;
 }
 
@@ -130,6 +180,10 @@ void CCompany::ReadOrder(FILE* fp)
 	m_orderTable[0] = order0;
 	m_orderTable[1] = order1;
 
+	delete temp;
+	// 필요 없음 delete order0;
+	// 필요 없음 delete order1;
+
 }
 
 
@@ -195,14 +249,45 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 
 		PROJECT* project = m_AllProjects + (prjId - 1);
 
-		// 1. payment 를 계산한다. 선금은 시작시 받기로 한다. 조건완료후 1주 후 수금			
-		// 2. 지출을 계산한다.
-		//' 3. 진행중인 프로젝트를 이관해서 기록한다.
-		int sum = m_doingTable[ORDER_SUM][thisWeek];
-		if (thisWeek < (project->isStart + project->duration - 1)) // ' 아직 안끝났으면
+		if (project->category == 0 ) {// 외부프로젝트면
+			// 1. payment 를 계산한다. 선금은 시작시 받기로 한다. 조건완료후 1주 후 수금			
+			// 2. 지출을 계산한다.
+			//' 3. 진행중인 프로젝트를 이관해서 기록한다.
+			int sum = m_doingTable[ORDER_SUM][thisWeek];
+			if (thisWeek < (project->isStart + project->duration - 1)) // ' 아직 안끝났으면
+			{
+				m_doingTable[sum + 1][thisWeek] = project->ID;// 테이블 크기는 자동으로 변경된다.
+				m_doingTable[ORDER_SUM][thisWeek] = sum + 1;
+			}
+		}
+		else // 내부프로젝트
 		{
-			m_doingTable[sum + 1][thisWeek] = project->ID;// 테이블 크기는 자동으로 변경된다.
-			m_doingTable[ORDER_SUM][thisWeek] = sum + 1;
+			// 1. 지난주에 종료되었으면 앞으로 받을 금액표 업데이트
+			if (project->endDate == (thisWeek - 1))
+			{
+				int win = ZeroOrOneByProb(project->winProb); // 성공 확율에 따라서 금액을 결정한다.
+
+				if (win) {
+					for (int future = thisWeek; future < m_GlobalEnv.maxWeek ; future++) {
+						m_incomeTable[0][future] += project->profit;
+					}
+				}
+			}
+			else {
+
+				// 2. 진행중이면 다음주부터 시작 가능 으로 표시하고 기간은 1주 감소
+				project->orderDate = thisWeek;
+				project->startAvail = thisWeek;
+				project->duration = project->duration - 1;
+				project->activities[0].duration = project->duration - 1;      // 활동 기간
+				project->activities[0].startDate = 0;     // 시작 날짜
+
+				// 인력 테이블 조정
+				RemoveInterProject(project, thisWeek);
+			}
+			
+
+			//2. 기간을 한주 줄임
 		}
 	}
 
@@ -226,6 +311,7 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 	/// 인원 충원을 결정하자.
 	
 	// 지금부터 채용한계선까지의 수지 차이
+	// 이렇게 하면 너무 채용이 많아짐. 
 	int temp = m_GlobalEnv.Cash_Init; // 기간까지 필요한 현금 = 필요지출 - 예상수입
 	for (int i = 0; i < m_GlobalEnv.recruit; i++)
 	{
@@ -235,8 +321,12 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 	// 보유 현금으로 인원 충원 한계선 이상 유지가 가능하면 충원		
 	if (temp < Cash)
 	{
-		int i = rand() % 3; /// 고급,중급,초급중 아무나
-		AddHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 충원 리드 타임
+		//분기에 한번 꼴로 충원하자.
+		int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 충원
+		if (win) {
+			int i = rand() % 3; /// 고급,중급,초급중 아무나
+			AddHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 충원 리드 타임
+		}
 	}
 
 	else 
@@ -249,12 +339,60 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 
 		if (temp > Cash)
 		{
-			int i = rand() % 3;  //song 인원 감원은 프로젝트 할당 상황을 보고 결정하게 수정해야함.
-			RemoveHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 감원 리드 타임
+			int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 감원
+			if (win) {
+				int i = rand() % 3;  //song 인원 감원은 프로젝트 할당 상황을 보고 결정하게 수정해야함.
+				RemoveHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 감원 리드 타임
+			}
 		}
 	}
 	
 	return TRUE;
+}
+
+void CCompany::RemoveInterProject(PROJECT* project, int thisWeek)
+{
+	project->isStart = project->startAvail;
+
+	// HR 정보 업데이트
+	// 2중 루프 activity->기간-> 등급업데이트 순서로 activity들을 순서대로 가져온다.
+	int numAct = project->numActivities;
+	for (int i = 0; i < numAct; i++)
+	{
+		PACTIVITY pActivity = &(project->activities[i]);
+		for (int j = 0; j < pActivity->duration; j++)
+		{
+			int col = j + thisWeek;// pActivity->startDate;
+			m_doingHR[HR_HIG][col] -= pActivity->highSkill;
+			m_doingHR[HR_MID][col] -= pActivity->midSkill;
+			m_doingHR[HR_LOW][col] -= pActivity->lowSkill;
+
+			m_freeHR[HR_HIG][col] = m_totalHR[HR_HIG][col] - m_doingHR[HR_HIG][col];
+			m_freeHR[HR_MID][col] = m_totalHR[HR_MID][col] - m_doingHR[HR_MID][col];
+			m_freeHR[HR_LOW][col] = m_totalHR[HR_LOW][col] - m_doingHR[HR_LOW][col];
+		}
+	}
+
+	// 현황판 업데이트
+	int sum = m_doingTable[0][thisWeek];
+	m_doingTable[sum + 1][thisWeek] = project->ID;
+	m_doingTable[0][thisWeek] = sum + 1;
+
+	// 수입 테이블 업데이트. 지출은 인원 관리쪽에서 한다.	
+	int incomeDate;
+
+	if (project->isStart <thisWeek)
+	{
+		MessageBox(NULL, _T("m_isStart miss"), _T("Error"), MB_OK | MB_ICONERROR);
+	}
+	incomeDate = project->isStart + project->firstPayMonth;	// 선금 지급일
+	m_incomeTable[0][incomeDate] += project->firstPay;
+
+	incomeDate = project->isStart + project->secondPayMonth;	// 2차 지급일
+	m_incomeTable[0][incomeDate] += project->secondPay;
+
+	incomeDate = project->isStart + project->finalPayMonth;	// 3차 지급일
+	m_incomeTable[0][incomeDate] += project->finalPay;
 }
 
 void CCompany::AddHR(int grade ,int addWeek)
@@ -297,24 +435,59 @@ void CCompany::RemoveHR(int grade, int removeWeek)
 	}
 }
 
+// song 프로젝트 테이블을 모두 돌면서 order이 이번주인것에서 비교하게 변경하자.
+
 void CCompany::SelectCandidates(int thisWeek)
-{
-	int lastID = m_orderTable[ORDER_SUM][thisWeek] ;	// 지난달까지 누계
-	int endID = m_orderTable[ORDER_ORD][thisWeek] + lastID;  // 지난달까지 누계 + 이번주 발생 갯수 - 1
-	for(int i=0; i< MAX_CANDIDATES; i++)
+{	
+	for (int i = 0; i< MAX_CANDIDATES; i++)
 		m_candidateTable[i] = 0;
 
-	int j = 0; 
-	for (int i = lastID; i < endID; i++)
+	int j = 0;
+
+	for (int i = 0; i < m_totalProjectNum; i++)
 	{
 		PROJECT* project = m_AllProjects + i;
-
-		if (IsEnoughHR(thisWeek, project)) // 인원 체크
+		if (project->orderDate == thisWeek)
 		{
-			m_candidateTable[j++] = project->ID;
+			if (IsEnoughHR(thisWeek, project)) // 인원 체크
+			{
+				m_candidateTable[j++] = project->ID;
+			}
 		}
 	}
 }
+
+//
+//void CCompany::SelectCandidatesOld(int thisWeek)
+//{
+//	int lastID = m_orderTable[ORDER_SUM][thisWeek] ;	// 지난달까지 누계
+//	int endID = m_orderTable[ORDER_ORD][thisWeek] + lastID;  // 지난달까지 누계 + 이번주 발생 갯수 - 1
+//	for(int i=0; i< MAX_CANDIDATES; i++)
+//		m_candidateTable[i] = 0;
+//
+//	int j = 0; 
+//	for (int i = lastID; i < endID; i++)
+//	{
+//		PROJECT* project = m_AllProjects + i;
+//
+//		if (IsEnoughHR(thisWeek, project)) // 인원 체크
+//		{
+//			m_candidateTable[j++] = project->ID;
+//		}
+//	}
+//
+//
+//	// 내부프로젝트에서 후보군을 찾는다.
+//	for (int i = 0; i < 1; i++)
+//	{
+//		PROJECT* project = m_InterProjects + i;
+//
+//		if (IsEnoughHR(thisWeek, project)) // 인원 체크
+//		{
+//			m_candidateTable[j++] = project->ID;
+//		}
+//	}
+//}
 
 BOOL CCompany::IsEnoughHR(int thisWeek, PROJECT* project)
 {
@@ -384,9 +557,17 @@ void CCompany::SelectNewProject(int thisWeek)
 	int j = 0;
 
 	while (m_candidateTable[j] != 0) {
+
+		PROJECT* project;
 		int id = m_candidateTable[j];
-		PROJECT* project = m_AllProjects+(id - 1);
-		valueArray[j] = project->profit;
+
+		project = m_AllProjects + (id - 1);
+		if(project->category == 0){// 외부 프로젝트
+			valueArray[j] = project->profit;
+		}
+		else {  //내부 프로젝트
+			valueArray[j] = project->profit * 4 * 12 *3;
+		}
 		j = j + 1;
 	}
 	
@@ -403,29 +584,28 @@ void CCompany::SelectNewProject(int thisWeek)
 		break;
 	default : 
 		break;
-	}
-	
-	
+	} 
 
 
 	int i = 0;
-	while(m_candidateTable[i] != 0) {
+	while (m_candidateTable[i] != 0) {
 
 		if (i > MAX_CANDIDATES) break;
 
 		int id = m_candidateTable[i++];
 
-		PROJECT* project = m_AllProjects + (id-1);
+		PROJECT* project = m_AllProjects + (id - 1);
 
 		if (project->startAvail < m_GlobalEnv.maxWeek)
 		{
-			if (IsEnoughHR(thisWeek,project))
-			{	
-				AddProjectEntry(project, thisWeek);	
+			if (IsEnoughHR(thisWeek, project))
+			{
+				AddProjectEntry(project, thisWeek);
 
 			}
-		}		
-	} 
+		}
+	}
+
 }
 
 // 모든 체크가 끝나고 호출된다. 

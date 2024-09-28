@@ -87,6 +87,8 @@ public:
 	BOOL ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
 
 	BOOL AddNewSheet(CString sheetName);
+
+	BOOL SaveAndCloseExcelFile(CString szFileName);
 	// 자동화 헬퍼 함수
 	//song
 

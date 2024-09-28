@@ -48,6 +48,7 @@ public:
 
 	BOOL ExportCString(SheetName sheet, CString szDataCollection);
 
+	BOOL SaveAndCloseExcelFile(CString szFileName);
 
 	CXLEzAutomation();
 	CXLEzAutomation(BOOL bVisible);

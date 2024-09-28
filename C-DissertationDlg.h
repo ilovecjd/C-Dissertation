@@ -59,4 +59,5 @@ public:
 	afx_msg void OnBnClickedLoad();
 	afx_msg void OnBnClickedPrintExcel();
 	afx_msg void OnBnClickedTest();
+	afx_msg void OnBnClickedData();
 };

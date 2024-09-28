@@ -12,6 +12,7 @@ public:
 public :
 	
 	int m_totalProjectNum;
+	int m_OutProjectNum;
 	Dynamic2DArray m_orderTable;
 	//PRJ_VAR prj_var;
 	
@@ -36,8 +37,8 @@ private:
 	double CalculateLaborCost(const std::string& grade);
 	void CalculatePaymentSchedule(PROJECT* pProject);
 
-	int ZeroOrOneByProb(int probability);
-	int RandomBetween(int low, int high);
+	//int ZeroOrOneByProb(int probability);
+	//int RandomBetween(int low, int high);
 
 	void WriteProjet(FILE* fp);
 };

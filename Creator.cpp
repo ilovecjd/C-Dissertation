@@ -20,7 +20,7 @@ BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv, ALL_ACT_TYPE* pActType, ALL_ACTIVITY
 	*(&m_ActType) = *pActType;
 	*(&m_ActPattern) = *pActPattern;
 
-	CreateOrderTable();//m_totalProjectNum 생성
+	CreateOrderTable();//m_totalProjectNum 생성 (내부프로젝트 3개 만큼 크게)
 	m_pProjects = new PROJECT[m_totalProjectNum];
 	CreateProjects();
 
@@ -57,7 +57,8 @@ int CCreator::CreateOrderTable()
 		m_orderTable[ORDER_ORD][week] = cnt;			// 발생 프로젝트갯수
 		sum = sum + cnt;	// 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다.
 	}
-	m_totalProjectNum = sum;
+	m_OutProjectNum = sum;
+	m_totalProjectNum = sum + 3;// 생성될 내부프로젝트 최대 갯수만큼 더한다.
 	return 0;
 }
 
@@ -68,6 +69,7 @@ int CCreator::CreateProjects()
 	int endNum = 0;
 	int preTotal = 0;
 
+	// 외부 프로젝트 생성
 	for (int week = 0; week < m_GlobalEnv.maxWeek; week++)
 	{
 		preTotal = m_orderTable[ORDER_SUM][week];			// 지난주까지의 발주 프로젝트 누계
@@ -98,19 +100,48 @@ int CCreator::CreateProjects()
 		}
 	}
 
+	// 내부 프로젝트 생성
+	for (int i = 0; i <3; i++)
+	{	
+		PROJECT* pProject;
+		int duration = 40+i*4;  // 10개월, 11개월, 12개월
+		int startDate = i * 4 * 12;
+
+		projectId = m_OutProjectNum + 1 + i;
+		pProject = &m_pProjects[projectId-1];
+		memset(pProject, 0, sizeof(struct PROJECT));
+
+		pProject->category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+		pProject->ID = projectId;		// 프로젝트의 번호	
+		pProject->orderDate = startDate;	// 발주일
+		pProject->startAvail = startDate; // 바로시작 가능
+		pProject->isStart = 0;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
+		pProject->experience = ZeroOrOneByProb(95);	// 경험 (0: 무경험 1: 유경험)
+		pProject->winProb = 30 + i*10;		// 성공 확률 song ==> 추후 사용시 생성 방법을 결정한다. 
+		pProject->nCashFlows = 0;			// 비용 지급 횟수(규모에 따라 변경 가능)
+		
+		pProject->endDate = startDate + duration - 1;		// 프로젝트 종료일
+		pProject->duration = duration;		// 프로젝트의 총 기간
+
+		//CalculatePaymentSchedule(pProject);			//m_cashFlows[MAX_N_CF] 계산	
+		pProject->profit = m_GlobalEnv.Cash_Init /12/4;	// 주당 기대수익으로 변경
+															
+		//1CreateActivities(pProject);			//m_activities[MAX_ACT] 계산 // 활동
+		pProject->numActivities = 1;          // 총 활동 수
+		pProject->activities[0].activityType = 1;// 활동에 관한 정보를 기록하는 배열	
+		pProject->activities[0].duration = duration;      // 활동 기간
+		pProject->activities[0].startDate = startDate;     // 시작 날짜
+		pProject->activities[0].endDate = startDate + duration - 1;       // 종료 날짜
+		pProject->activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
+		pProject->activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
+		pProject->activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
+
+	}
+
 	return 0;
-}
-// 확률에 따라서 0 또는 1 생성
-int CCreator::ZeroOrOneByProb(int probability)
-{
-	double randomProb = (double)rand() / RAND_MAX;
-	return (randomProb <= (double)probability / 100) ? 1 : 0;
+
 }
 
-// 랜덤 숫자 생성 함수
-int CCreator::RandomBetween(int low, int high) {
-	return low + rand() % (high - low + 1);
-}
 
 BOOL CCreator::CreateActivities(PROJECT* pProject) {
 	//song 사용하지 않는 멤버 변수와 지역 변수들 삭제 하자	

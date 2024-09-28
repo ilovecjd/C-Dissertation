@@ -71,3 +71,14 @@ bool ReadDataWithHeader(FILE* fp, void* data, size_t expectedSize, int expectedT
 	return true;
 }
 
+// 확률에 따라서 0 또는 1 생성
+int ZeroOrOneByProb(int probability)
+{
+	double randomProb = (double)rand() / RAND_MAX;
+	return (randomProb <= (double)probability / 100) ? 1 : 0;
+}
+
+// 랜덤 숫자 생성 함수
+int RandomBetween(int low, int high) {
+	return low + rand() % (high - low + 1);
+}

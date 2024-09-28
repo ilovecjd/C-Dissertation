@@ -190,3 +190,8 @@ BOOL CXLEzAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int s
 
 	return m_pXLServer->ReadExRangeConvertInt(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
+
+BOOL CXLEzAutomation::SaveAndCloseExcelFile(CString szFileName)
+{
+	return m_pXLServer->SaveAndCloseExcelFile(szFileName);
+}

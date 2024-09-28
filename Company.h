@@ -32,21 +32,25 @@ public:
 
 	void PrintDBTitle(CXLEzAutomation* pXl);
 
+	Dynamic2DArray m_totalHR;
+	int recruitTerm; // 인원 충감을 계산하는 기간 비율 (100/기간(week) 로 계산)
+
 private:
 	// 초기화 필요한 변수들
 	int m_totalProjectNum;
-
+	
 	ALL_ACT_TYPE	m_ActType;
 	ALL_ACTIVITY_PATTERN m_ActPattern;
 
 	PROJECT* m_AllProjects = NULL;	
+	//PROJECT m_InterProjects[3] = {0,};
 	CXLEzAutomation* m_pXl = NULL; // 엑셀을 다루기 위한 클래스	
 
 	int* m_orderTable[2] = {NULL,NULL};
 
 	Dynamic2DArray m_doingHR;
 	Dynamic2DArray m_freeHR;
-	Dynamic2DArray m_totalHR;
+	
 
 	Dynamic2DArray m_doingTable;
 	Dynamic2DArray m_doneTable;
@@ -70,6 +74,9 @@ private:
 
 	void CCompany::ReadOrder(FILE* fp);
 	void ReadProject(FILE* fp);
+
+
+	void RemoveInterProject(PROJECT* project, int addWeek);
 	
 }; 
 
