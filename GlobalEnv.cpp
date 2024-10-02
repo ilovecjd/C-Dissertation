@@ -22,7 +22,11 @@ extern LPOLESTR gSheetNames[WS_NUM_SHEET_COUNT];// = { L"parameters", L"dashboar
 /////////////////////////////////////////////////////////////////////
 // 파일 처리 루틴들
 bool OpenFile(const CString& filename, const TCHAR* mode, FILE** fp) {
-	errno_t err = _wfopen_s(fp, filename, mode);
+
+	// CString을 const wchar_t*로 변환 (유니코드 지원)
+	const wchar_t* pFileName = filename.GetString();
+
+	errno_t err = _wfopen_s(fp, pFileName, mode);
 	if (err != 0 || *fp == nullptr) {
 		perror("Failed to open file");
 		return false;
@@ -63,7 +67,7 @@ bool ReadDataWithHeader(FILE* fp, void* data, size_t expectedSize, int expectedT
 		return false;
 	}
 
-	if (fread(data, 1, tl.length, fp) != tl.length) {
+	if (fread(data, 1, tl.length,fp) != tl.length) {
 		perror("Failed to read data");
 		return false;
 	}

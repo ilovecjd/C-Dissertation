@@ -68,52 +68,52 @@ BOOL CCompany::Init(CString fileName)
 	// 내부프로젝트 생성
 	// 내부프로제트는 3개만 발생함
 
-	//int duration = 40;
-	//int startDate = 0;
+	int duration = 40;
+	int startDate = 0;
+/*
+	m_InterProjects[0].category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	m_InterProjects[0].ID = 1001;			// 프로젝트의 번호	
+	m_InterProjects[0].orderDate = startDate;	// 발주일
+	m_InterProjects[0].startAvail = startDate;	// 시작 가능일
+	m_InterProjects[0].winProb = 30;		// 성공 확률 30%
+	m_InterProjects[0].endDate = startDate + duration-1;		// 프로젝트 종료일
+	m_InterProjects[0].duration = duration;		// 프로젝트의 총 기간
+	m_InterProjects[0].profit = m_GlobalEnv.Cash_Init/6 /2;	// 총 기대 수익 (HR 종속)
 
-	//m_InterProjects[0].category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
-	//m_InterProjects[0].ID = 1001;			// 프로젝트의 번호	
-	//m_InterProjects[0].orderDate = startDate;	// 발주일
-	//m_InterProjects[0].startAvail = startDate;	// 시작 가능일
-	//m_InterProjects[0].winProb = 30;		// 성공 확률 30%
-	//m_InterProjects[0].endDate = startDate + duration-1;		// 프로젝트 종료일
-	//m_InterProjects[0].duration = duration;		// 프로젝트의 총 기간
-	//m_InterProjects[0].profit = m_GlobalEnv.Cash_Init/6 /2;	// 총 기대 수익 (HR 종속)
-
-	//// 활동
-	//m_InterProjects[0].numActivities = 1;          // 총 활동 수
-	//m_InterProjects[0].activities[0].activityType = 1;// 활동에 관한 정보를 기록하는 배열	
-	//m_InterProjects[0].activities[0].duration = duration;      // 활동 기간
-	//m_InterProjects[0].activities[0].startDate = startDate;     // 시작 날짜
-	//m_InterProjects[0].activities[0].endDate = startDate+duration - 1;       // 종료 날짜
-	//m_InterProjects[0].activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
-	//m_InterProjects[0].activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
-	//m_InterProjects[0].activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
+	// 활동
+	m_InterProjects[0].numActivities = 1;          // 총 활동 수
+	m_InterProjects[0].activities[0].activityType = 1;// 활동에 관한 정보를 기록하는 배열	
+	m_InterProjects[0].activities[0].duration = duration;      // 활동 기간
+	m_InterProjects[0].activities[0].startDate = startDate;     // 시작 날짜
+	m_InterProjects[0].activities[0].endDate = startDate+duration - 1;       // 종료 날짜
+	m_InterProjects[0].activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
+	m_InterProjects[0].activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
+	m_InterProjects[0].activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
 
 
-	// 1번
-	//duration = 24;
-	//startDate = 48;
-	//m_InterProjects[1].category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
-	//m_InterProjects[1].ID = 1002;			// 프로젝트의 번호
-	//m_InterProjects[1].orderDate = startDate;	// 발주일
-	//m_InterProjects[1].startAvail = startDate;	// 시작 가능일
-	//m_InterProjects[1].winProb = 0.4;		// 성공 확률	
-	//m_InterProjects[1].endDate = startDate + duration - 1;	// 프로젝트 종료일
-	//m_InterProjects[1].duration = duration;
-	//// 프로젝트의 총 기간
-	//m_InterProjects[1].profit = m_GlobalEnv.Cash_Init / 6 / 2;	// 총 기대 수익 (HR 종속)
+	//1번
+	duration = 24;
+	startDate = 48;
+	m_InterProjects[1].category = 1;		// 프로젝트 분류 (0: 외부 / 1: 내부)
+	m_InterProjects[1].ID = 1002;			// 프로젝트의 번호
+	m_InterProjects[1].orderDate = startDate;	// 발주일
+	m_InterProjects[1].startAvail = startDate;	// 시작 가능일
+	m_InterProjects[1].winProb = 0.4;		// 성공 확률	
+	m_InterProjects[1].endDate = startDate + duration - 1;	// 프로젝트 종료일
+	m_InterProjects[1].duration = duration;
+	// 프로젝트의 총 기간
+	m_InterProjects[1].profit = m_GlobalEnv.Cash_Init / 6 / 2;	// 총 기대 수익 (HR 종속)
 
-	//// 활동
-	//m_InterProjects[1].numActivities = 1;          // 총 활동 수
-	//m_InterProjects[1].activities[0].activityType = 1; // 활동에 관한 정보를 기록하는 배열	
-	//m_InterProjects[1].activities[0].duration = duration;      // 활동 기간
-	//m_InterProjects[1].activities[0].startDate = startDate;     // 시작 날짜
-	//m_InterProjects[1].activities[0].endDate = startDate + duration-1;       // 종료 날짜
-	//m_InterProjects[1].activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
-	//m_InterProjects[1].activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
-	//m_InterProjects[1].activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
-	//	
+	// 활동
+	m_InterProjects[1].numActivities = 1;          // 총 활동 수
+	m_InterProjects[1].activities[0].activityType = 1; // 활동에 관한 정보를 기록하는 배열	
+	m_InterProjects[1].activities[0].duration = duration;      // 활동 기간
+	m_InterProjects[1].activities[0].startDate = startDate;     // 시작 날짜
+	m_InterProjects[1].activities[0].endDate = startDate + duration-1;       // 종료 날짜
+	m_InterProjects[1].activities[0].highSkill = m_GlobalEnv.Hr_Init_H / 2;     // 높은 기술 수준 인력 수
+	m_InterProjects[1].activities[0].midSkill = m_GlobalEnv.Hr_Init_H / 2;      // 중간 기술 수준 인력 수
+	m_InterProjects[1].activities[0].lowSkill = m_GlobalEnv.Hr_Init_H / 2;      // 낮은 기술 수준 인력 수
+		*/
 	return TRUE;
 }
 
@@ -325,7 +325,7 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 		int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 충원
 		if (win) {
 			int i = rand() % 3; /// 고급,중급,초급중 아무나
-			AddHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 충원 리드 타임
+			//AddHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 충원 리드 타임
 		}
 	}
 
@@ -342,7 +342,7 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 			int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 감원
 			if (win) {
 				int i = rand() % 3;  //song 인원 감원은 프로젝트 할당 상황을 보고 결정하게 수정해야함.
-				RemoveHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 감원 리드 타임
+				//RemoveHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 감원 리드 타임
 			}
 		}
 	}

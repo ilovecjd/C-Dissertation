@@ -597,7 +597,6 @@ void CCDissertationDlg::OnBnClickedTest()
 						*(lastResult+(printRow * printWidth  + index++)) = successProfit;
 						*(lastResult+(printRow * printWidth  + index++)) = cashInit;
 						*(lastResult + (printRow * printWidth + index++)) = totalIncome;
-
 						if(successCnt)
 							*(lastResult + (printRow * printWidth + index++))= successProfit / successCnt;						
 						else 
@@ -605,11 +604,8 @@ void CCDissertationDlg::OnBnClickedTest()
 
 						*(lastResult + (printRow * printWidth +index++)) = failCnt;
 						*(lastResult + (printRow * printWidth +index++)) = failMon;
-
 						if(failCnt)
 							*(lastResult + (printRow * printWidth + index++))= failMon/failCnt;
-						else
-							*(lastResult + (printRow * printWidth + index++)) = 0;
 
 						printRow++;
 					}

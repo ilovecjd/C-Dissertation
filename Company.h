@@ -44,7 +44,7 @@ private:
 	ALL_ACTIVITY_PATTERN m_ActPattern;
 
 	PROJECT* m_AllProjects = NULL;	
-	//PROJECT m_InterProjects[3] = {0,};
+	//PROJECT m_InterProjects[3] = {0,};  //내부프로젝트
 	CXLEzAutomation* m_pXl = NULL; // 엑셀을 다루기 위한 클래스	
 
 	int* m_orderTable[2] = {NULL,NULL};
