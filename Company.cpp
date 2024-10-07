@@ -322,11 +322,14 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 	if (temp < Cash)
 	{
 		//분기에 한번 꼴로 충원하자.
-		int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 충원
-		if (win) {
-			int i = rand() % 3; /// 고급,중급,초급중 아무나
-			//AddHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 충원 리드 타임
+		if (0 < recruitTerm){ //0 이면 인원 증감 없음
+			int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 충원
+			if (win) {
+				int i = rand() % 3; /// 고급,중급,초급중 아무나
+				AddHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 충원 리드 타임
+			}
 		}
+		
 	}
 
 	else 
@@ -339,10 +342,12 @@ BOOL CCompany::CheckLastWeek(int thisWeek)
 
 		if (temp > Cash)
 		{
-			int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 감원
-			if (win) {
-				int i = rand() % 3;  //song 인원 감원은 프로젝트 할당 상황을 보고 결정하게 수정해야함.
-				//RemoveHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 감원 리드 타임
+			if (0 < recruitTerm) { //0 이면 인원 증감 없음
+				int win = ZeroOrOneByProb(recruitTerm); // 분기에 한번 감원
+				if (win) {
+					int i = rand() % 3;  //song 인원 감원은 프로젝트 할당 상황을 보고 결정하게 수정해야함.
+					RemoveHR(i, thisWeek + m_GlobalEnv.Hr_LeadTime);// 인원 감원 리드 타임
+				}
 			}
 		}
 	}
@@ -455,6 +460,19 @@ void CCompany::SelectCandidates(int thisWeek)
 			}
 		}
 	}
+
+
+		// 내부프로젝트에서 후보군을 찾는다.
+		for (int i = 0; i < countNPD; i++)
+		{
+			PROJECT* project = m_InterProjects + i;
+	
+			if (IsEnoughHR(thisWeek, project)) // 인원 체크
+			{
+				m_candidateTable[j++] = project->ID;
+			}
+
+		}
 }
 
 //

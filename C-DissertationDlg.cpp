@@ -854,122 +854,158 @@ void CCDissertationDlg::OnBnClickedSimulationStart()
 	DefaultParameters(actTemp, patternTemp);
 	//for (int i = 0; i < 10; i++) {
 #define _PRINT_WIDTH	10	
-		int iLoop = 100;
+		int iLoop = 1;
 		int* lastResult = NULL;
-		lastResult = new int[iLoop * _PRINT_WIDTH];
+		
+		// 1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
+		// 4: 내부포함 먼저 발생한 순서대로 5: 내부 금액큰순 6: 내부 금액작은순
+		// 7: 내부, 인원 주기 
+		int selectOrder = 1;
+		int  recruitTerm = 12; // 인원 충원 강도. 12면 분기에 한번 (12주) , 0 이면 안함
+		int  countNPD = 0; // 0 : 외부 프로젝트만, 3 : 내부 프로젝트 3개 검사
+		int  winNPD = 0; // 0 : 외부 와 내부중 내부진행 확율
 
-		//m_pGlobalEnv 를 통해서 모든 환경을 설정한다.
-		for (int loop = 0; loop < iLoop; loop++)
-		{
-			int successProfi = 0; //성공시 금액			
-			int lastMonth = 0; // 실패 개월
-			int hr_Inc = 0; // 최종 인원
-			int successProfit = 0;
-			int totalIncome = 0;
-			int successCnt = 1;
-
-			int hr_h = 3;
-			int hr_m = 3;
-			int hr_l = 3;
-			int SimulationWeeks = 4 * 36; // 4주 x 36 개월;	
+		for ( selectOrder = 1; selectOrder < 4; selectOrder++) {
+			for ( recruitTerm = 0; recruitTerm <= 12*3; recruitTerm += 12) {
+				for (countNPD = 0; countNPD <= 3; countNPD += 3) {
+					lastResult = new int[iLoop * _PRINT_WIDTH];
 
 
-			//selectOrder 
-			// 1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
-			// 4: 내부포함 먼저 발생한 순서대로 5: 내부 금액큰순 6: 내부 금액작은순
-			// 7: 내부, 인원 주기 
-			m_pGlobalEnv->SimulationWeeks = SimulationWeeks;
-			m_pGlobalEnv->maxWeek = SimulationWeeks + 80;
-			m_pGlobalEnv->WeeklyProb = 1.25;
-			m_pGlobalEnv->Hr_Init_H = hr_h;
-			m_pGlobalEnv->Hr_Init_M = hr_m;
-			m_pGlobalEnv->Hr_Init_L = hr_l;
-			m_pGlobalEnv->Hr_LeadTime = 12;
-			m_pGlobalEnv->Cash_Init = (50 * hr_h + 39 * hr_m + 25 * hr_l) * 4 * 6 * 1.2; //인원수 대비 6개월
-			m_pGlobalEnv->ProblemCnt = 10;
-			m_pGlobalEnv->ExpenseRate = 1.2;	// 비용계산에 사용되는 제경비 비율		
-			m_pGlobalEnv->selectOrder = 1;	
-			m_pGlobalEnv->recruit = 4 * 12;		// 충원에 필요한 운영비 (몇주분량인가?)
-			m_pGlobalEnv->layoff = 4 * 3.5;			// 감원에 필요한 운영비 (몇주분량인가?)
+					for (int loop = 0; loop < iLoop; loop++)
+					{
+						int successProfi = 0; //성공시 금액			
+						int lastMonth = 0; // 실패 개월
+						int hr_Inc = 0; // 최종 인원
+						int successProfit = 0;
+						int totalIncome = 0;
+						int successCnt = 1;
 
-			CCreator Creator;
-			Creator.Init(m_pGlobalEnv, actTemp, patternTemp);
+						int hr_h = 3;
+						int hr_m = 3;
+						int hr_l = 3;
+					
+						int SimulationWeeks = 4 * 36; // 4주 x 36 개월;	
 
-			CString prarmFile;
-			prarmFile.Format(_T("d:\\result\\resualt.ahn"));
-			Creator.Save(prarmFile);
 
-			CCompany* company = new CCompany;
-			company->Init(prarmFile);
-			company->ReInit();
+						m_pGlobalEnv->SimulationWeeks = SimulationWeeks;
+						m_pGlobalEnv->maxWeek = SimulationWeeks + 80;
+						m_pGlobalEnv->WeeklyProb = 1.25;
+						m_pGlobalEnv->Hr_Init_H = hr_h;
+						m_pGlobalEnv->Hr_Init_M = hr_m;
+						m_pGlobalEnv->Hr_Init_L = hr_l;
+						m_pGlobalEnv->Hr_LeadTime = 12;
+						m_pGlobalEnv->Cash_Init = (50 * hr_h + 39 * hr_m + 25 * hr_l) * 4 * 6 * 1.2; //인원수 대비 6개월
+						m_pGlobalEnv->ProblemCnt = 10;
+						m_pGlobalEnv->ExpenseRate = 1.2;	// 비용계산에 사용되는 제경비 비율		
+						m_pGlobalEnv->selectOrder = selectOrder;
+						m_pGlobalEnv->recruit = 4 * 12;		// 충원에 필요한 운영비 (몇주분량인가?)
+						m_pGlobalEnv->layoff = 4 * 3.5;			// 감원에 필요한 운영비 (몇주분량인가?)
 
-			//******************************
-			company->recruitTerm = 12;
+						CCreator Creator(countNPD);
+						Creator.Init(m_pGlobalEnv, actTemp, patternTemp);
 
-			for (int k = 0; k < m_pGlobalEnv->SimulationWeeks; k++)
-			{
-				if (FALSE == company->Decision(k))  // j번째 기간에 결정해야 할 일들		
-				{
-					// 실패하면 카운드를 0으로
-					successCnt = 0;
-					break;
-				}
-			}
+						CString prarmFile;
+						prarmFile.Format(_T("D:\\result\\%03d_%02d_%02d_%02d.ahn"), iLoop, selectOrder, recruitTerm, countNPD);
+						Creator.Save(prarmFile);
 
-			lastMonth = company->m_lastDecisionWeek;
-			successProfit = company->CalculateFinalResult(); //성공시 금액
-			successProfit = successProfit - m_pGlobalEnv->Cash_Init;
+						CCompany* company = new CCompany;
+						company->Init(prarmFile);
+						company->ReInit();
 
-			hr_Inc = company->m_totalHR[HR_HIG][m_pGlobalEnv->SimulationWeeks];
-			hr_Inc += company->m_totalHR[HR_MID][m_pGlobalEnv->SimulationWeeks];
-			hr_Inc += company->m_totalHR[HR_LOW][m_pGlobalEnv->SimulationWeeks];
+						//******************************
+						company->recruitTerm = recruitTerm;//
+						company->countNPD = countNPD;
 
-			totalIncome = company->CalculateTotalInCome();
+						for (int k = 0; k < m_pGlobalEnv->SimulationWeeks; k++)
+						{
+							if (FALSE == company->Decision(k))  // j번째 기간에 결정해야 할 일들		
+							{
+								// 실패하면 카운드를 0으로
+								successCnt = 0;
+								break;
+							}
+						}
+						
 
-			if (company) {
-				delete company;
-				company = NULL;
-			}
 
-			int temp = 0;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = loop;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_h;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_m;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_l;
+						lastMonth = company->m_lastDecisionWeek;
+						successProfit = company->CalculateFinalResult(); //성공시 금액
+						successProfit = successProfit - m_pGlobalEnv->Cash_Init;
 
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = successCnt;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = lastMonth;
+						hr_Inc = company->m_totalHR[HR_HIG][m_pGlobalEnv->SimulationWeeks];
+						hr_Inc += company->m_totalHR[HR_MID][m_pGlobalEnv->SimulationWeeks];
+						hr_Inc += company->m_totalHR[HR_LOW][m_pGlobalEnv->SimulationWeeks];
 
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = m_pGlobalEnv->Cash_Init;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = totalIncome;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = successProfit;
-			*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_Inc;
+						totalIncome = company->CalculateTotalInCome();
 
-		}
+						if (company) {
+							delete company;
+							company = NULL;
+						}
 
-		CString xlFile;
-		xlFile.Format(_T("d:\\result\\result.xlsx"));
+						// 파일 삭제
+						CT2CA pszConvertedAnsiString(prarmFile);
+						const char* pFileName = pszConvertedAnsiString;
+						remove(pFileName);
 
-		CString sheetName;
-		sheetName.Format(_T("song%d"), 4);
+						int temp = 0;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = loop;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_h;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_m;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_l;
 
-		CXLEzAutomation* pXl;
-		pXl = new CXLEzAutomation;
-		pXl->OpenExcelFile(xlFile, sheetName);
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = successCnt;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = lastMonth;
 
-		CString strTitle[1][_PRINT_WIDTH] = {
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = m_pGlobalEnv->Cash_Init;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = totalIncome;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = successProfit;
+						*(lastResult + (loop* _PRINT_WIDTH + temp++)) = hr_Inc;
+
+					}
+
+					CString xlFile;
+					xlFile.Format(_T("d:\\result\\result.xlsx"));
+
+					CString sheetName;
+					sheetName.Format(_T("%03d_%02d_%02d_%02d"), iLoop, selectOrder, recruitTerm, countNPD);
+
+					CXLEzAutomation* pXl;
+					pXl = new CXLEzAutomation;
+					pXl->OpenExcelFile(xlFile, sheetName);
+
+					CString strEnv[2][_PRINT_WIDTH] = {{
+						_T("실행횟수"), _T(" "), _T("순서"), _T(" "), _T("인원강도"),	_T(" "), _T("내부포함"),
+						_T(" "), _T("내부실행강도"), _T(" ") }, {
+							_T("cnt"), _T("h"), _T("m"), _T("l"), _T("sCnt"),	_T("month"), _T("initCash"),
+							_T("totalIncome"), _T("successProfit"), _T("hr_Inc")
+						}
+				};
+
+		/*CString strTitle[1][_PRINT_WIDTH] = {
 			_T("cnt"), _T("h"), _T("m"), _T("l"), _T("sCnt"),	_T("month"), _T("initCash"),
 			_T("totalIncome"), _T("successProfit"), _T("hr_Inc")
 		};
 
+*/
+		
 
-		pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (CString*)strTitle, 1, _PRINT_WIDTH);
-		pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 2, 1, (int*)lastResult, iLoop, _PRINT_WIDTH);
+		pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 1, 1, (CString*)strEnv, 2, _PRINT_WIDTH);
+		pXl->SetCellValue(WS_NUM_DEBUG_INFO, 1, 2, iLoop);
+		pXl->SetCellValue(WS_NUM_DEBUG_INFO, 1, 4, selectOrder);
+		pXl->SetCellValue(WS_NUM_DEBUG_INFO, 1, 6, recruitTerm);
+		pXl->SetCellValue(WS_NUM_DEBUG_INFO, 1, 8, countNPD);
+		pXl->SetCellValue(WS_NUM_DEBUG_INFO, 1, 10, winNPD);
+
+		//pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 2, 1, (CString*)strTitle, 1, _PRINT_WIDTH);
+		pXl->WriteArrayToRange(WS_NUM_DEBUG_INFO, 3, 1, (int*)lastResult, iLoop, _PRINT_WIDTH);
 
 		pXl->SaveAndCloseExcelFile(xlFile);
 
 		delete pXl;
 		delete lastResult;
+
+		} } }
 
 	//}
 		delete actTemp;

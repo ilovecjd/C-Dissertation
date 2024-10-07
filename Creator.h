@@ -6,6 +6,7 @@ class CCreator
 {
 public:
 	CCreator();
+	CCreator(int count);
 	~CCreator();
 
 	// song
@@ -20,6 +21,8 @@ public :
 	//BOOL Init(int type, int ID, int ODate, ALL_ACT_TYPE* pActType, ALL_ACTIVITY_PATTERN* pActPattern);
 	void Save(CString filename);
 	void Load(CString filename);
+	int countNPD = 0;
+
 
 private:	
 	GLOBAL_ENV m_GlobalEnv;
@@ -36,9 +39,6 @@ private:
 	double CalculateTotalLaborCost(int highCount, int midCount, int lowCount);
 	double CalculateLaborCost(const std::string& grade);
 	void CalculatePaymentSchedule(PROJECT* pProject);
-
-	//int ZeroOrOneByProb(int probability);
-	//int RandomBetween(int low, int high);
 
 	void WriteProjet(FILE* fp);
 };

@@ -1502,7 +1502,8 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 	VariantInit(&vargRng);
 
 	// Set the Excel range using the GetRange function
-	if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
+	//if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)){
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1521,6 +1522,7 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 		return FALSE;
 	}
 
+	// Fill the SAFEARRAY with data
 	// Fill the SAFEARRAY with data
 	for (long r = 1; r <= rows; ++r) {
 		for (long c = 1; c <= cols; ++c) {
@@ -1550,6 +1552,7 @@ BOOL CXLAutomation::WriteArrayToRangeCString(SheetName sheet, int startRow, int 
 			VariantClear(&vtData); // Clear VARIANT after use
 		}
 	}
+
 
 	// Wrap the SAFEARRAY in a VARIANT
 	VARIANT vtArray;

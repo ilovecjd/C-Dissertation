@@ -7,6 +7,10 @@ CCreator::CCreator()
 {
 	
 }
+CCreator::CCreator(int count)
+{
+	countNPD = count;
+}
 
 CCreator::~CCreator()
 {	
@@ -58,7 +62,7 @@ int CCreator::CreateOrderTable()
 		sum = sum + cnt;	// 이번주 까지 발생한 프로젝트 갯수. 다음주에 기록된다.
 	}
 	m_OutProjectNum = sum;
-	m_totalProjectNum = sum;// +3;// 생성될 내부프로젝트 최대 갯수만큼 더한다.
+	m_totalProjectNum = sum + countNPD;// +3;// 생성될 내부프로젝트 최대 갯수만큼 더한다.
 	return 0;
 }
 
@@ -101,7 +105,7 @@ int CCreator::CreateProjects()
 	}
 
 	// 내부 프로젝트 생성
-	for (int i = 0; i <0; i++)
+	for (int i = 0; i < countNPD; i++)
 	{	
 		PROJECT* pProject;
 		int duration = 40+i*4;  // 10개월, 11개월, 12개월
